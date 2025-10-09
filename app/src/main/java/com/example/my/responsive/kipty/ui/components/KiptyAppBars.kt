@@ -38,62 +38,65 @@ enum class BottomBarDestinations(
 }
 
 @Composable
-fun KiptyTopBar() {
-    Box(modifier = Modifier.background(MaterialTheme.colorScheme.background)) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+fun KiptyTopBar(
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextButton(
+            onClick = {}
         ) {
-            TextButton(
-                onClick = {}
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.KeyboardArrowDown,
-                    contentDescription = "Arrow dropdown menu icon",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
-            Text(
-                text = "vosk-model-small",
-                color = MaterialTheme.colorScheme.onBackground,
-                style = MaterialTheme.typography.titleMedium
+            Icon(
+                imageVector = Icons.Filled.KeyboardArrowDown,
+                contentDescription = "Arrow dropdown menu icon",
+                tint = MaterialTheme.colorScheme.onBackground
             )
-            TextButton(
-                onClick = {}
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(R.drawable.folder_code_48px),
-                    contentDescription = "Resource code icon",
-                    tint = MaterialTheme.colorScheme.onBackground,
-                )
-            }
+        }
+        Text(
+            text = "vosk-model-small",
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.titleMedium
+        )
+        TextButton(
+            onClick = {}
+        ) {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = painterResource(R.drawable.folder_code_48px),
+                contentDescription = "Resource code icon",
+                tint = MaterialTheme.colorScheme.onBackground,
+            )
         }
     }
 }
 
 @Composable
-fun KiptyBottomBar() {
-    Row(
-        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.background),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+fun KiptyBottomBar(
+    modifier: Modifier = Modifier
+) {
+    NavigationBar(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.surface
     ) {
-        NavigationBar {
-            BottomBarDestinations.entries.forEach { destinations ->
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {},
-                    icon = {
-                        Icon(
-                            painter = painterResource(destinations.icon), destinations.route,
-                            modifier = Modifier.size(destinations.size),
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
-                    }
-                )
-            }
+        BottomBarDestinations.entries.forEach { destinations ->
+            NavigationBarItem(
+                selected = false,
+                onClick = {
+                    // TODO: Handle click
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(destinations.icon), destinations.route,
+                        modifier = Modifier.size(destinations.size),
+                        tint = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            )
         }
     }
 }

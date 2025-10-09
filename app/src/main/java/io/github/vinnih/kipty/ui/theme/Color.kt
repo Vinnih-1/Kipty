@@ -1,4 +1,4 @@
-package com.example.my.responsive.kipty.ui.theme
+package io.github.vinnih.kipty.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

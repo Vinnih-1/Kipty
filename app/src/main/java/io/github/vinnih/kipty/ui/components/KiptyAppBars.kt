@@ -1,10 +1,8 @@
-package com.example.my.responsive.kipty.ui.components
+package io.github.vinnih.kipty.ui.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -24,8 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.my.responsive.kipty.R
-import com.example.my.responsive.kipty.ui.theme.AppTheme
+import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.ui.theme.AppTheme
 
 enum class BottomBarDestinations(
     val size: Dp = 32.dp,

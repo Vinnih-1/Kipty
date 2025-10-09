@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.my.responsive.kipty"
+    namespace = "io.github.vinnih.kipty"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.my.responsive.kipty"
+        applicationId = "io.github.vinnih.kipty"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

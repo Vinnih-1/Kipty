@@ -2,4 +2,8 @@
     <string name="app_name">Kipty</string>
     <string name="no_transcriptions_found">You don\'t have any transcriptions yet.</string>
     <string name="add_transcription">Add a transcription</string>
+    <string name="create_transcription_dialog_title">Create a transcription</string>
+    <string name="create_transcription_dialog_description">This will create a new transcription.</string>
+    <string name="create_transcription_dialog_confirm_button">Confirm</string>
+    <string name="create_transcription_dialog_label">Insert a description</string>
 </resources>

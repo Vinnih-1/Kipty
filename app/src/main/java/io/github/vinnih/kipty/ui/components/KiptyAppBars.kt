@@ -10,12 +10,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -42,42 +47,45 @@ enum class BottomBarDestinations(
     HISTORY(icon = R.drawable.manage_history_48px, route = "history")
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KiptyTopBar(
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(14.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        TextButton(
-            onClick = {}
-        ) {
-            Icon(
-                imageVector = Icons.Filled.KeyboardArrowDown,
-                contentDescription = "Arrow dropdown menu icon",
-                tint = MaterialTheme.colorScheme.onBackground
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = "vosk-model-small",
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
+        },
+        navigationIcon = {
+            TextButton(
+                onClick = {}
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.KeyboardArrowDown,
+                    contentDescription = "Arrow dropdown menu icon",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+        },
+        actions = {
+            TextButton(
+                onClick = {}
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    painter = painterResource(R.drawable.folder_code_48px),
+                    contentDescription = "Resource code icon",
+                    tint = MaterialTheme.colorScheme.onBackground,
+                )
+            }
         }
-        Text(
-            text = "vosk-model-small",
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.titleMedium
-        )
-        TextButton(
-            onClick = {}
-        ) {
-            Icon(
-                modifier = Modifier.size(24.dp),
-                painter = painterResource(R.drawable.folder_code_48px),
-                contentDescription = "Resource code icon",
-                tint = MaterialTheme.colorScheme.onBackground,
-            )
-        }
-    }
+    )
 }
 
 @Composable

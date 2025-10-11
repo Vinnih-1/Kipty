@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
@@ -27,8 +26,7 @@ class MainActivity : ComponentActivity() {
                     bottomBar = { KiptyBottomBar() }
                 ) { paddingValues ->
                     Surface(
-                        modifier = Modifier.padding(paddingValues),
-                        tonalElevation = 1.dp
+                        modifier = Modifier.padding(paddingValues)
                     ) {
                         HomeScreen()
                     }

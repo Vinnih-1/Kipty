@@ -55,6 +55,7 @@ fun KiptyTranscriptionItem(
                     onClick = {
                         viewModel.deleteTranscription(transcription)
                         Toast.makeText(viewModel.context, R.string.delete_transcription_successful_toast, Toast.LENGTH_SHORT).show()
+                        showBottomSheet = false
                     }
                 ) {
                     Icon(

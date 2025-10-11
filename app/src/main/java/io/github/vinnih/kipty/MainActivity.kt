@@ -14,7 +14,6 @@ import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.theme.AppTheme
-import kotlinx.coroutines.flow.MutableStateFlow
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

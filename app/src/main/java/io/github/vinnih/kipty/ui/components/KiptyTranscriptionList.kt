@@ -44,14 +44,13 @@ fun KiptyTranscriptionList(
     viewModel: HomeViewModel,
 ) {
     val transcriptions = viewModel.transcriptions.collectAsState()
-    val context: Context = LocalContext.current
     var openTranscriptionCreator by remember { mutableStateOf(false) }
 
     if (openTranscriptionCreator) {
         KiptyTranscriptionCreator(
             viewModel = viewModel,
             onConfirm = {
-                Toast.makeText(context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
+                Toast.makeText(viewModel.context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
                 openTranscriptionCreator = false
             },
             onCancel = { openTranscriptionCreator = false }

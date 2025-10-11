@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -48,7 +47,6 @@ fun KiptyTranscriptionCreator(
     onConfirm: () -> Unit,
     onCancel: () -> Unit
 ) {
-    val context = LocalContext.current
     var description by remember { mutableStateOf("") }
     var pickedUri by remember { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(
@@ -96,20 +94,20 @@ fun KiptyTranscriptionCreator(
                     onClick = { launcher.launch(arrayOf("audio/*")) }
                 ) {
                     Text(
-                        text = if (pickedUri != null) getFileName(context, pickedUri!!)!! else stringResource(R.string.create_transcription_dialog_select_button)
+                        text = if (pickedUri != null) getFileName(viewModel.context, pickedUri!!)!! else stringResource(R.string.create_transcription_dialog_select_button)
                     )
                 }
                 Button(
                     modifier = Modifier.padding(bottom = 8.dp),
                     onClick = {
                         if (pickedUri == null) {
-                            Toast.makeText(context, R.string.create_transcription_dialog_no_file_toast, Toast.LENGTH_SHORT).show()
+                            Toast.makeText(viewModel.context, R.string.create_transcription_dialog_no_file_toast, Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 
                         val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
                         val transcription = Transcription(
-                            transcriptionName = getFileName(context, pickedUri!!) ?: "",
+                            transcriptionName = getFileName(viewModel.context, pickedUri!!) ?: "",
                             transcriptionUri = pickedUri!!.toString(),
                             transcriptionDescription = description,
                             createdAt = date

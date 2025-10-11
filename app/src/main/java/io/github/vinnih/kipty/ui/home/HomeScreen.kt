@@ -29,25 +29,11 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
-    val context: Context = LocalContext.current
-    val transcriptions = viewModel.transcriptions.collectAsState()
-    var openTranscriptionCreator by remember { mutableStateOf(false) }
 
-    if (openTranscriptionCreator) {
-        KiptyTranscriptionCreator(
-            viewModel = viewModel,
-            onConfirm = {
-                Toast.makeText(context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
-                openTranscriptionCreator = false
-            },
-            onCancel = { openTranscriptionCreator = false }
-        )
-    }
 
     KiptyTranscriptionList(
         modifier = modifier,
-        transcriptions = transcriptions,
-        onEmptyButtonClick = { openTranscriptionCreator = true }
+        viewModel = viewModel
     )
 }
 

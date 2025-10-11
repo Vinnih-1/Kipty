@@ -9,4 +9,5 @@
     <string name="create_transcription_dialog_select_button">Select a file</string>
     <string name="create_transcription_dialog_no_file_toast">Please select a file before clicking confirm</string>
     <string name="create_transcription_dialog_created_toast">Transcription created</string>
+    <string name="delete_transcription_successful_toast">Transcription deleted successfully</string>
 </resources>

@@ -6,4 +6,7 @@
     <string name="create_transcription_dialog_description">This will create a new transcription.</string>
     <string name="create_transcription_dialog_confirm_button">Confirm</string>
     <string name="create_transcription_dialog_label">Insert a description</string>
+    <string name="create_transcription_dialog_select_button">Select a file</string>
+    <string name="create_transcription_dialog_no_file_toast">Please select a file before clicking confirm</string>
+    <string name="create_transcription_dialog_created_toast">Transcription created</string>
 </resources>

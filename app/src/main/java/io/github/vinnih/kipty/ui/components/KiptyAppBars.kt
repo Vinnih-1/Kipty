@@ -2,9 +2,7 @@ package io.github.vinnih.kipty.ui.components
 
 import android.content.Context
 import android.content.res.Configuration
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -33,13 +31,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.data.local.entity.Transcription
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
-import io.github.vinnih.kipty.utils.getFileName
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 enum class BottomBarDestinations(
     val size: Dp = 32.dp,
@@ -95,28 +88,13 @@ fun KiptyBottomBar(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val context: Context = LocalContext.current
-    var pickedUri by remember { mutableStateOf<Uri?>(null) }
     var openTranscriptionCreator by remember { mutableStateOf(false) }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) {
-        if (it != null) {
-            pickedUri = it
-            openTranscriptionCreator = true
-        }
-    }
 
     if (openTranscriptionCreator) {
         KiptyTranscriptionCreator(
-            onConfirm = { description ->
-                val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
-                val transcription = Transcription(
-                    transcriptionName = getFileName(context, pickedUri!!) ?: "",
-                    transcriptionUri = pickedUri!!.toString(),
-                    transcriptionDescription = description,
-                    createdAt = date
-                )
-                viewModel.createTranscription(transcription)
+            viewModel = viewModel,
+            onConfirm = {
+                Toast.makeText(context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
                 openTranscriptionCreator = false
             },
             onCancel = { openTranscriptionCreator = false }
@@ -129,10 +107,7 @@ fun KiptyBottomBar(
         BottomBarDestinations.entries.forEach { destinations ->
             NavigationBarItem(
                 selected = false,
-                onClick = {
-                    launcher.launch(arrayOf("audio/*"))
-                    openTranscriptionCreator = true
-                },
+                onClick = { openTranscriptionCreator = true },
                 icon = {
                     Icon(
                         painter = painterResource(destinations.icon), destinations.route,

@@ -2,9 +2,7 @@ package io.github.vinnih.kipty.ui.home
 
 import android.content.Context
 import android.content.res.Configuration
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -19,16 +17,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import io.github.vinnih.kipty.data.local.entity.Transcription
+import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.components.KiptyTranscriptionCreator
 import io.github.vinnih.kipty.ui.components.KiptyTranscriptionList
 import io.github.vinnih.kipty.ui.theme.AppTheme
-import io.github.vinnih.kipty.utils.getFileName
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun HomeScreen(
@@ -37,28 +31,13 @@ fun HomeScreen(
 ) {
     val context: Context = LocalContext.current
     val transcriptions = viewModel.transcriptions.collectAsState()
-    var pickedUri by remember { mutableStateOf<Uri?>(null) }
     var openTranscriptionCreator by remember { mutableStateOf(false) }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) {
-        if (it != null) {
-            pickedUri = it
-            openTranscriptionCreator = true
-        }
-    }
 
     if (openTranscriptionCreator) {
         KiptyTranscriptionCreator(
-            onConfirm = { description ->
-                val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
-                val transcription = Transcription(
-                    transcriptionName = getFileName(context, pickedUri!!) ?: "",
-                    transcriptionUri = pickedUri!!.toString(),
-                    transcriptionDescription = description,
-                    createdAt = date
-                )
-                viewModel.createTranscription(transcription)
+            viewModel = viewModel,
+            onConfirm = {
+                Toast.makeText(context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
                 openTranscriptionCreator = false
             },
             onCancel = { openTranscriptionCreator = false }
@@ -68,7 +47,7 @@ fun HomeScreen(
     KiptyTranscriptionList(
         modifier = modifier,
         transcriptions = transcriptions,
-        onEmptyButtonClick = { launcher.launch(arrayOf("audio/*")) }
+        onEmptyButtonClick = { openTranscriptionCreator = true }
     )
 }
 

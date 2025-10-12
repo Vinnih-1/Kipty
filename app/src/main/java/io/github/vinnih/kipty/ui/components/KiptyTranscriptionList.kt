@@ -1,6 +1,5 @@
 package io.github.vinnih.kipty.ui.components
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -36,21 +35,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.ui.home.HomeViewModel
+import io.github.vinnih.kipty.ui.home.HomeUiController
 
 @Composable
 fun KiptyTranscriptionList(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel,
+    controller: HomeUiController,
 ) {
-    val transcriptions = viewModel.transcriptions.collectAsState()
+    val context = LocalContext.current
+    val transcriptions = controller.uiState.collectAsState()
     var openTranscriptionCreator by remember { mutableStateOf(false) }
 
     if (openTranscriptionCreator) {
         KiptyTranscriptionCreator(
-            viewModel = viewModel,
+            controller = controller,
             onConfirm = {
-                Toast.makeText(viewModel.context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
                 openTranscriptionCreator = false
             },
             onCancel = { openTranscriptionCreator = false }
@@ -111,7 +111,7 @@ fun KiptyTranscriptionList(
             items(transcriptions.value) { transcription ->
                 KiptyTranscriptionItem(
                     transcription = transcription,
-                    viewModel = viewModel
+                    controller = controller
                 )
             }
         }

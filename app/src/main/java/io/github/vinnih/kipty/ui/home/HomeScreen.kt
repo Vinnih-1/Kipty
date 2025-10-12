@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.components.KiptyTranscriptionList
@@ -17,11 +16,11 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel()
+    controller: HomeUiController
 ) {
     KiptyTranscriptionList(
         modifier = modifier,
-        viewModel = viewModel
+        controller = controller
     )
 }
 
@@ -35,17 +34,18 @@ fun HomeScreen(
     device = "id:pixel_9", showBackground = true, showSystemUi = false
 )
 @Composable
-fun HomeScreenPreview() {
+fun KiptyTranscriptionListPreview() {
+    val controller: HomeUiController = FakeHomeViewModel()
+
     AppTheme {
         Scaffold(
             topBar = { KiptyTopBar() },
-            bottomBar = { KiptyBottomBar() }
+            bottomBar = { KiptyBottomBar(controller = controller) }
         ) { paddingValues ->
             Surface(
-                modifier = Modifier.padding(paddingValues),
-                tonalElevation = 5.dp
+                modifier = Modifier.padding(paddingValues)
             ) {
-                HomeScreen()
+                HomeScreen(controller = controller)
             }
         }
     }

@@ -2,11 +2,6 @@ package io.github.vinnih.kipty.ui.components
 
 import android.content.res.Configuration
 import android.widget.Toast
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -14,27 +9,25 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.ui.home.HomeViewModel
+import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
+import io.github.vinnih.kipty.ui.home.HomeUiController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 enum class BottomBarDestinations(
@@ -91,15 +84,16 @@ fun KiptyTopBar(
 @Composable
 fun KiptyBottomBar(
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = hiltViewModel()
+    controller: HomeUiController
 ) {
+    val context = LocalContext.current
     var openTranscriptionCreator by remember { mutableStateOf(false) }
 
     if (openTranscriptionCreator) {
         KiptyTranscriptionCreator(
-            viewModel = viewModel,
+            controller = controller,
             onConfirm = {
-                Toast.makeText(viewModel.context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, R.string.create_transcription_dialog_created_toast, Toast.LENGTH_SHORT).show()
                 openTranscriptionCreator = false
             },
             onCancel = { openTranscriptionCreator = false }
@@ -153,6 +147,6 @@ fun KiptyTopBarPreview() {
 @Composable
 fun KiptyBottomBarPreview() {
     AppTheme {
-        KiptyBottomBar()
+        KiptyBottomBar(controller = FakeHomeViewModel())
     }
 }

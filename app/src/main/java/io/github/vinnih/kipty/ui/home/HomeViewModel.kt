@@ -16,16 +16,16 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     val transcriptionRepository: TranscriptionRepository,
     @ApplicationContext val context: Context
-) : ViewModel() {
+) : ViewModel(), HomeUiController {
 
-    val transcriptions = transcriptionRepository.getAllTranscriptions()
+    override val uiState = transcriptionRepository.getAllTranscriptions()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    fun createTranscription(transcription: Transcription) = viewModelScope.launch {
+    override fun createTranscription(transcription: Transcription) = viewModelScope.launch {
         transcriptionRepository.insertTranscription(transcription)
     }
 
-    fun deleteTranscription(transcription: Transcription) = viewModelScope.launch {
+    override fun deleteTranscription(transcription: Transcription) = viewModelScope.launch {
         transcriptionRepository.deleteTranscription(transcription)
     }
 }

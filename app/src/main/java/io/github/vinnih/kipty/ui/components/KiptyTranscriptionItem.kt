@@ -23,21 +23,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.data.local.entity.Transcription
-import io.github.vinnih.kipty.ui.home.HomeViewModel
+import io.github.vinnih.kipty.ui.home.HomeUiController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun KiptyTranscriptionItem(
     modifier: Modifier = Modifier,
     transcription: Transcription,
-    viewModel: HomeViewModel,
+    controller: HomeUiController,
 ) {
+    val context = LocalContext.current
     var showBottomSheet by remember { mutableStateOf(false) }
 
     if (showBottomSheet) {
@@ -53,8 +55,8 @@ fun KiptyTranscriptionItem(
             ) {
                 TextButton(
                     onClick = {
-                        viewModel.deleteTranscription(transcription)
-                        Toast.makeText(viewModel.context, R.string.delete_transcription_successful_toast, Toast.LENGTH_SHORT).show()
+                        controller.deleteTranscription(transcription)
+                        Toast.makeText(context, R.string.delete_transcription_successful_toast, Toast.LENGTH_SHORT).show()
                         showBottomSheet = false
                     }
                 ) {

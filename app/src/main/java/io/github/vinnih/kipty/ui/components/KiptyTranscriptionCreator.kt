@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,68 +32,67 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.data.local.entity.Transcription
 import io.github.vinnih.kipty.ui.home.HomeUiController
-import io.github.vinnih.kipty.utils.getFileName
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import io.github.vinnih.kipty.utils.copyFile
 
 @Composable
 fun KiptyTranscriptionCreator(
     modifier: Modifier = Modifier,
     controller: HomeUiController,
     onConfirm: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var description by remember { mutableStateOf("") }
     var pickedUri by remember { mutableStateOf<Uri?>(null) }
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) {
-        if (it != null) {
-            pickedUri = it
+    val launcher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.OpenDocument(),
+        ) {
+            if (it != null) {
+                pickedUri = it
+            }
         }
-    }
 
     Dialog(
-        onDismissRequest = onCancel
+        onDismissRequest = onCancel,
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
         ) {
             Column(
                 modifier = Modifier.padding(top = 8.dp).fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
                     contentDescription = "Create transcription icon",
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
                 )
                 Text(
                     text = stringResource(R.string.create_transcription_dialog_title),
                     style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold)
+                    fontWeight = FontWeight.Bold,
+                )
                 Text(
                     text = stringResource(R.string.create_transcription_dialog_description),
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Light
+                    fontWeight = FontWeight.Light,
                 )
                 TextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text(stringResource(R.string.create_transcription_dialog_label)) },
-                    singleLine = true
+                    singleLine = true,
                 )
                 TextButton(
-                    onClick = { launcher.launch(arrayOf("audio/*")) }
+                    onClick = { launcher.launch(arrayOf("audio/*")) },
                 ) {
                     Text(
-                        text = if (pickedUri != null) getFileName(context, pickedUri!!)!! else stringResource(R.string.create_transcription_dialog_select_button)
+                        text = ""
                     )
                 }
                 Button(
@@ -103,15 +103,11 @@ fun KiptyTranscriptionCreator(
                             return@Button
                         }
 
-                        val date = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
-                        val transcription = Transcription(
-                            transcriptionName = getFileName(context, pickedUri!!) ?: "",
-                            transcriptionUri = pickedUri!!.toString(),
-                            transcriptionDescription = description,
-                            createdAt = date
-                        )
-                        controller.createTranscription(transcription).also { onConfirm.invoke() }
-                    }
+                        val file = copyFile(context, pickedUri!!)
+                        controller.convertFile(file) {
+                            Toast.makeText(context, "File converted successfully: ${file.name.take(10)}.${file.extension}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                 ) { Text(stringResource(R.string.create_transcription_dialog_confirm_button)) }
             }
         }

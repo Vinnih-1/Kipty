@@ -1,13 +1,8 @@
 package io.github.vinnih.kipty.ui.home
 
-import io.github.vinnih.kipty.data.local.entity.Transcription
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.StateFlow
+import java.io.File
 
 interface HomeUiController {
-    val uiState: StateFlow<List<Transcription>>
 
-    fun createTranscription(transcription: Transcription): Job
-
-    fun deleteTranscription(transcription: Transcription): Job
+    fun convertFile(file: File, onSuccess: (File) -> Unit)
 }

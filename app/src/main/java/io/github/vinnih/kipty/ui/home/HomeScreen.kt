@@ -16,22 +16,27 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    controller: HomeUiController
+    controller: HomeUiController,
 ) {
     KiptyTranscriptionList(
         modifier = modifier,
-        controller = controller
+        controller = controller,
     )
 }
 
 @Preview(
-    showBackground = true, showSystemUi = false, name = "Light Mode",
-    uiMode = Configuration.UI_MODE_TYPE_NORMAL, device = "id:pixel_9"
+    showBackground = true,
+    showSystemUi = false,
+    name = "Light Mode",
+    uiMode = Configuration.UI_MODE_TYPE_NORMAL,
+    device = "id:pixel_9",
 )
 @Preview(
     name = "Dark Mode",
     uiMode = Configuration.UI_MODE_NIGHT_YES or Configuration.UI_MODE_TYPE_NORMAL,
-    device = "id:pixel_9", showBackground = true, showSystemUi = false
+    device = "id:pixel_9",
+    showBackground = true,
+    showSystemUi = false,
 )
 @Composable
 fun KiptyTranscriptionListPreview() {
@@ -40,10 +45,10 @@ fun KiptyTranscriptionListPreview() {
     AppTheme {
         Scaffold(
             topBar = { KiptyTopBar() },
-            bottomBar = { KiptyBottomBar(controller = controller) }
+            bottomBar = { KiptyBottomBar(controller = controller) },
         ) { paddingValues ->
             Surface(
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.padding(paddingValues),
             ) {
                 HomeScreen(controller = controller)
             }

@@ -26,7 +26,7 @@ android {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                "proguard-rules.pro"
             )
         }
     }
@@ -40,6 +40,10 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+ktlint {
+    enableExperimentalRules.set(true)
 }
 
 dependencies {
@@ -62,4 +66,6 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
 
     debugImplementation(libs.androidx.compose.ui.tooling)
+
+    ktlintRuleset(libs.ktlint.compose)
 }

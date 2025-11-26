@@ -42,7 +42,7 @@ private val lightScheme =
         surfaceContainerLow = surfaceContainerLowLight,
         surfaceContainer = surfaceContainerLight,
         surfaceContainerHigh = surfaceContainerHighLight,
-        surfaceContainerHighest = surfaceContainerHighestLight,
+        surfaceContainerHighest = surfaceContainerHighestLight
     )
 
 private val darkScheme =
@@ -81,20 +81,15 @@ private val darkScheme =
         surfaceContainerLow = surfaceContainerLowDark,
         surfaceContainer = surfaceContainerDark,
         surfaceContainerHigh = surfaceContainerHighDark,
-        surfaceContainerHighest = surfaceContainerHighestDark,
+        surfaceContainerHighest = surfaceContainerHighestDark
     )
 
 @Composable
-fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content:
-        @Composable()
-        () -> Unit,
-) {
+fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme = if (darkTheme) darkScheme else lightScheme
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
-        content = content,
+        content = content
     )
 }

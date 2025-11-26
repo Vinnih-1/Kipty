@@ -4,10 +4,7 @@ import android.content.Context
 import android.net.Uri
 import java.io.File
 
-fun copyFile(
-    context: Context,
-    uri: Uri,
-): File {
+fun copyFile(context: Context, uri: Uri): File {
     val inputStream = context.contentResolver.openInputStream(uri)!!
     val file = File(context.filesDir, "")
     inputStream.use { input ->

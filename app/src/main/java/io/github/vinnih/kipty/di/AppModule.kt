@@ -12,10 +12,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 class AppModule {
-
     @Provides
     @Singleton
-    fun getExoplayer(
-        @ApplicationContext context: Context,
-    ) = ExoPlayer.Builder(context).build()
+    fun getExoplayer(@ApplicationContext context: Context) = ExoPlayer.Builder(context).build()
 }

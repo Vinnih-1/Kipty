@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.devtools.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ktlint.gradle)
+    alias(libs.plugins.serialization.plugin)
 }
 
 android {
@@ -36,6 +37,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
     buildFeatures {
         compose = true
@@ -47,6 +49,7 @@ ktlint {
 }
 
 dependencies {
+    implementation(project(":whisper"))
     implementation(libs.android.transcoder)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -59,6 +62,7 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.media3.exoplayer)
     implementation(libs.vosk.api)
+    implementation(libs.serialization.json)
 
     ksp(libs.hilt.compiler)
 

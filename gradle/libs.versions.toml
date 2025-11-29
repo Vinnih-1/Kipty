@@ -15,6 +15,8 @@ vosk = "0.3.70"
 transcoder = "1.0.0"
 ktlint = "14.0.1"
 ktlint-compose = "0.4.28"
+serialization = "2.2.0"
+json = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +35,7 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 vosk-api = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 android-transcoder = { group = "io.github.vinnih-1", name = "android-transcoder", version.ref = "transcoder" }
 ktlint-compose = { group = "io.nlopez.compose.rules", name = "ktlint", version.ref = "ktlint-compose" }
+serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "json" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
@@ -42,3 +45,4 @@ kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "ko
 devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 ktlint-gradle = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+serialization-plugin = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serialization" }

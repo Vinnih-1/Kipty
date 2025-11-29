@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Kipty"
 include(":app")
+include(":whisper")

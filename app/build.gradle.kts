@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "io.github.vinnih.kipty"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -49,7 +49,7 @@ ktlint {
 }
 
 dependencies {
-    implementation(project(":whisper"))
+    implementation(project(":lib"))
     implementation(libs.android.transcoder)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

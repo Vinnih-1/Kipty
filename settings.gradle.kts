@@ -22,4 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Kipty"
 include(":app")
-include(":whisper")
+include(":lib")
+project(":lib").projectDir = File(rootDir, "whisper_cpp/examples/whisper.android/lib/")

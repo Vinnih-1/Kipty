@@ -19,7 +19,7 @@ import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(controller: HomeController, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
         repeat(5) {
             AudioCard(modifier = Modifier.fillMaxWidth().height(128.dp))
@@ -47,7 +47,7 @@ private fun HomeScreenPreview() {
                 FloatingAddButton(onClick = {}, modifier = Modifier.size(72.dp))
             }
         ) { paddingValues ->
-            HomeScreen(modifier = Modifier.padding(paddingValues))
+            HomeScreen(controller = FakeHomeViewModel(), modifier = Modifier.padding(paddingValues))
         }
     }
 }

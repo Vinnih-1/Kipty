@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,9 +22,16 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
 fun HomeScreen(controller: HomeController, modifier: Modifier = Modifier) {
+    val audioState = controller.value.collectAsState()
+
+    LaunchedEffect(Unit) {
+        controller.updateAudioFiles()
+    }
+
     Column(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
-        repeat(5) {
-            AudioCard(modifier = Modifier.fillMaxWidth().height(128.dp))
+        audioState.value.forEach { audioData ->
+            AudioCard(audioData = audioData, onClick = {
+            }, modifier = Modifier.fillMaxWidth().height(128.dp))
         }
     }
 }
@@ -44,7 +53,7 @@ private fun HomeScreenPreview() {
             topBar = { KiptyTopBar("Home") },
             bottomBar = { KiptyBottomBar() },
             floatingActionButton = {
-                FloatingAddButton(onClick = {}, modifier = Modifier.size(72.dp))
+                FloatingAddButton(modifier = Modifier.size(72.dp))
             }
         ) { paddingValues ->
             HomeScreen(controller = FakeHomeViewModel(), modifier = Modifier.padding(paddingValues))

@@ -51,6 +51,7 @@ ktlint {
 dependencies {
     implementation(project(":lib"))
     implementation(libs.android.transcoder)
+    implementation(libs.android.resampler)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

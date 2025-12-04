@@ -33,13 +33,12 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
 fun FloatingAddButton(
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     content: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     FloatingActionButton(
-        onClick = onClick,
+        onClick = {},
         modifier = modifier,
         containerColor = container,
         contentColor = content
@@ -53,13 +52,12 @@ fun FloatingAddButton(
 
 @Composable
 fun BackButton(
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimary,
     tint: Color = MaterialTheme.colorScheme.primary
 ) {
     IconButton(
-        onClick = onClick,
+        onClick = {},
         modifier = modifier.size(48.dp),
         colors = IconButtonDefaults.iconButtonColors(
             containerColor = container
@@ -75,13 +73,9 @@ fun BackButton(
 }
 
 @Composable
-fun EditButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    tint: Color = MaterialTheme.colorScheme.onPrimary
-) {
+fun EditButton(modifier: Modifier = Modifier, tint: Color = MaterialTheme.colorScheme.onPrimary) {
     IconButton(
-        onClick = onClick,
+        onClick = {},
         modifier = modifier.size(48.dp)
     ) {
         Icon(
@@ -94,15 +88,48 @@ fun EditButton(
 }
 
 @Composable
+fun GenerateTranscriptionButton(
+    modifier: Modifier = Modifier,
+    container: Color = MaterialTheme.colorScheme.onPrimary,
+    content: Color = MaterialTheme.colorScheme.primary
+) {
+    Button(
+        onClick = {},
+        modifier = modifier,
+        shape = RoundedCornerShape(size = 8.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = container,
+            contentColor = content
+        )
+    ) {
+        Row(
+            modifier = Modifier.fillMaxHeight().weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(
+                16.dp,
+                Alignment.CenterHorizontally
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.edit_document),
+                contentDescription = "Generate transcription button",
+                modifier = Modifier.size(24.dp)
+            )
+            Text(text = "Transcribe Audio")
+        }
+    }
+}
+
+@Composable
 fun PlayPauseAudioButton(
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimary,
     content: Color = MaterialTheme.colorScheme.primary
 ) {
     Row(modifier = modifier.padding(4.dp)) {
         Button(
-            onClick = onClick,
+            onClick = {},
             modifier = Modifier.fillMaxWidth(.8f).fillMaxHeight(),
             shape = RoundedCornerShape(
                 topStart = 8.dp,
@@ -168,7 +195,7 @@ fun PlayPauseAudioButton(
 @Composable
 private fun FloatingActionButtonPreview() {
     AppTheme {
-        FloatingAddButton(onClick = {})
+        FloatingAddButton()
     }
 }
 
@@ -185,7 +212,7 @@ private fun FloatingActionButtonPreview() {
 @Composable
 private fun BackButtonPreview() {
     AppTheme {
-        BackButton(onClick = {})
+        BackButton()
     }
 }
 
@@ -202,7 +229,7 @@ private fun BackButtonPreview() {
 @Composable
 private fun EditButtonPreview() {
     AppTheme {
-        EditButton(onClick = {}, tint = MaterialTheme.colorScheme.inversePrimary)
+        EditButton(tint = MaterialTheme.colorScheme.inversePrimary)
     }
 }
 
@@ -219,6 +246,23 @@ private fun EditButtonPreview() {
 @Composable
 private fun PlayPauseButtonPreview() {
     AppTheme {
-        PlayPauseAudioButton(onClick = {}, modifier = Modifier.width(140.dp).height(40.dp))
+        PlayPauseAudioButton(modifier = Modifier.width(140.dp).height(40.dp))
+    }
+}
+
+@Preview(
+    name = "Light",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    name = "Dark",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun GenerateTranscriptionButtonPreview() {
+    AppTheme {
+        GenerateTranscriptionButton(modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
     }
 }

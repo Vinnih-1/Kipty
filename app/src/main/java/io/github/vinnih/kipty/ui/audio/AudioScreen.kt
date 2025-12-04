@@ -27,13 +27,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.vinnih.kipty.data.transcription.AudioData
+import io.github.vinnih.kipty.data.transcription.AudioDetails
 import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.components.EditButton
+import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
-fun AudioScreen(modifier: Modifier = Modifier) {
+fun AudioScreen(audioData: AudioData, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -57,15 +60,15 @@ fun AudioScreen(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BackButton(onClick = {})
+                BackButton()
                 Text(text = "vosk-model", color = colors.onPrimary, style = typography.titleMedium)
-                EditButton(onClick = {})
+                EditButton()
             }
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = "Simplified Speech EP 227",
+                    text = audioData.details.name,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
                     textAlign = TextAlign.Center,
                     style = typography.displayMedium,
@@ -92,15 +95,27 @@ fun AudioScreen(modifier: Modifier = Modifier) {
                     overflow = TextOverflow.Ellipsis,
                     color = colors.secondary
                 )
-                PlayPauseAudioButton(
-                    onClick = {
-                    },
-                    modifier = Modifier.width(
-                        240.dp
-                    ).height(
-                        70.dp
-                    ).align(Alignment.BottomCenter).padding(bottom = 8.dp).shadow(elevation = 16.dp)
-                )
+                if (audioData.transcription.isNullOrEmpty()) {
+                    GenerateTranscriptionButton(
+                        modifier = Modifier.width(
+                            240.dp
+                        ).height(
+                            64.dp
+                        ).align(
+                            Alignment.BottomCenter
+                        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
+                    )
+                } else {
+                    PlayPauseAudioButton(
+                        modifier = Modifier.width(
+                            240.dp
+                        ).height(
+                            70.dp
+                        ).align(
+                            Alignment.BottomCenter
+                        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
+                    )
+                }
             }
         }
     }
@@ -118,7 +133,12 @@ fun AudioScreen(modifier: Modifier = Modifier) {
 )
 @Composable
 private fun AudioScreenPreview() {
+    val audioData =
+        AudioData(
+            AudioDetails("1865-02-01 From Washington Abolition of Slavery", "", 0, 0L, "", "")
+        )
+
     AppTheme {
-        AudioScreen(modifier = Modifier.fillMaxSize())
+        AudioScreen(audioData = audioData, modifier = Modifier.fillMaxSize())
     }
 }

@@ -15,17 +15,18 @@ fun String.timestamp(): Pair<Long, Long> {
     if (times.size != 2) return pair.copy()
 
     times.forEachIndexed { index, time ->
-        val currentValue = map.getOrDefault(index, 0L)
+        var currentValue = map.getOrDefault(index, 0L)
         time.split(":").forEachIndexed { index, part ->
-            when (index) {
-                0 -> currentValue.plus(part.toLong() * Timestamp.HOUR.multiplier)
 
-                1 -> currentValue.plus(part.toLong() * Timestamp.MINUTE.multiplier)
+            when (index) {
+                0 -> currentValue += part.toLong() * Timestamp.HOUR.multiplier
+
+                1 -> currentValue += part.toLong() * Timestamp.MINUTE.multiplier
 
                 2 -> {
                     val split = part.split(".")
-                    currentValue.plus(split[0].toLong() * Timestamp.SECOND.multiplier)
-                    currentValue.plus(split[1].toLong() * Timestamp.MILLISECOND.multiplier)
+                    currentValue += split[0].toLong() * Timestamp.SECOND.multiplier
+                    currentValue += split[1].toLong() * Timestamp.MILLISECOND.multiplier
                 }
             }
         }
@@ -35,4 +36,32 @@ fun String.timestamp(): Pair<Long, Long> {
     if (map.size != 2) return pair.copy()
 
     return pair.copy(map.get(0)!!, map.get(1)!!)
+}
+
+fun Long.timestamp(): String {
+    var milliseconds = this
+
+    val hours = milliseconds / Timestamp.HOUR.multiplier
+    milliseconds -= hours * Timestamp.HOUR.multiplier
+
+    val minutes = milliseconds / Timestamp.MINUTE.multiplier
+    milliseconds -= minutes * Timestamp.MINUTE.multiplier
+
+    val seconds = milliseconds / Timestamp.SECOND.multiplier
+    milliseconds -= seconds / Timestamp.SECOND.multiplier
+
+    val timestamp = String.format(
+        "%02d:%02d:%02d%s%03d",
+        hours,
+        minutes,
+        seconds,
+        ".",
+        milliseconds
+    )
+
+    return buildString {
+        append("[")
+        append(timestamp)
+        append("]")
+    }
 }

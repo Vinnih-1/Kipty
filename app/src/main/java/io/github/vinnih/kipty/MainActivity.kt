@@ -12,12 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.vinnih.androidtranscoder.utils.toWavReader
 import io.github.vinnih.kipty.data.application.AppConfig
+import io.github.vinnih.kipty.data.transcription.AudioData
+import io.github.vinnih.kipty.data.transcription.AudioDetails
+import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
+import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import kotlinx.coroutines.launch
 
@@ -25,6 +30,8 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private val homeViewModel: HomeViewModel by viewModels()
+    private val playerViewModel: PlayerViewModel by viewModels()
+    private val audioViewModel: AudioViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +39,17 @@ class MainActivity : ComponentActivity() {
 
         if (!AppConfig(applicationContext).read().defaultSamplesLoaded) {
             lifecycleScope.launch {
-                homeViewModel.copyAssets()
+                homeViewModel.copyAssets().forEach { file ->
+                    val reader = file.toWavReader(applicationContext.cacheDir)
+                    val details = AudioDetails(
+                        name = reader.data.nameWithoutExtension,
+                        duration = reader.duration
+                    )
+                    val data = AudioData(details = details)
+
+                    homeViewModel.createAudio(audioData = data, reader = reader)
+                    reader.dispose()
+                }
             }
         }
 
@@ -42,7 +59,7 @@ class MainActivity : ComponentActivity() {
                     topBar = { KiptyTopBar("Home") },
                     bottomBar = { KiptyBottomBar() },
                     floatingActionButton = {
-                        FloatingAddButton(onClick = {}, modifier = Modifier.size(72.dp))
+                        FloatingAddButton(modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
                     HomeScreen(

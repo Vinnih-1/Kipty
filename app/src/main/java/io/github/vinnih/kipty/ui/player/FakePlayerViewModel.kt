@@ -1,9 +1,9 @@
 package io.github.vinnih.kipty.ui.player
 
-import io.github.vinnih.kipty.data.transcription.AudioData
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 
 class FakePlayerViewModel : PlayerController {
-    override fun playAudio(audioData: AudioData) {
+    override fun playAudio(audioEntity: AudioEntity) {
         TODO("Not yet implemented")
     }
 

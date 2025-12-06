@@ -27,8 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinnih.kipty.data.transcription.AudioData
-import io.github.vinnih.kipty.data.transcription.AudioDetails
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.components.EditButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
@@ -36,7 +35,7 @@ import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
-fun AudioScreen(audioData: AudioData, modifier: Modifier = Modifier) {
+fun AudioScreen(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -68,7 +67,7 @@ fun AudioScreen(audioData: AudioData, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = audioData.details.name,
+                    text = audioEntity.name,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
                     textAlign = TextAlign.Center,
                     style = typography.displayMedium,
@@ -95,7 +94,7 @@ fun AudioScreen(audioData: AudioData, modifier: Modifier = Modifier) {
                     overflow = TextOverflow.Ellipsis,
                     color = colors.secondary
                 )
-                if (audioData.transcription.isNullOrEmpty()) {
+                if (audioEntity.transcription.isNullOrEmpty()) {
                     GenerateTranscriptionButton(
                         modifier = Modifier.width(
                             240.dp
@@ -133,12 +132,7 @@ fun AudioScreen(audioData: AudioData, modifier: Modifier = Modifier) {
 )
 @Composable
 private fun AudioScreenPreview() {
-    val audioData =
-        AudioData(
-            AudioDetails("1865-02-01 From Washington Abolition of Slavery", "", 0, 0L, "", "")
-        )
-
     AppTheme {
-        AudioScreen(audioData = audioData, modifier = Modifier.fillMaxSize())
+        // AudioScreen(audioEntity = audioEntity, modifier = Modifier.fillMaxSize())
     }
 }

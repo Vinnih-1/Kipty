@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CardDefaults
@@ -22,10 +20,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
-fun AudioCard(modifier: Modifier = Modifier) {
+fun AudioCard(audioEntity: AudioEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -37,9 +36,7 @@ fun AudioCard(modifier: Modifier = Modifier) {
         colors = CardDefaults.elevatedCardColors(
             containerColor = colors.primaryContainer
         ),
-        onClick = {
-            // TODO: Open audio details screen
-        }
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.padding(8.dp).fillMaxSize(),
@@ -52,13 +49,13 @@ fun AudioCard(modifier: Modifier = Modifier) {
             )
             Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
                 Text(
-                    text = "Simplified Speech EP 227",
+                    text = audioEntity.name,
                     style = typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    text = "finibus sed magna vel, sodales elementum leo. Cras",
+                    text = audioEntity.description ?: "Audio without any description",
                     style = typography.bodySmall,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -81,6 +78,7 @@ fun AudioCard(modifier: Modifier = Modifier) {
 @Composable
 private fun AudioCardPreview() {
     AppTheme {
-        AudioCard(modifier = Modifier.fillMaxWidth().height(128.dp))
+        // AudioCard(audioEntity = audioEntity, onClick = {
+        // }, modifier = Modifier.fillMaxWidth().height(128.dp))
     }
 }

@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.vinnih.kipty.data.transcription.AudioData
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import javax.inject.Inject
 
 @HiltViewModel
@@ -15,7 +15,7 @@ class PlayerViewModel @Inject constructor(
 ) : ViewModel(),
     PlayerController {
 
-    override fun playAudio(audioData: AudioData) {
+    override fun playAudio(audioEntity: AudioEntity) {
         TODO("Not yet implemented")
     }
 

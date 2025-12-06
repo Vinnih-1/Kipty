@@ -1,10 +1,10 @@
 package io.github.vinnih.kipty.ui.player
 
-import io.github.vinnih.kipty.data.transcription.AudioData
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 
 interface PlayerController {
 
-    fun playAudio(audioData: AudioData)
+    fun playAudio(audioEntity: AudioEntity)
 
     fun pauseAudio()
 

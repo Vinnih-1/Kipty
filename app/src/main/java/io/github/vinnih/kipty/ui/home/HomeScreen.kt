@@ -30,7 +30,7 @@ fun HomeScreen(controller: HomeController, modifier: Modifier = Modifier) {
 
     Column(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
         audioState.value.forEach { audioData ->
-            AudioCard(audioData = audioData, onClick = {
+            AudioCard(audioEntity = audioData, onClick = {
             }, modifier = Modifier.fillMaxWidth().height(128.dp))
         }
     }

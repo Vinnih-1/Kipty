@@ -7,9 +7,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.androidtranscoder.extractor.WavReader
 import io.github.vinnih.kipty.data.application.AppConfig
 import io.github.vinnih.kipty.data.application.ApplicationData
-import io.github.vinnih.kipty.data.transcription.AudioData
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.repository.AudioRepository
 import jakarta.inject.Inject
 import java.io.File
+import java.time.LocalDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,48 +22,46 @@ import kotlinx.serialization.json.Json
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     @ApplicationContext val context: Context,
-    val config: AppConfig
+    private val config: AppConfig,
+    private val repository: AudioRepository
 ) : ViewModel(),
     HomeController {
-    private var _value = MutableStateFlow<List<AudioData>>(emptyList())
+    private var _value = MutableStateFlow<List<AudioEntity>>(emptyList())
     override val value = _value.asStateFlow()
 
     private val modelsPath = File(context.filesDir, "models")
     private val samplesPath = File(context.filesDir, "samples")
     private val transcriptionsPath = File(context.filesDir, "transcriptions")
 
-    override suspend fun createAudio(audioData: AudioData, reader: WavReader) =
-        withContext(Dispatchers.IO) {
-            if (!transcriptionsPath.exists()) {
-                transcriptionsPath.mkdirs()
-            }
-
-            val path = File(transcriptionsPath, audioData.details.name).also {
-                it.mkdirs()
-            }
-
-            reader.data.inputStream().use { inputStream ->
-                File(path, "audio.wav").also {
-                    it.outputStream().use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
-            }
-            File(path, "details.json").writeText(Json.encodeToString(audioData))
-            updateAudioFiles()
+    override suspend fun createAudio(reader: WavReader): AudioEntity = withContext(Dispatchers.IO) {
+        if (!transcriptionsPath.exists()) {
+            transcriptionsPath.mkdirs()
         }
 
-    override suspend fun updateAudioFiles(): Unit = withContext(Dispatchers.IO) {
-        if (transcriptionsPath.list().isNullOrEmpty()) return@withContext
+        val path = File(transcriptionsPath, reader.data.nameWithoutExtension).also {
+            it.mkdirs()
+        }
+        reader.data.inputStream().use { inputStream ->
+            File(path, "audio.wav").also {
+                it.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+        }
+        val entity = AudioEntity(
+            name = reader.data.nameWithoutExtension,
+            path = path.path,
+            createdAt = LocalDateTime.now().toString(),
+            duration = reader.duration
+        )
+        repository.insert(entity)
 
+        return@withContext entity
+    }
+
+    override suspend fun updateAudioFiles(): Unit = withContext(Dispatchers.IO) {
         _value.update {
-            transcriptionsPath.list().map { transcription ->
-                val data = Json.decodeFromString<AudioData>(
-                    File(transcriptionsPath, "$transcription").resolve("details.json").readText()
-                )
-                println(Json.encodeToString(data))
-                data
-            }.toList()
+            repository.getAll()
         }
     }
 

@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import com.whispercpp.whisper.WhisperContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.vinnih.kipty.data.transcription.AudioTranscription
+import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+import io.github.vinnih.kipty.data.database.repository.AudioRepository
 import io.github.vinnih.kipty.utils.timestamp
 import io.github.vinnih.kipty.utils.toFloatArray
 import java.io.File
@@ -14,8 +15,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @HiltViewModel
-class AudioViewModel @Inject constructor(@ApplicationContext private val context: Context) :
-    ViewModel(),
+class AudioViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val repository: AudioRepository
+) : ViewModel(),
     AudioController {
 
     private val modelsPath = File(context.filesDir, "models")

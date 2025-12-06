@@ -14,8 +14,6 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.androidtranscoder.utils.toWavReader
 import io.github.vinnih.kipty.data.application.AppConfig
-import io.github.vinnih.kipty.data.transcription.AudioData
-import io.github.vinnih.kipty.data.transcription.AudioDetails
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
@@ -39,15 +37,10 @@ class MainActivity : ComponentActivity() {
 
         if (!AppConfig(applicationContext).read().defaultSamplesLoaded) {
             lifecycleScope.launch {
-                homeViewModel.copyAssets().forEach { file ->
-                    val reader = file.toWavReader(applicationContext.cacheDir)
-                    val details = AudioDetails(
-                        name = reader.data.nameWithoutExtension,
-                        duration = reader.duration
-                    )
-                    val data = AudioData(details = details)
-
-                    homeViewModel.createAudio(audioData = data, reader = reader)
+                homeViewModel.copyAssets().map {
+                    it.toWavReader(applicationContext.cacheDir)
+                }.forEach { reader ->
+                    homeViewModel.createAudio(reader)
                     reader.dispose()
                 }
             }

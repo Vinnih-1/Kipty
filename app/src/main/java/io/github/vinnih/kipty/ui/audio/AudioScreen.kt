@@ -6,16 +6,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,21 +39,40 @@ import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.components.EditButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
+import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 
 @Composable
-fun AudioScreen(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
+fun AudioScreen(
+    controller: AudioController,
+    id: Int,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    Column(modifier = modifier) {
+    var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
+    val isTranscribing = controller.isTranscribing.collectAsState()
+    val scope = rememberCoroutineScope()
+    val scroll = rememberScrollState()
+
+    scope.launch {
+        audioEntity = controller.getById(id)
+    }
+
+    if (audioEntity == null) return Box(modifier = modifier)
+
+    Column(modifier = modifier.verticalScroll(scroll)) {
         Column(
             modifier = Modifier.fillMaxWidth().clip(
                 shape = RoundedCornerShape(
                     bottomStart = 24.dp,
                     bottomEnd = 24.dp
                 )
-            ).fillMaxHeight(.6f).background(
+            ).height(400.dp).background(
                 brush = Brush.linearGradient(
                     colors = listOf(colors.primary, colors.onPrimary),
                     start = Offset.Zero,
@@ -59,7 +85,7 @@ fun AudioScreen(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                BackButton()
+                BackButton(onClick = onBack)
                 Text(text = "vosk-model", color = colors.onPrimary, style = typography.titleMedium)
                 EditButton()
             }
@@ -67,7 +93,7 @@ fun AudioScreen(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize()
             ) {
                 Text(
-                    text = audioEntity.name,
+                    text = audioEntity!!.name,
                     modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
                     textAlign = TextAlign.Center,
                     style = typography.displayMedium,
@@ -77,25 +103,24 @@ fun AudioScreen(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = """
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut erat tortor, 
-                        finibus sed magna vel, sodales elementum leo. Cras tellus ipsum, pulvinar 
-                        in mattis quis, scelerisque eget metus. In dapibus aliquet dui, sit amet 
-                        pretium nunc gravida vel. Nulla sed dictum eros, sed pulvinar ligula. 
-                        Vivamus ornare risus felis, et vehicula dui gravida ac. Class aptent taciti
-                        sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. 
-                        Curabitur varius libero at nibh pretium ornare. Nullam commodo porttitor 
-                        magna, non finibus libero feugiat nec.
+                    text = audioEntity!!.description ?: """
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra lorem a facilisis ullamcorper. Aliquam est arcu, dictum a sapien vel, vestibulum iaculis elit. Maecenas venenatis nec erat non tincidunt. Aliquam diam purus, fringilla non feugiat vel, gravida ut felis. Nullam at turpis nec quam maximus ullamcorper non ac enim. Nulla et est ut elit finibus laoreet. Donec at ante sed dolor viverra facilisis. Vestibulum tincidunt justo nec consectetur semper. Pellentesque ac mollis risus. Quisque dignissim velit ut lobortis lacinia. Aenean ornare arcu nec est bibendum interdum.
                     """.trimIndent(),
-                    modifier = Modifier.align(Alignment.Center).padding(top = 12.dp),
+                    modifier = Modifier.align(Alignment.Center).padding(top = 50.dp),
                     textAlign = TextAlign.Center,
                     style = typography.bodyLarge,
-                    maxLines = 7,
+                    maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     color = colors.secondary
                 )
-                if (audioEntity.transcription.isNullOrEmpty()) {
+                if (audioEntity!!.transcription.isNullOrEmpty()) {
                     GenerateTranscriptionButton(
+                        onClick = {
+                            controller.transcribeAudio(audioEntity!!, onSuccess = {
+                                println(Json.encodeToString(it))
+                            })
+                        },
+                        enabled = !isTranscribing.value,
                         modifier = Modifier.width(
                             240.dp
                         ).height(
@@ -116,6 +141,9 @@ fun AudioScreen(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
                     )
                 }
             }
+        }
+        if (!audioEntity!!.transcription.isNullOrEmpty()) {
+            TextViewer(controller, audioEntity!!.transcription!!)
         }
     }
 }

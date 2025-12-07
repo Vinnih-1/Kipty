@@ -8,12 +8,17 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.androidtranscoder.utils.toWavReader
 import io.github.vinnih.kipty.data.application.AppConfig
+import io.github.vinnih.kipty.ui.audio.AudioScreen
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
@@ -22,7 +27,20 @@ import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+
+private data object Home
+
+private data class Audio(val id: Int)
+
+@OptIn(ExperimentalSerializationApi::class)
+val json = Json {
+    allowTrailingComma = true
+    ignoreUnknownKeys = true
+}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -36,7 +54,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         if (!AppConfig(applicationContext).read().defaultSamplesLoaded) {
-            lifecycleScope.launch {
+            lifecycleScope.launch(Dispatchers.IO) {
                 homeViewModel.copyAssets().map {
                     it.toWavReader(applicationContext.cacheDir)
                 }.forEach { reader ->
@@ -47,17 +65,44 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
+            val backstack = remember { mutableStateListOf<Any>(Home) }
+            val screen = backstack.last()
+
             AppTheme {
                 Scaffold(
-                    topBar = { KiptyTopBar("Home") },
+                    topBar = { if (screen is Home) KiptyTopBar("Home") },
                     bottomBar = { KiptyBottomBar() },
                     floatingActionButton = {
                         FloatingAddButton(modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
-                    HomeScreen(
-                        controller = homeViewModel,
-                        modifier = Modifier.padding(paddingValues)
+                    NavDisplay(
+                        modifier = Modifier.padding(
+                            paddingValues
+                        ),
+                        backStack = backstack,
+                        onBack = {
+                            backstack.removeLastOrNull()
+                        },
+                        entryProvider = { key ->
+                            when (key) {
+                                is Home -> NavEntry(key) {
+                                    HomeScreen(controller = homeViewModel, onClick = {
+                                        backstack.add(Audio(it.uid))
+                                    })
+                                }
+
+                                is Audio -> NavEntry(key) {
+                                    AudioScreen(controller = audioViewModel, id = key.id, onBack = {
+                                        backstack.removeLastOrNull()
+                                    })
+                                }
+
+                                else -> {
+                                    error("Unknown key: $key")
+                                }
+                            }
+                        }
                     )
                 }
             }

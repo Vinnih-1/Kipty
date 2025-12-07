@@ -52,12 +52,13 @@ fun FloatingAddButton(
 
 @Composable
 fun BackButton(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimary,
     tint: Color = MaterialTheme.colorScheme.primary
 ) {
     IconButton(
-        onClick = {},
+        onClick = onClick,
         modifier = modifier.size(48.dp),
         colors = IconButtonDefaults.iconButtonColors(
             containerColor = container
@@ -89,13 +90,16 @@ fun EditButton(modifier: Modifier = Modifier, tint: Color = MaterialTheme.colorS
 
 @Composable
 fun GenerateTranscriptionButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimary,
     content: Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
-        onClick = {},
+        onClick = onClick,
         modifier = modifier,
+        enabled = enabled,
         shape = RoundedCornerShape(size = 8.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
@@ -212,7 +216,7 @@ private fun FloatingActionButtonPreview() {
 @Composable
 private fun BackButtonPreview() {
     AppTheme {
-        BackButton()
+        BackButton(onClick = {})
     }
 }
 
@@ -263,6 +267,7 @@ private fun PlayPauseButtonPreview() {
 @Composable
 private fun GenerateTranscriptionButtonPreview() {
     AppTheme {
-        GenerateTranscriptionButton(modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
+        GenerateTranscriptionButton(onClick = {
+        }, enabled = true, modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
     }
 }

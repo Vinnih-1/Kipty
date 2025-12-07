@@ -14,6 +14,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.ui.components.AudioCard
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
@@ -21,7 +22,11 @@ import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
-fun HomeScreen(controller: HomeController, modifier: Modifier = Modifier) {
+fun HomeScreen(
+    controller: HomeController,
+    onClick: (AudioEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val audioState = controller.value.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -31,6 +36,7 @@ fun HomeScreen(controller: HomeController, modifier: Modifier = Modifier) {
     Column(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
         audioState.value.forEach { audioData ->
             AudioCard(audioEntity = audioData, onClick = {
+                onClick(audioData)
             }, modifier = Modifier.fillMaxWidth().height(128.dp))
         }
     }
@@ -56,7 +62,8 @@ private fun HomeScreenPreview() {
                 FloatingAddButton(modifier = Modifier.size(72.dp))
             }
         ) { paddingValues ->
-            HomeScreen(controller = FakeHomeViewModel(), modifier = Modifier.padding(paddingValues))
+            HomeScreen(controller = FakeHomeViewModel(), onClick = {
+            }, modifier = Modifier.padding(paddingValues))
         }
     }
 }

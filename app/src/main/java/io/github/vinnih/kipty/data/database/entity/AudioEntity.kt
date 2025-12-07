@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "audios")
 data class AudioEntity(
     @PrimaryKey(autoGenerate = true) val uid: Int = 0,

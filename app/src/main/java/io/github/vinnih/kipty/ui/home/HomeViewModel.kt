@@ -17,7 +17,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -50,11 +49,11 @@ class HomeViewModel @Inject constructor(
         }
         val entity = AudioEntity(
             name = reader.data.nameWithoutExtension,
-            path = path.path,
+            path = path.canonicalPath,
             createdAt = LocalDateTime.now().toString(),
             duration = reader.duration
         )
-        repository.insert(entity)
+        repository.save(entity)
 
         return@withContext entity
     }

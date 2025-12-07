@@ -6,9 +6,9 @@ interface AudioRepository {
 
     suspend fun getAll(): List<AudioEntity>
 
-    suspend fun getById(id: Long): AudioEntity?
+    suspend fun getById(id: Int): AudioEntity?
 
-    suspend fun insert(audio: AudioEntity)
+    suspend fun save(audio: AudioEntity)
 
     suspend fun delete(audio: AudioEntity)
 }

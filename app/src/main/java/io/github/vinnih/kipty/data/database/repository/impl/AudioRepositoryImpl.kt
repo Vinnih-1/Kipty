@@ -4,18 +4,28 @@ import io.github.vinnih.kipty.data.database.dao.AudioDao
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.AudioRepository
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : AudioRepository {
 
-    override suspend fun getAll(): List<AudioEntity> = dao.getAll()
+    override suspend fun getAll(): List<AudioEntity> = withContext(Dispatchers.IO) {
+        return@withContext dao.getAll()
+    }
 
-    override suspend fun getById(id: Long): AudioEntity? = dao.getById(id)
+    override suspend fun getById(id: Int): AudioEntity? = withContext(Dispatchers.IO) {
+        return@withContext dao.getById(id)
+    }
 
-    override suspend fun insert(audio: AudioEntity) {
-        dao.insert(audio)
+    override suspend fun save(audio: AudioEntity) {
+        withContext(Dispatchers.IO) {
+            dao.save(audio)
+        }
     }
 
     override suspend fun delete(audio: AudioEntity) {
-        dao.delete(audio)
+        withContext(Dispatchers.IO) {
+            dao.delete(audio)
+        }
     }
 }

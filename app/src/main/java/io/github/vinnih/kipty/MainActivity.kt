@@ -8,8 +8,11 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +28,7 @@ import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
+import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
@@ -66,16 +70,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val backstack = remember { mutableStateListOf<Any>(Home) }
+            var showPlayerScreen by remember { mutableStateOf(false) }
             val screen = backstack.last()
 
             AppTheme {
                 Scaffold(
                     topBar = { if (screen is Home) KiptyTopBar("Home") },
-                    bottomBar = { KiptyBottomBar() },
+                    bottomBar = { KiptyBottomBar(onClick = { showPlayerScreen = true }) },
                     floatingActionButton = {
                         FloatingAddButton(modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
+                    if (showPlayerScreen) {
+                        PlayerScreen(controller = playerViewModel, onDismiss = {
+                            showPlayerScreen =
+                                false
+                        })
+                    }
+
                     NavDisplay(
                         modifier = Modifier.padding(
                             paddingValues

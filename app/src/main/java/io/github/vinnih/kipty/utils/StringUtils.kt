@@ -7,6 +7,15 @@ private enum class Timestamp(val multiplier: Long) {
     MILLISECOND(1)
 }
 
+fun Long.formatTime(): String {
+    if (this < 0) return "--:--"
+    val totalSeconds = this / 1000
+    val minutes = totalSeconds / 60
+    val remainingSeconds = totalSeconds % 60
+
+    return String.format("%02d:%02d", minutes, remainingSeconds)
+}
+
 fun String.timestamp(): Pair<Long, Long> {
     val pair = Pair(0L, 0L)
     val map = HashMap<Int, Long>()

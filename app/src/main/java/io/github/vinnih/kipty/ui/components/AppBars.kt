@@ -55,7 +55,7 @@ fun KiptyTopBar(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun KiptyBottomBar(modifier: Modifier = Modifier) {
+fun KiptyBottomBar(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -64,9 +64,7 @@ fun KiptyBottomBar(modifier: Modifier = Modifier) {
             .7f
         }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
         BottomAppBar(
-            modifier = Modifier.clickable(onClick = {
-                // TODO: Show player screen
-            })
+            modifier = Modifier.clickable(onClick = onClick)
         ) {
             Row(
                 modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -119,6 +117,6 @@ private fun KiptyTopBarPreview() {
 @Composable
 private fun KiptyBottomBarPreview() {
     AppTheme {
-        KiptyBottomBar()
+        KiptyBottomBar(onClick = {})
     }
 }

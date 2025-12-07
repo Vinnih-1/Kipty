@@ -57,7 +57,7 @@ private fun HomeScreenPreview() {
     AppTheme {
         Scaffold(
             topBar = { KiptyTopBar("Home") },
-            bottomBar = { KiptyBottomBar() },
+            bottomBar = { KiptyBottomBar(onClick = {}) },
             floatingActionButton = {
                 FloatingAddButton(modifier = Modifier.size(72.dp))
             }

@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
     implementation(libs.media3.exoplayer)
+    implementation(libs.media3.uicompose)
     implementation(libs.vosk.api)
     implementation(libs.serialization.json)
 

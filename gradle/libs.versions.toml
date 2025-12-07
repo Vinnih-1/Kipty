@@ -39,6 +39,7 @@ hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose"}
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
+media3-uicompose = { group = "androidx.media3", name = "media3-ui-compose", version.ref = "media3" }
 vosk-api = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 android-transcoder = { group = "io.github.vinnih-1", name = "android-transcoder", version.ref = "transcoder" }
 android-resampler = { group = "io.github.nailik", name = "androidresampler", version.ref = "resampler" }

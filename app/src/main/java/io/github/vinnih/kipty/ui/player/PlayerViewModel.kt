@@ -10,7 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val player: ExoPlayer,
+    override val player: ExoPlayer,
     @ApplicationContext private val context: Context
 ) : ViewModel(),
     PlayerController {

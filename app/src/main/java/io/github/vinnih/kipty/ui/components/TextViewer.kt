@@ -7,31 +7,26 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinnih.kipty.data.FakeAudio
-import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import io.github.vinnih.kipty.json
-import io.github.vinnih.kipty.ui.audio.AudioController
-import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
+import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
+import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.timestamp
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.Json
 
 @Composable
 fun TextViewer(
-    controller: AudioController,
-    transcription: List<AudioTranscription>,
+    controller: PlayerController,
     modifier: Modifier = Modifier,
     showTimestamp: Boolean = true
 ) {
+    val currentAudio = controller.currentAudio.collectAsState()
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -39,8 +34,12 @@ fun TextViewer(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        transcription.forEach { transcription ->
-            Column(modifier = Modifier.clickable(onClick = {})) {
+        currentAudio.value?.transcription?.forEach { transcription ->
+            Column(
+                modifier = Modifier.clickable(onClick = {
+                    controller.seekTo(transcription.start - 150)
+                })
+            ) {
                 if (showTimestamp) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -83,10 +82,7 @@ fun TextViewer(
 private fun TextViewerPreview() {
     AppTheme {
         TextViewer(
-            controller = FakeAudioViewModel(),
-            transcription = json.decodeFromString<AudioEntity>(
-                FakeAudio.audio_1865_02_01
-            ).transcription!!
+            controller = FakePlayerViewModel()
         )
     }
 }

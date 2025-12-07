@@ -127,13 +127,14 @@ fun GenerateTranscriptionButton(
 
 @Composable
 fun PlayPauseAudioButton(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimary,
     content: Color = MaterialTheme.colorScheme.primary
 ) {
     Row(modifier = modifier.padding(4.dp)) {
         Button(
-            onClick = {},
+            onClick = onClick,
             modifier = Modifier.fillMaxWidth(.8f).fillMaxHeight(),
             shape = RoundedCornerShape(
                 topStart = 8.dp,
@@ -250,7 +251,7 @@ private fun EditButtonPreview() {
 @Composable
 private fun PlayPauseButtonPreview() {
     AppTheme {
-        PlayPauseAudioButton(modifier = Modifier.width(140.dp).height(40.dp))
+        PlayPauseAudioButton(onClick = {}, modifier = Modifier.width(140.dp).height(40.dp))
     }
 }
 

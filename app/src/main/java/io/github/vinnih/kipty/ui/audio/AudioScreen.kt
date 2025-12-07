@@ -39,13 +39,14 @@ import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.components.EditButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
-import io.github.vinnih.kipty.ui.components.TextViewer
+import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import kotlinx.serialization.json.Json
 
 @Composable
 fun AudioScreen(
-    controller: AudioController,
+    audioController: AudioController,
+    playerController: PlayerController,
     id: Int,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -54,11 +55,11 @@ fun AudioScreen(
     val typography = MaterialTheme.typography
 
     var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
-    val isTranscribing = controller.isTranscribing.collectAsState()
+    val isTranscribing = audioController.isTranscribing.collectAsState()
     val scroll = rememberScrollState()
 
     LaunchedEffect(Unit) {
-        audioEntity = controller.getById(id)
+        audioEntity = audioController.getById(id)
     }
 
     if (audioEntity == null) return Box(modifier = modifier)
@@ -114,7 +115,7 @@ fun AudioScreen(
                 if (audioEntity!!.transcription.isNullOrEmpty()) {
                     GenerateTranscriptionButton(
                         onClick = {
-                            controller.transcribeAudio(audioEntity!!, onSuccess = {
+                            audioController.transcribeAudio(audioEntity!!, onSuccess = {
                                 println(Json.encodeToString(it))
                             })
                         },
@@ -129,6 +130,7 @@ fun AudioScreen(
                     )
                 } else {
                     PlayPauseAudioButton(
+                        onClick = { playerController.playAudio(audioEntity!!) },
                         modifier = Modifier.width(
                             240.dp
                         ).height(
@@ -141,7 +143,7 @@ fun AudioScreen(
             }
         }
         if (!audioEntity!!.transcription.isNullOrEmpty()) {
-            TextViewer(controller, audioEntity!!.transcription!!)
+            // TextViewer(controller = playerController)
         }
     }
 }

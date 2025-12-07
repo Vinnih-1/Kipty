@@ -43,8 +43,7 @@ fun PlayerScreen(controller: PlayerController, onDismiss: () -> Unit) {
                 ),
             scrimColor = Color.Transparent,
             sheetState = sheetState,
-            onDismissRequest = {
-            },
+            onDismissRequest = onDismiss,
             shape = RectangleShape,
             dragHandle = {}
         ) {

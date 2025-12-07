@@ -19,6 +19,7 @@ serialization = "2.2.0"
 json = "1.9.0"
 resampler = "0.3"
 room = "2.8.4"
+nav3Core = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,6 +32,8 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "fonts" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }

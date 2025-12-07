@@ -1,11 +1,18 @@
 package io.github.vinnih.kipty.ui.audio
 
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import java.io.File
+import kotlinx.coroutines.flow.StateFlow
 
 interface AudioController {
 
-    suspend fun convertTranscription(transcribedData: String): List<AudioTranscription>
+    val isTranscribing: StateFlow<Boolean>
 
-    suspend fun transcribeAudio(audio: File): String
+    fun convertTranscription(transcribedData: String): List<AudioTranscription>
+
+    fun transcribeAudio(audioEntity: AudioEntity, onSuccess: (AudioEntity) -> Unit)
+
+    fun saveTranscription(audioEntity: AudioEntity)
+
+    suspend fun getById(id: Int): AudioEntity
 }

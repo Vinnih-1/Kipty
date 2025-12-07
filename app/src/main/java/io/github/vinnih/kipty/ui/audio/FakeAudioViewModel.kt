@@ -1,14 +1,26 @@
 package io.github.vinnih.kipty.ui.audio
 
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import java.io.File
+import kotlinx.coroutines.flow.StateFlow
 
 class FakeAudioViewModel : AudioController {
-    override suspend fun convertTranscription(transcribedData: String): List<AudioTranscription> {
+    override val isTranscribing: StateFlow<Boolean>
+        get() = TODO("Not yet implemented")
+
+    override fun convertTranscription(transcribedData: String): List<AudioTranscription> {
         TODO("Not yet implemented")
     }
 
-    override suspend fun transcribeAudio(audio: File): String {
+    override fun transcribeAudio(audioEntity: AudioEntity, onSuccess: (AudioEntity) -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun saveTranscription(audioEntity: AudioEntity) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getById(id: Int): AudioEntity {
         TODO("Not yet implemented")
     }
 }

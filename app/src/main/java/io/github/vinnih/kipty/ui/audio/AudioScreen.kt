@@ -17,11 +17,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +41,6 @@ import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.theme.AppTheme
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 @Composable
@@ -56,10 +55,9 @@ fun AudioScreen(
 
     var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
     val isTranscribing = controller.isTranscribing.collectAsState()
-    val scope = rememberCoroutineScope()
     val scroll = rememberScrollState()
 
-    scope.launch {
+    LaunchedEffect(Unit) {
         audioEntity = controller.getById(id)
     }
 

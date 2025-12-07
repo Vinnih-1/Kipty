@@ -19,6 +19,7 @@ import io.github.vinnih.kipty.ui.components.AudioCard
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
+import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
@@ -57,7 +58,7 @@ private fun HomeScreenPreview() {
     AppTheme {
         Scaffold(
             topBar = { KiptyTopBar("Home") },
-            bottomBar = { KiptyBottomBar(onClick = {}) },
+            bottomBar = { KiptyBottomBar(onClick = {}, playerController = FakePlayerViewModel()) },
             floatingActionButton = {
                 FloatingAddButton(modifier = Modifier.size(72.dp))
             }

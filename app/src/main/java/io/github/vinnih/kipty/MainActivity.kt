@@ -76,15 +76,18 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 Scaffold(
                     topBar = { if (screen is Home) KiptyTopBar("Home") },
-                    bottomBar = { KiptyBottomBar(onClick = { showPlayerScreen = true }) },
+                    bottomBar = {
+                        KiptyBottomBar(onClick = {
+                            showPlayerScreen = true
+                        }, playerController = playerViewModel)
+                    },
                     floatingActionButton = {
                         FloatingAddButton(modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
                     if (showPlayerScreen) {
-                        PlayerScreen(controller = playerViewModel, onDismiss = {
-                            showPlayerScreen =
-                                false
+                        PlayerScreen(playerController = playerViewModel, onDismiss = {
+                            showPlayerScreen = false
                         })
                     }
 
@@ -105,7 +108,7 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 is Audio -> NavEntry(key) {
-                                    AudioScreen(controller = audioViewModel, id = key.id, onBack = {
+                                    AudioScreen(audioController = audioViewModel, playerController = playerViewModel, id = key.id, onBack = {
                                         backstack.removeLastOrNull()
                                     })
                                 }

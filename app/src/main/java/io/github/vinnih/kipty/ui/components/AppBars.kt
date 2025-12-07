@@ -18,6 +18,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -25,7 +31,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
+import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import io.github.vinnih.kipty.utils.formatTime
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,13 +65,33 @@ fun KiptyTopBar(title: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun KiptyBottomBar(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun KiptyBottomBar(
+    onClick: () -> Unit,
+    playerController: PlayerController,
+    modifier: Modifier = Modifier
+) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val currentAudio = playerController.currentAudio.collectAsState()
+    var songPosition by remember { mutableFloatStateOf(0f) }
+    val currentPositionMs = (songPosition * playerController.player.duration).toLong()
+    val totalDurationMs = playerController.player.duration
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            if (playerController.player.isPlaying) {
+                val current = playerController.player.currentPosition.toFloat()
+                val duration = playerController.player.duration.toFloat()
+
+                songPosition = (current / duration)
+            }
+            delay(500)
+        }
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         LinearProgressIndicator(progress = {
-            .7f
+            songPosition
         }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
         BottomAppBar(
             modifier = Modifier.clickable(onClick = onClick)
@@ -72,14 +102,18 @@ fun KiptyBottomBar(onClick: () -> Unit, modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Nothing playing",
+                    text = currentAudio.value?.name ?: "Nothing playing",
                     style = typography.titleMedium,
                     color = colors.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.fillMaxWidth(.7f)
                 )
-                Text(text = "00:00 / --:--", style = typography.bodySmall, color = colors.primary)
+                Text(
+                    text = "${currentPositionMs.formatTime()} / ${totalDurationMs.formatTime()}",
+                    style = typography.bodySmall,
+                    color = colors.primary
+                )
             }
         }
     }
@@ -117,6 +151,6 @@ private fun KiptyTopBarPreview() {
 @Composable
 private fun KiptyBottomBarPreview() {
     AppTheme {
-        KiptyBottomBar(onClick = {})
+        KiptyBottomBar(onClick = {}, playerController = FakePlayerViewModel())
     }
 }

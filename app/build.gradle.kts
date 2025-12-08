@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.media3.uicompose)
     implementation(libs.vosk.api)
     implementation(libs.serialization.json)
+    implementation(libs.lottie.compose)
 
     ksp(libs.androidx.compiler)
     ksp(libs.hilt.compiler)

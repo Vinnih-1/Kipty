@@ -20,6 +20,7 @@ json = "1.9.0"
 resampler = "0.3"
 room = "2.8.4"
 nav3Core = "1.0.0"
+lottie = "6.6.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -45,6 +46,7 @@ android-transcoder = { group = "io.github.vinnih-1", name = "android-transcoder"
 android-resampler = { group = "io.github.nailik", name = "androidresampler", version.ref = "resampler" }
 ktlint-compose = { group = "io.nlopez.compose.rules", name = "ktlint", version.ref = "ktlint-compose" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "json" }
+lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

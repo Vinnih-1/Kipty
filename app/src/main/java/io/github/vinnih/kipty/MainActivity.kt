@@ -28,6 +28,7 @@ import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
+import io.github.vinnih.kipty.ui.loading.LoadingScreen
 import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
@@ -57,21 +58,24 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        if (!AppConfig(applicationContext).read().defaultSamplesLoaded) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                homeViewModel.copyAssets().map {
-                    it.toWavReader(applicationContext.cacheDir)
-                }.forEach { reader ->
-                    homeViewModel.createAudio(reader)
-                    reader.dispose()
-                }
-            }
-        }
-
         setContent {
             val backstack = remember { mutableStateListOf<Any>(Home) }
             var showPlayerScreen by remember { mutableStateOf(false) }
+            var loadingScreen by remember { mutableStateOf(false) }
             val screen = backstack.last()
+
+            if (!AppConfig(applicationContext).read().defaultSamplesLoaded) {
+                loadingScreen = true
+                lifecycleScope.launch(Dispatchers.IO) {
+                    homeViewModel.copyAssets().map {
+                        it.toWavReader(applicationContext.cacheDir)
+                    }.forEach { reader ->
+                        homeViewModel.createAudio(reader)
+                        reader.dispose()
+                    }
+                    loadingScreen = false
+                }
+            }
 
             AppTheme {
                 Scaffold(
@@ -85,6 +89,13 @@ class MainActivity : ComponentActivity() {
                         FloatingAddButton(modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
+                    if (loadingScreen) {
+                        return@Scaffold LoadingScreen(
+                            text = "Loading...",
+                            modifier = Modifier.padding(paddingValues)
+                        )
+                    }
+
                     if (showPlayerScreen) {
                         PlayerScreen(playerController = playerViewModel, onDismiss = {
                             showPlayerScreen = false

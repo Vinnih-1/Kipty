@@ -60,7 +60,7 @@ private fun HomeScreenPreview() {
             topBar = { KiptyTopBar("Home") },
             bottomBar = { KiptyBottomBar(onClick = {}, playerController = FakePlayerViewModel()) },
             floatingActionButton = {
-                FloatingAddButton(modifier = Modifier.size(72.dp))
+                FloatingAddButton(onClick = {}, modifier = Modifier.size(72.dp))
             }
         ) { paddingValues ->
             HomeScreen(controller = FakeHomeViewModel(), onClick = {

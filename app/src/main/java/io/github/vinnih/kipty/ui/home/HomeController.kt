@@ -8,7 +8,11 @@ import kotlinx.coroutines.flow.StateFlow
 interface HomeController {
     val value: StateFlow<List<AudioEntity>>
 
-    suspend fun createAudio(reader: WavReader): AudioEntity
+    suspend fun createAudio(
+        reader: WavReader,
+        name: String? = null,
+        description: String? = null
+    ): AudioEntity
 
     suspend fun updateAudioFiles()
 

@@ -26,6 +26,7 @@ import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
 import io.github.vinnih.kipty.ui.components.KiptyTopBar
+import io.github.vinnih.kipty.ui.create.CreateScreen
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.loading.LoadingScreen
@@ -40,6 +41,8 @@ import kotlinx.serialization.json.Json
 private data object Home
 
 private data class Audio(val id: Int)
+
+private data object Create
 
 @OptIn(ExperimentalSerializationApi::class)
 val json = Json {
@@ -86,7 +89,9 @@ class MainActivity : ComponentActivity() {
                         }, playerController = playerViewModel)
                     },
                     floatingActionButton = {
-                        FloatingAddButton(modifier = Modifier.size(72.dp))
+                        FloatingAddButton(onClick = {
+                            backstack.add(Create)
+                        }, modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
                     if (loadingScreen) {
@@ -99,7 +104,7 @@ class MainActivity : ComponentActivity() {
                     if (showPlayerScreen) {
                         PlayerScreen(playerController = playerViewModel, onDismiss = {
                             showPlayerScreen = false
-                        })
+                        }, modifier = Modifier.padding(paddingValues))
                     }
 
                     NavDisplay(
@@ -119,7 +124,16 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 is Audio -> NavEntry(key) {
-                                    AudioScreen(audioController = audioViewModel, playerController = playerViewModel, id = key.id, onBack = {
+                                    AudioScreen(
+                                        audioController = audioViewModel,
+                                        playerController = playerViewModel,
+                                        id = key.id,
+                                        onBack = { backstack.removeLastOrNull() }
+                                    )
+                                }
+
+                                is Create -> NavEntry(key) {
+                                    CreateScreen(homeController = homeViewModel, onBack = {
                                         backstack.removeLastOrNull()
                                     })
                                 }

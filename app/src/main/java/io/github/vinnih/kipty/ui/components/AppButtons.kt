@@ -33,12 +33,13 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
 fun FloatingAddButton(
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimaryContainer,
     content: Color = MaterialTheme.colorScheme.onPrimary
 ) {
     FloatingActionButton(
-        onClick = {},
+        onClick = onClick,
         modifier = modifier,
         containerColor = container,
         contentColor = content
@@ -126,6 +127,30 @@ fun GenerateTranscriptionButton(
 }
 
 @Composable
+fun CreateAudioButton(
+    text: String,
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    modifier: Modifier = Modifier,
+    container: Color = MaterialTheme.colorScheme.primary,
+    content: Color = MaterialTheme.colorScheme.onPrimary
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = RoundedCornerShape(size = 8.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = container,
+            contentColor = content
+        )
+    ) {
+        Text(text = text)
+    }
+}
+
+@Composable
 fun PlayPauseAudioButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -200,7 +225,7 @@ fun PlayPauseAudioButton(
 @Composable
 private fun FloatingActionButtonPreview() {
     AppTheme {
-        FloatingAddButton()
+        FloatingAddButton(onClick = {})
     }
 }
 
@@ -270,5 +295,23 @@ private fun GenerateTranscriptionButtonPreview() {
     AppTheme {
         GenerateTranscriptionButton(onClick = {
         }, enabled = true, modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
+    }
+}
+
+@Preview(
+    name = "Light",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_TYPE_NORMAL
+)
+@Preview(
+    name = "Dark",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+private fun CreateAudioButtonPreview() {
+    AppTheme {
+        CreateAudioButton(text = "Next", onClick = {
+        }, modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
     }
 }

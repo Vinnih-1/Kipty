@@ -24,7 +24,11 @@ class FakeHomeViewModel : HomeController {
             ).asStateFlow()
         }
 
-    override suspend fun createAudio(reader: WavReader): AudioEntity {
+    override suspend fun createAudio(
+        reader: WavReader,
+        name: String?,
+        description: String?
+    ): AudioEntity {
         TODO("Not yet implemented")
     }
 

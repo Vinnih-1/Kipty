@@ -15,7 +15,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -33,61 +32,60 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PlayerScreen(playerController: PlayerController, onDismiss: () -> Unit) {
+fun PlayerScreen(
+    playerController: PlayerController,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val player = playerController.player
     val playPause = rememberPlayPauseButtonState(player)
     val scroll = rememberScrollState()
 
-    Scaffold { paddingValues ->
-        ModalBottomSheet(
-            modifier =
-                Modifier.fillMaxHeight().padding(
-                    paddingValues
-                ),
-            scrimColor = Color.Transparent,
-            sheetState = sheetState,
-            onDismissRequest = onDismiss,
-            shape = RectangleShape,
-            dragHandle = {}
+    ModalBottomSheet(
+        modifier = modifier.fillMaxHeight(),
+        scrimColor = Color.Transparent,
+        sheetState = sheetState,
+        onDismissRequest = onDismiss,
+        shape = RectangleShape,
+        dragHandle = {}
+    ) {
+        Box(
+            modifier = Modifier.fillMaxWidth().height(72.dp).padding(start = 16.dp, end = 16.dp)
         ) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(72.dp).padding(start = 16.dp, end = 16.dp)
-            ) {
-                IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(
-                        painter = painterResource(R.drawable.keyboard_arrow_down),
-                        contentDescription = "Dismiss player screen modal"
-                    )
-                }
-                Text(text = "Player", modifier = Modifier.align(Alignment.Center))
-                IconButton(
-                    onClick = playPause::onClick,
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            if (playPause.showPlay) R.drawable.play else R.drawable.pause
-                        ),
-                        contentDescription = "Play and pause button"
-                    )
-                }
+            IconButton(onClick = onDismiss, modifier = Modifier.align(Alignment.CenterStart)) {
+                Icon(
+                    painter = painterResource(R.drawable.keyboard_arrow_down),
+                    contentDescription = "Dismiss player screen modal"
+                )
             }
-            HorizontalDivider(thickness = 2.dp)
-            Column(
-                modifier = Modifier.fillMaxSize().verticalScroll(scroll),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.SpaceAround
+            Text(text = "Player", modifier = Modifier.align(Alignment.Center))
+            IconButton(
+                onClick = playPause::onClick,
+                modifier = Modifier.align(Alignment.CenterEnd)
             ) {
-                TextViewer(controller = playerController)
+                Icon(
+                    painter = painterResource(
+                        if (playPause.showPlay) R.drawable.play else R.drawable.pause
+                    ),
+                    contentDescription = "Play and pause button"
+                )
             }
+        }
+        HorizontalDivider(thickness = 2.dp)
+        Column(
+            modifier = Modifier.fillMaxSize().verticalScroll(scroll),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceAround
+        ) {
+            TextViewer(controller = playerController)
         }
     }
 }
 
 @Preview
 @Composable
-fun PlayerScreenPreview() {
+private fun PlayerScreenPreview() {
     AppTheme {
         PlayerScreen(playerController = FakePlayerViewModel(), onDismiss = {
         })

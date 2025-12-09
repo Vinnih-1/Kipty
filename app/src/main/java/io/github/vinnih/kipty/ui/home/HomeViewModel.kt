@@ -32,7 +32,11 @@ class HomeViewModel @Inject constructor(
     private val samplesPath = File(context.filesDir, "samples")
     private val transcriptionsPath = File(context.filesDir, "transcriptions")
 
-    override suspend fun createAudio(reader: WavReader): AudioEntity = withContext(Dispatchers.IO) {
+    override suspend fun createAudio(
+        reader: WavReader,
+        name: String?,
+        description: String?
+    ): AudioEntity = withContext(Dispatchers.IO) {
         if (!transcriptionsPath.exists()) {
             transcriptionsPath.mkdirs()
         }
@@ -48,7 +52,8 @@ class HomeViewModel @Inject constructor(
             }
         }
         val entity = AudioEntity(
-            name = reader.data.nameWithoutExtension,
+            name = name ?: reader.data.nameWithoutExtension,
+            description = description ?: "",
             path = path.canonicalPath,
             createdAt = LocalDateTime.now().toString(),
             duration = reader.duration

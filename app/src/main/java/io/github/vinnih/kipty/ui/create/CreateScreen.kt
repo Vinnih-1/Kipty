@@ -40,15 +40,12 @@ import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import io.github.vinnih.androidtranscoder.utils.toWavReader
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.dashedBorder
 import java.io.File
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 
 private enum class Stage {
     FILE,
@@ -64,9 +61,9 @@ private data class AudioCreator(
 
 @Composable
 fun CreateScreen(
+    onBack: () -> Unit,
     homeController: HomeController,
-    modifier: Modifier = Modifier,
-    onBack: () -> Unit
+    modifier: Modifier = Modifier
 ) {
     var audio by remember { mutableStateOf(AudioCreator()) }
     var stage by remember { mutableStateOf(Stage.FILE) }
@@ -100,12 +97,12 @@ fun CreateScreen(
 
 @Composable
 private fun BasicCreateScreen(
-    composition: LottieComposition?,
-    content: @Composable () -> Unit,
     onNext: () -> Unit,
     stage: Stage,
+    composition: LottieComposition?,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    content: @Composable () -> Unit
 ) {
     val progress by animateLottieCompositionAsState(
         composition = composition,
@@ -147,7 +144,7 @@ private fun BasicCreateScreen(
 }
 
 @Composable
-private fun AudioFileStage(modifier: Modifier = Modifier, onComplete: (File) -> Unit) {
+private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animations/speaker-icon.json")
@@ -215,13 +212,15 @@ private fun AudioFileStage(modifier: Modifier = Modifier, onComplete: (File) -> 
 }
 
 @Composable
-private fun AudioNameStage(modifier: Modifier = Modifier, onComplete: (String) -> Unit) {
+private fun AudioNameStage(onComplete: (String) -> Unit, modifier: Modifier = Modifier) {
     var name by remember { mutableStateOf("") }
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animations/creative-idea.json")
     )
 
-    BasicCreateScreen(composition = composition, content = {
+    BasicCreateScreen(onNext = {
+        onComplete(name)
+    }, Stage.NAME, modifier = modifier, composition = composition) {
         TextField(
             value = name,
             onValueChange = { name = it },
@@ -236,17 +235,19 @@ private fun AudioNameStage(modifier: Modifier = Modifier, onComplete: (String) -
                 )
             }
         )
-    }, onNext = { onComplete(name) }, Stage.NAME, modifier = modifier)
+    }
 }
 
 @Composable
-private fun AudioDescriptionStage(modifier: Modifier = Modifier, onComplete: (String) -> Unit) {
+private fun AudioDescriptionStage(onComplete: (String) -> Unit, modifier: Modifier = Modifier) {
     var description by remember { mutableStateOf("") }
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animations/creative-idea.json")
     )
 
-    BasicCreateScreen(composition = composition, content = {
+    BasicCreateScreen(onNext = {
+        onComplete(description)
+    }, Stage.DESCRIPTION, modifier = modifier, composition = composition) {
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
@@ -260,7 +261,7 @@ private fun AudioDescriptionStage(modifier: Modifier = Modifier, onComplete: (St
                 )
             }
         )
-    }, onNext = { onComplete(description) }, Stage.DESCRIPTION, modifier = modifier)
+    }
 }
 
 @Preview(

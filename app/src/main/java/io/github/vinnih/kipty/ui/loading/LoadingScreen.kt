@@ -20,7 +20,12 @@ import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
 import io.github.vinnih.kipty.ui.home.HomeController
 
 @Composable
-fun LoadingScreen(homeController: HomeController, text: String, onLoad: () -> Unit, modifier: Modifier = Modifier) {
+fun LoadingScreen(
+    homeController: HomeController,
+    text: String,
+    onLoad: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val context = LocalContext.current

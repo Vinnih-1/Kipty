@@ -8,19 +8,13 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.vinnih.androidtranscoder.utils.toWavReader
-import io.github.vinnih.kipty.data.application.AppConfig
 import io.github.vinnih.kipty.ui.audio.AudioScreen
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
@@ -33,16 +27,18 @@ import io.github.vinnih.kipty.ui.loading.LoadingScreen
 import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+
+private data object Loading
 
 private data object Home
 
 private data class Audio(val id: Int)
 
 private data object Create
+
+private data object Player
 
 @OptIn(ExperimentalSerializationApi::class)
 val json = Json {
@@ -62,30 +58,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val backstack = remember { mutableStateListOf<Any>(Home) }
-            var showPlayerScreen by remember { mutableStateOf(false) }
-            var loadingScreen by remember { mutableStateOf(false) }
+            val backstack = remember { mutableStateListOf<Any>(Loading) }
             val screen = backstack.last()
-
-            if (!AppConfig(applicationContext).read().defaultSamplesLoaded) {
-                loadingScreen = true
-                lifecycleScope.launch(Dispatchers.IO) {
-                    homeViewModel.copyAssets().map {
-                        it.toWavReader(applicationContext.cacheDir)
-                    }.forEach { reader ->
-                        homeViewModel.createAudio(reader)
-                        reader.dispose()
-                    }
-                    loadingScreen = false
-                }
-            }
 
             AppTheme {
                 Scaffold(
                     topBar = { if (screen is Home) KiptyTopBar("Home") },
                     bottomBar = {
                         KiptyBottomBar(onClick = {
-                            showPlayerScreen = true
+                            backstack.add(Player)
                         }, playerController = playerViewModel)
                     },
                     floatingActionButton = {
@@ -94,19 +75,6 @@ class MainActivity : ComponentActivity() {
                         }, modifier = Modifier.size(72.dp))
                     }
                 ) { paddingValues ->
-                    if (loadingScreen) {
-                        return@Scaffold LoadingScreen(
-                            text = "Loading...",
-                            modifier = Modifier.padding(paddingValues)
-                        )
-                    }
-
-                    if (showPlayerScreen) {
-                        PlayerScreen(playerController = playerViewModel, onDismiss = {
-                            showPlayerScreen = false
-                        }, modifier = Modifier.padding(paddingValues))
-                    }
-
                     NavDisplay(
                         modifier = Modifier.padding(
                             paddingValues
@@ -136,6 +104,24 @@ class MainActivity : ComponentActivity() {
                                     CreateScreen(homeController = homeViewModel, onBack = {
                                         backstack.removeLastOrNull()
                                     })
+                                }
+
+                                is Player -> NavEntry(key) {
+                                    PlayerScreen(playerController = playerViewModel, onDismiss = {
+                                        backstack.removeLastOrNull()
+                                    }, modifier = Modifier.padding(paddingValues))
+                                }
+
+                                is Loading -> NavEntry(key) {
+                                    LoadingScreen(
+                                        homeController = homeViewModel,
+                                        text = "Loading...",
+                                        onLoad = {
+                                            backstack.remove(Loading)
+                                            backstack.add(Home)
+                                        },
+                                        modifier = Modifier.padding(paddingValues)
+                                    )
                                 }
 
                                 else -> {

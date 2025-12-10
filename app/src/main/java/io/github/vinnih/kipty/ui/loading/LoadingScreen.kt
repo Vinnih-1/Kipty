@@ -8,15 +8,34 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import io.github.vinnih.androidtranscoder.utils.toWavReader
+import io.github.vinnih.kipty.data.application.AppConfig
+import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
+import io.github.vinnih.kipty.ui.home.HomeController
 
 @Composable
-fun LoadingScreen(text: String, modifier: Modifier = Modifier) {
+fun LoadingScreen(homeController: HomeController, text: String, onLoad: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        if (!AppConfig(context).read().defaultSamplesLoaded) {
+            homeController.copyAssets().map {
+                it.toWavReader(context.cacheDir)
+            }.forEach { reader ->
+                homeController.createAudio(reader)
+                reader.dispose()
+            }
+        }
+        onLoad.invoke()
+    }
 
     Column(modifier = modifier) {
         Box(modifier = Modifier.fillMaxSize().padding(48.dp)) {
@@ -42,5 +61,5 @@ fun LoadingScreen(text: String, modifier: Modifier = Modifier) {
 )
 @Composable
 private fun LoadingScreenPreview() {
-    LoadingScreen("Kipty")
+    LoadingScreen(homeController = FakeHomeViewModel(), text = "Kipty", onLoad = {})
 }

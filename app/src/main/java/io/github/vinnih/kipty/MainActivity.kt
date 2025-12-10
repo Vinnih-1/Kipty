@@ -3,7 +3,6 @@ package io.github.vinnih.kipty
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +26,7 @@ import io.github.vinnih.kipty.ui.loading.LoadingScreen
 import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import io.github.vinnih.kipty.ui.theme.EnableEdgeToEdge
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
@@ -55,11 +55,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
 
         setContent {
             val backstack = remember { mutableStateListOf<Any>(Loading) }
             val screen = backstack.last()
+
+            this.EnableEdgeToEdge()
 
             AppTheme {
                 Scaffold(

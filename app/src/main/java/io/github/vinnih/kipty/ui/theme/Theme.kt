@@ -1,10 +1,14 @@
 package io.github.vinnih.kipty.ui.theme
 
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.toArgb
 
 private val lightScheme =
     lightColorScheme(
@@ -87,9 +91,28 @@ private val darkScheme =
 @Composable
 fun AppTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colorScheme = if (darkTheme) darkScheme else lightScheme
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
         content = content
+    )
+}
+
+@Composable
+fun ComponentActivity.EnableEdgeToEdge(darkTheme: Boolean = isSystemInDarkTheme()) {
+    val colors = if (darkTheme) darkScheme else lightScheme
+
+    enableEdgeToEdge(
+        navigationBarStyle = if (darkTheme) {
+            SystemBarStyle.dark(
+                scrim = colors.surfaceContainer.toArgb()
+            )
+        } else {
+            SystemBarStyle.light(
+                scrim = colors.surfaceContainer.toArgb(),
+                darkScrim = colors.onSecondaryContainer.toArgb()
+            )
+        }
     )
 }

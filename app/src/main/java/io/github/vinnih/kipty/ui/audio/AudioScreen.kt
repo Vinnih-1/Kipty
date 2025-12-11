@@ -2,20 +2,19 @@ package io.github.vinnih.kipty.ui.audio
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -29,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,12 +36,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.ui.components.BackButton
-import io.github.vinnih.kipty.ui.components.EditButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
 import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
-import kotlinx.serialization.json.Json
 
 @Composable
 fun AudioScreen(
@@ -49,51 +47,39 @@ fun AudioScreen(
     playerController: PlayerController,
     id: Int,
     onBack: () -> Unit,
+    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-
     var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
     val isTranscribing = audioController.isTranscribing.collectAsState()
+    var currentButton: (@Composable () -> Unit)? by remember { mutableStateOf(null) }
     val scroll = rememberScrollState()
 
     LaunchedEffect(Unit) {
         audioEntity = audioController.getById(id)
-    }
 
-    if (audioEntity == null) return Box(modifier = modifier)
-
-    Column(modifier = modifier.verticalScroll(scroll)) {
-        Column(
-            modifier = Modifier.fillMaxWidth().clip(
-                shape = RoundedCornerShape(
-                    bottomStart = 24.dp,
-                    bottomEnd = 24.dp
-                )
-            ).height(400.dp).background(
-                brush = Brush.linearGradient(
-                    colors = listOf(colors.primary, colors.onPrimary),
-                    start = Offset.Zero,
-                    end = Offset.Infinite
-                )
-            )
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                BackButton(onClick = onBack)
-                Text(text = "vosk-model", color = colors.onPrimary, style = typography.titleMedium)
-                EditButton()
-            }
+        onTopBarChange {
             Box(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxWidth().clip(
+                    shape = RoundedCornerShape(
+                        bottomStart = 24.dp,
+                        bottomEnd = 24.dp
+                    )
+                ).height(400.dp).background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(colors.primary, colors.onPrimary),
+                        start = Offset.Zero,
+                        end = Offset.Infinite
+                    )
+                )
             ) {
+                currentButton = { GetCurrentButton(playerController = playerController, audioController = audioController, audioEntity = audioEntity!!, enabled = !isTranscribing.value) }
+                AudioScreenTopBar(onBack = onBack, modifier = modifier.align(Alignment.TopCenter))
                 Text(
                     text = audioEntity!!.name,
-                    modifier = Modifier.align(Alignment.TopCenter).padding(top = 12.dp),
+                    modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
                     textAlign = TextAlign.Center,
                     style = typography.displayMedium,
                     maxLines = 2,
@@ -102,50 +88,90 @@ fun AudioScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = audioEntity!!.description ?: """
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra lorem a facilisis ullamcorper. Aliquam est arcu, dictum a sapien vel, vestibulum iaculis elit. Maecenas venenatis nec erat non tincidunt. Aliquam diam purus, fringilla non feugiat vel, gravida ut felis. Nullam at turpis nec quam maximus ullamcorper non ac enim. Nulla et est ut elit finibus laoreet. Donec at ante sed dolor viverra facilisis. Vestibulum tincidunt justo nec consectetur semper. Pellentesque ac mollis risus. Quisque dignissim velit ut lobortis lacinia. Aenean ornare arcu nec est bibendum interdum.
+                    text = """
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra 
+                        lorem a facilisis ullamcorper. Aliquam est arcu, dictum a sapien vel, 
+                        vestibulum iaculis elit. Maecenas venenatis nec erat non tincidunt. 
+                        Aliquam diam purus, fringilla non feugiat vel, gravida ut felis.
+                        Nullam at turpis nec quam maximus ullamcorper non ac enim. Nulla 
+                        et est ut elit finibus laoreet. Donec at ante sed dolor viverra 
+                        facilisis. Vestibulum tincidunt justo nec consectetur semper. 
+                        Pellentesque ac mollis risus. Quisque dignissim velit ut lobortis 
+                        lacinia. Aenean ornare arcu nec est bibendum interdum.
                     """.trimIndent(),
-                    modifier = Modifier.align(Alignment.Center).padding(top = 50.dp),
+                    modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
                     textAlign = TextAlign.Center,
                     style = typography.bodyLarge,
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis,
                     color = colors.secondary
                 )
-                if (audioEntity!!.transcription.isNullOrEmpty()) {
-                    GenerateTranscriptionButton(
-                        onClick = {
-                            audioController.transcribeAudio(audioEntity!!, onSuccess = {
-                                println(Json.encodeToString(it))
-                            })
-                        },
-                        enabled = !isTranscribing.value,
-                        modifier = Modifier.width(
-                            240.dp
-                        ).height(
-                            64.dp
-                        ).align(
-                            Alignment.BottomCenter
-                        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
-                    )
-                } else {
-                    PlayPauseAudioButton(
-                        onClick = { playerController.playAudio(audioEntity!!) },
-                        modifier = Modifier.width(
-                            240.dp
-                        ).height(
-                            70.dp
-                        ).align(
-                            Alignment.BottomCenter
-                        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
-                    )
-                }
+                currentButton!!.invoke()
             }
         }
-        if (!audioEntity!!.transcription.isNullOrEmpty()) {
-            // TextViewer(controller = playerController)
-        }
     }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AudioScreenTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                text = "ggml-tiny.en-q5_1",
+                color = colors.onPrimary,
+                style = typography.titleMedium
+            )
+        },
+        navigationIcon = {
+            BackButton(onClick = onBack, modifier = Modifier.padding(start = 10.dp))
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = Color.Transparent
+        ),
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun BoxScope.GetCurrentButton(playerController: PlayerController, audioController: AudioController, audioEntity: AudioEntity, enabled: Boolean, modifier: Modifier = Modifier) {
+    if (audioEntity.transcription.isNullOrEmpty()) {
+        TranscriptionButton(onClick = { audioController.transcribeAudio(audioEntity, onSuccess = {}) }, enabled = enabled)
+    } else {
+        PlayPauseButton(onClick = { playerController.playAudio(audioEntity) })
+    }
+}
+
+@Composable
+private fun BoxScope.PlayPauseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    PlayPauseAudioButton(
+        onClick = onClick,
+        modifier = modifier.width(
+            240.dp
+        ).height(
+            70.dp
+        ).align(
+            Alignment.BottomCenter
+        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
+    )
+}
+
+@Composable
+private fun BoxScope.TranscriptionButton(onClick: () -> Unit, enabled: Boolean, modifier: Modifier = Modifier) {
+    GenerateTranscriptionButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier.width(
+            240.dp
+        ).height(
+            64.dp
+        ).align(
+            Alignment.BottomCenter
+        ).padding(bottom = 8.dp).shadow(elevation = 16.dp))
 }
 
 @Preview(

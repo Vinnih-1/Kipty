@@ -7,8 +7,12 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
@@ -18,7 +22,6 @@ import io.github.vinnih.kipty.ui.audio.AudioScreen
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.FloatingAddButton
 import io.github.vinnih.kipty.ui.components.KiptyBottomBar
-import io.github.vinnih.kipty.ui.components.KiptyTopBar
 import io.github.vinnih.kipty.ui.create.CreateScreen
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
@@ -57,14 +60,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            var currentTopbar: (@Composable () -> Unit)? by remember { mutableStateOf(null) }
             val backstack = remember { mutableStateListOf<Any>(Loading) }
-            val screen = backstack.last()
 
             this.EnableEdgeToEdge()
 
             AppTheme {
                 Scaffold(
-                    topBar = { if (screen is Home) KiptyTopBar("Home") },
+                    topBar = { currentTopbar?.invoke() },
                     bottomBar = {
                         KiptyBottomBar(onClick = {
                             backstack.add(Player)
@@ -89,7 +92,7 @@ class MainActivity : ComponentActivity() {
                                 is Home -> NavEntry(key) {
                                     HomeScreen(controller = homeViewModel, onClick = {
                                         backstack.add(Audio(it.uid))
-                                    })
+                                    }, onTopBarChange = { topbar -> currentTopbar = topbar })
                                 }
 
                                 is Audio -> NavEntry(key) {
@@ -97,19 +100,22 @@ class MainActivity : ComponentActivity() {
                                         audioController = audioViewModel,
                                         playerController = playerViewModel,
                                         id = key.id,
-                                        onBack = { backstack.removeLastOrNull() }
+                                        onBack = { backstack.removeLastOrNull() },
+                                        onTopBarChange = { topbar -> currentTopbar = topbar }
                                     )
                                 }
 
                                 is Create -> NavEntry(key) {
                                     CreateScreen(homeController = homeViewModel, onBack = {
                                         backstack.removeLastOrNull()
-                                    })
+                                    }, onTopBarChange = { topbar -> currentTopbar = null })
                                 }
 
                                 is Player -> NavEntry(key) {
                                     PlayerScreen(playerController = playerViewModel, onDismiss = {
                                         backstack.removeLastOrNull()
+                                    }, onTopBarChange = { topbar ->
+                                        currentTopbar = null
                                     }, modifier = Modifier.padding(paddingValues))
                                 }
 
@@ -121,7 +127,8 @@ class MainActivity : ComponentActivity() {
                                             backstack.remove(Loading)
                                             backstack.add(Home)
                                         },
-                                        modifier = Modifier.padding(paddingValues)
+                                        modifier = Modifier.padding(paddingValues),
+                                        onTopBarChange = { topbar -> currentTopbar = null }
                                     )
                                 }
 

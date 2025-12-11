@@ -18,6 +18,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,22 +26,30 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
+@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     playerController: PlayerController,
     onDismiss: () -> Unit,
+    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val player = playerController.player
     val playPause = rememberPlayPauseButtonState(player)
     val scroll = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        onTopBarChange {
+        }
+    }
 
     ModalBottomSheet(
         modifier = modifier.fillMaxHeight(),
@@ -88,6 +97,6 @@ fun PlayerScreen(
 private fun PlayerScreenPreview() {
     AppTheme {
         PlayerScreen(playerController = FakePlayerViewModel(), onDismiss = {
-        })
+        }, onTopBarChange = {})
     }
 }

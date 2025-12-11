@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,14 +62,20 @@ private data class AudioCreator(
 
 @Composable
 fun CreateScreen(
-    onBack: () -> Unit,
     homeController: HomeController,
+    onBack: () -> Unit,
+    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var audio by remember { mutableStateOf(AudioCreator()) }
     var stage by remember { mutableStateOf(Stage.FILE) }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        onTopBarChange {
+        }
+    }
 
     when (stage) {
         Stage.FILE -> AudioFileStage(modifier = modifier, onComplete = {

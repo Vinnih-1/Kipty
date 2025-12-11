@@ -24,6 +24,7 @@ fun LoadingScreen(
     homeController: HomeController,
     text: String,
     onLoad: () -> Unit,
+    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -31,6 +32,8 @@ fun LoadingScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
+        onTopBarChange {
+        }
         if (!AppConfig(context).read().defaultSamplesLoaded) {
             homeController.copyAssets().map {
                 it.toWavReader(context.cacheDir)
@@ -66,5 +69,6 @@ fun LoadingScreen(
 )
 @Composable
 private fun LoadingScreenPreview() {
-    LoadingScreen(homeController = FakeHomeViewModel(), text = "Kipty", onLoad = {})
+    LoadingScreen(homeController = FakeHomeViewModel(), text = "Kipty", onLoad = {
+    }, onTopBarChange = {})
 }

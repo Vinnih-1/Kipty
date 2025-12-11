@@ -3,17 +3,21 @@ package io.github.vinnih.kipty.ui.player
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import java.io.File
-import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
+import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
@@ -39,6 +43,29 @@ class PlayerViewModel @Inject constructor(
         player.prepare()
         player.play()
         _currentAudio.value = audioEntity
+    }
+
+    override fun playSection(audioEntity: AudioEntity, start: Long, end: Long) {
+        player.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(audioEntity.path, "audio.wav"))))
+        player.prepare()
+        this.seekTo(start)
+        player.play()
+        _currentAudio.value = audioEntity
+
+        viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                val currentPosition = withContext(Dispatchers.Main) {
+                    player.currentPosition
+                }
+
+                if (currentPosition > end) {
+                    withContext(Dispatchers.Main) {
+                        player.stop()
+                    }
+                    break
+                }
+            }
+        }
     }
 
     override fun pauseAudio() {

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +39,11 @@ import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
+import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioScreen(
     audioController: AudioController,
@@ -54,63 +57,69 @@ fun AudioScreen(
     val typography = MaterialTheme.typography
     var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
     val isTranscribing = audioController.isTranscribing.collectAsState()
-    var currentButton: (@Composable () -> Unit)? by remember { mutableStateOf(null) }
     val scroll = rememberScrollState()
 
     LaunchedEffect(Unit) {
         audioEntity = audioController.getById(id)
+    }
 
-        onTopBarChange {
-            Box(
-                modifier = Modifier.fillMaxWidth().clip(
-                    shape = RoundedCornerShape(
-                        bottomStart = 24.dp,
-                        bottomEnd = 24.dp
-                    )
-                ).height(400.dp).background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(colors.primary, colors.onPrimary),
-                        start = Offset.Zero,
-                        end = Offset.Infinite
-                    )
+    if (audioEntity == null) return
+
+    onTopBarChange {
+        Box(
+            modifier = Modifier.fillMaxWidth().clip(
+                shape = RoundedCornerShape(
+                    bottomStart = 24.dp,
+                    bottomEnd = 24.dp
                 )
-            ) {
-                currentButton = { GetCurrentButton(playerController = playerController, audioController = audioController, audioEntity = audioEntity!!, enabled = !isTranscribing.value) }
-                AudioScreenTopBar(onBack = onBack, modifier = modifier.align(Alignment.TopCenter))
-                Text(
-                    text = audioEntity!!.name,
-                    modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
-                    textAlign = TextAlign.Center,
-                    style = typography.displayMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = colors.onPrimary,
-                    fontWeight = FontWeight.Bold
+            ).height((400 - scroll.value).coerceAtLeast(0).dp).background(
+                brush = Brush.linearGradient(
+                    colors = listOf(colors.primary, colors.onPrimary),
+                    start = Offset.Zero,
+                    end = Offset.Infinite
                 )
-                Text(
-                    text = """
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean viverra 
-                        lorem a facilisis ullamcorper. Aliquam est arcu, dictum a sapien vel, 
-                        vestibulum iaculis elit. Maecenas venenatis nec erat non tincidunt. 
-                        Aliquam diam purus, fringilla non feugiat vel, gravida ut felis.
-                        Nullam at turpis nec quam maximus ullamcorper non ac enim. Nulla 
-                        et est ut elit finibus laoreet. Donec at ante sed dolor viverra 
-                        facilisis. Vestibulum tincidunt justo nec consectetur semper. 
-                        Pellentesque ac mollis risus. Quisque dignissim velit ut lobortis 
-                        lacinia. Aenean ornare arcu nec est bibendum interdum.
-                    """.trimIndent(),
-                    modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
-                    textAlign = TextAlign.Center,
-                    style = typography.bodyLarge,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                    color = colors.secondary
-                )
-                currentButton!!.invoke()
+            )
+        ) {
+            AudioScreenTopBar(onBack = onBack, modifier = modifier.align(Alignment.TopCenter))
+            Text(
+                text = audioEntity!!.name,
+                modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
+                textAlign = TextAlign.Center,
+                style = typography.displayMedium,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                color = colors.onPrimary,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = audioEntity!!.description ?: "",
+                modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
+                textAlign = TextAlign.Center,
+                style = typography.bodyLarge,
+                maxLines = 4,
+                overflow = TextOverflow.Ellipsis,
+                color = colors.secondary
+            )
+            if (audioEntity!!.transcription.isNullOrEmpty()) {
+                TranscriptionButton(onClick = {
+                    audioController.transcribeAudio(audioEntity!!, onSuccess = {
+                        audioEntity =
+                            it
+                    })
+                }, enabled = !isTranscribing.value, modifier = modifier)
+            } else {
+                PlayPauseButton(onClick = {
+                    playerController.playAudio(audioEntity!!)
+                }, modifier = modifier)
             }
         }
     }
 
+    if (!audioEntity?.transcription.isNullOrEmpty()) {
+        TextViewer(transcription = audioEntity!!.transcription!!, onClick = { start, end ->
+            playerController.playSection(audioEntity!!, start, end)
+        }, modifier = Modifier.verticalScroll(scroll))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -138,15 +147,6 @@ private fun AudioScreenTopBar(onBack: () -> Unit, modifier: Modifier = Modifier)
 }
 
 @Composable
-private fun BoxScope.GetCurrentButton(playerController: PlayerController, audioController: AudioController, audioEntity: AudioEntity, enabled: Boolean, modifier: Modifier = Modifier) {
-    if (audioEntity.transcription.isNullOrEmpty()) {
-        TranscriptionButton(onClick = { audioController.transcribeAudio(audioEntity, onSuccess = {}) }, enabled = enabled)
-    } else {
-        PlayPauseButton(onClick = { playerController.playAudio(audioEntity) })
-    }
-}
-
-@Composable
 private fun BoxScope.PlayPauseButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     PlayPauseAudioButton(
         onClick = onClick,
@@ -161,7 +161,11 @@ private fun BoxScope.PlayPauseButton(onClick: () -> Unit, modifier: Modifier = M
 }
 
 @Composable
-private fun BoxScope.TranscriptionButton(onClick: () -> Unit, enabled: Boolean, modifier: Modifier = Modifier) {
+private fun BoxScope.TranscriptionButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier
+) {
     GenerateTranscriptionButton(
         onClick = onClick,
         enabled = enabled,
@@ -171,7 +175,8 @@ private fun BoxScope.TranscriptionButton(onClick: () -> Unit, enabled: Boolean, 
             64.dp
         ).align(
             Alignment.BottomCenter
-        ).padding(bottom = 8.dp).shadow(elevation = 16.dp))
+        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
+    )
 }
 
 @Preview(

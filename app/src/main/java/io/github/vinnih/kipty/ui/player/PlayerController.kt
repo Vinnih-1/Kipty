@@ -12,6 +12,8 @@ interface PlayerController {
 
     fun playAudio(audioEntity: AudioEntity)
 
+    fun playSection(audioEntity: AudioEntity, start: Long, end: Long)
+
     fun pauseAudio()
 
     fun seekTo(position: Long)

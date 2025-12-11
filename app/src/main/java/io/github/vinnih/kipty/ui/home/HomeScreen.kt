@@ -26,11 +26,15 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 fun HomeScreen(
     controller: HomeController,
     onClick: (AudioEntity) -> Unit,
+    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val audioState = controller.value.collectAsState()
 
     LaunchedEffect(Unit) {
+        onTopBarChange {
+            KiptyTopBar("Home")
+        }
         controller.updateAudioFiles()
     }
 
@@ -64,7 +68,7 @@ private fun HomeScreenPreview() {
             }
         ) { paddingValues ->
             HomeScreen(controller = FakeHomeViewModel(), onClick = {
-            }, modifier = Modifier.padding(paddingValues))
+            }, onTopBarChange = {}, modifier = Modifier.padding(paddingValues))
         }
     }
 }

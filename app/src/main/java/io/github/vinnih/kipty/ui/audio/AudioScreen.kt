@@ -98,9 +98,7 @@ fun AudioScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = """
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ut condimentum est, ut congue diam. Nunc laoreet sem vel urna congue commodo. Sed libero ante, varius eget magna eget, interdum facilisis libero. Mauris sed fringilla ex. Cras ultricies imperdiet massa eu faucibus. Donec nunc augue, placerat non elit quis, finibus tempus metus. Aenean vel venenatis dui.
-                """.trimIndent(),
+                    text = audioEntity!!.description ?: "",
                     modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
                     textAlign = TextAlign.Center,
                     style = typography.bodyLarge,

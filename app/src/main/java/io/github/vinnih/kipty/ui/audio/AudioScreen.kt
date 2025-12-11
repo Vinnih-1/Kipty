@@ -1,6 +1,7 @@
 package io.github.vinnih.kipty.ui.audio
 
 import android.content.res.Configuration
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -57,6 +59,7 @@ fun AudioScreen(
     val typography = MaterialTheme.typography
     var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
     val isTranscribing = audioController.isTranscribing.collectAsState()
+    var expanded by remember { mutableStateOf(true) }
     val scroll = rememberScrollState()
 
     LaunchedEffect(Unit) {
@@ -65,14 +68,16 @@ fun AudioScreen(
 
     if (audioEntity == null) return
 
+    expanded = scroll.value < 100
+
     onTopBarChange {
         Box(
-            modifier = Modifier.fillMaxWidth().clip(
+            modifier = Modifier.fillMaxWidth().animateContentSize().clip(
                 shape = RoundedCornerShape(
                     bottomStart = 24.dp,
                     bottomEnd = 24.dp
                 )
-            ).height((400 - scroll.value).coerceAtLeast(0).dp).background(
+            ).height(if (expanded) 400.dp else 150.dp).background(
                 brush = Brush.linearGradient(
                     colors = listOf(colors.primary, colors.onPrimary),
                     start = Offset.Zero,
@@ -81,25 +86,29 @@ fun AudioScreen(
             )
         ) {
             AudioScreenTopBar(onBack = onBack, modifier = modifier.align(Alignment.TopCenter))
-            Text(
-                text = audioEntity!!.name,
-                modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
-                textAlign = TextAlign.Center,
-                style = typography.displayMedium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = colors.onPrimary,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = audioEntity!!.description ?: "",
-                modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
-                textAlign = TextAlign.Center,
-                style = typography.bodyLarge,
-                maxLines = 4,
-                overflow = TextOverflow.Ellipsis,
-                color = colors.secondary
-            )
+            if (expanded) {
+                Text(
+                    text = audioEntity!!.name,
+                    modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
+                    textAlign = TextAlign.Center,
+                    style = typography.displayMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = colors.onPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = """
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam ut condimentum est, ut congue diam. Nunc laoreet sem vel urna congue commodo. Sed libero ante, varius eget magna eget, interdum facilisis libero. Mauris sed fringilla ex. Cras ultricies imperdiet massa eu faucibus. Donec nunc augue, placerat non elit quis, finibus tempus metus. Aenean vel venenatis dui.
+                """.trimIndent(),
+                    modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
+                    textAlign = TextAlign.Center,
+                    style = typography.bodyLarge,
+                    maxLines = 4,
+                    overflow = TextOverflow.Ellipsis,
+                    color = colors.secondary
+                )
+            }
             if (audioEntity!!.transcription.isNullOrEmpty()) {
                 TranscriptionButton(onClick = {
                     audioController.transcribeAudio(audioEntity!!, onSuccess = {
@@ -118,7 +127,7 @@ fun AudioScreen(
     if (!audioEntity?.transcription.isNullOrEmpty()) {
         TextViewer(transcription = audioEntity!!.transcription!!, onClick = { start, end ->
             playerController.playSection(audioEntity!!, start, end)
-        }, modifier = Modifier.verticalScroll(scroll))
+        }, modifier = Modifier.verticalScroll(scroll).padding(top = if (expanded) 24.dp else 90.dp))
     }
 }
 

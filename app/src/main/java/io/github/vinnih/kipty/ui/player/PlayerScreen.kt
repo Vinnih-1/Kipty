@@ -1,10 +1,7 @@
 package io.github.vinnih.kipty.ui.player
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -82,13 +79,9 @@ fun PlayerScreen(
             }
         }
         HorizontalDivider(thickness = 2.dp)
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(scroll),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceAround
-        ) {
-            TextViewer(controller = playerController)
-        }
+        TextViewer(playerController = playerController, onClick = { start, end ->
+            playerController.seekTo(start)
+        }, modifier = Modifier.verticalScroll(scroll))
     }
 }
 

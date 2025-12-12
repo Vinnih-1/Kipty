@@ -14,14 +14,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinnih.androidtranscoder.utils.toWavReader
 import io.github.vinnih.kipty.data.application.AppConfig
+import io.github.vinnih.kipty.data.application.ApplicationData
+import io.github.vinnih.kipty.ui.audio.AudioController
+import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
 import io.github.vinnih.kipty.ui.home.HomeController
 
 @Composable
 fun LoadingScreen(
     homeController: HomeController,
+    audioController: AudioController,
     text: String,
     onLoad: () -> Unit,
     onTopBarChange: (@Composable () -> Unit) -> Unit,
@@ -32,17 +35,28 @@ fun LoadingScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        onTopBarChange {
-        }
         if (!AppConfig(context).read().defaultSamplesLoaded) {
-            homeController.copyAssets().map {
-                it.toWavReader(context.cacheDir)
-            }.forEach { reader ->
-                homeController.createAudio(reader)
-                reader.dispose()
+            val model = homeController.copyModel()
+
+            homeController.copySamples().forEach { (audio, transcription) ->
+                val audioEntity = homeController.createAudio(file = audio)
+                val transcriptionData = audioController.convertTranscription(
+                    transcription.readText()
+                )
+
+                audioController.saveTranscription(
+                    audioEntity.copy(transcription = transcriptionData)
+                ).also {
+                    audio.delete()
+                    transcription.delete()
+                }
             }
+            AppConfig(context).write(ApplicationData(model.nameWithoutExtension, true))
         }
         onLoad.invoke()
+    }
+
+    onTopBarChange {
     }
 
     Column(modifier = modifier) {
@@ -69,6 +83,11 @@ fun LoadingScreen(
 )
 @Composable
 private fun LoadingScreenPreview() {
-    LoadingScreen(homeController = FakeHomeViewModel(), text = "Kipty", onLoad = {
-    }, onTopBarChange = {})
+    LoadingScreen(
+        homeController = FakeHomeViewModel(),
+        audioController = FakeAudioViewModel(),
+        text = "Kipty",
+        onLoad = {},
+        onTopBarChange = {}
+    )
 }

@@ -1,0 +1,124 @@
+[00:00:00.000 --> 00:00:07.000]   This is a Libra Box recording. All Libra Box recordings are in the public domain.
+[00:00:07.000 --> 00:00:11.600]   For more information at volunteer, please visit librocks.org.
+[00:00:11.600 --> 00:00:20.000]   Benjamin Franklin, lead it to the editor, journal, dipelli, April 26, 1784.
+[00:00:20.000 --> 00:00:26.000]   Read by ML Cohen, Cleveland, Ohio, March 2007.
+[00:00:26.000 --> 00:00:32.000]   Monsieur, you often entertain us with accounts of new discoveries.
+[00:00:32.000 --> 00:00:38.000]   Permit me to communicate to the public through your paper, one that has lately been made by myself,
+[00:00:38.000 --> 00:00:42.000]   and which I conceived may be of great utility.
+[00:00:42.000 --> 00:00:45.000]   I was the other evening in a grand company,
+[00:00:45.000 --> 00:00:51.000]   where the new lamp a messier's concave and laying was introduced in much admire for its splendor.
+[00:00:51.000 --> 00:00:57.000]   But a generous inquiry was made, whether the oil it consumed was not in proportion to the light it afforded,
+[00:00:57.000 --> 00:01:02.000]   in which case there would be no saving in the use of it.
+[00:01:02.000 --> 00:01:06.000]   No one present can satisfy us in that point, which all agreed ought to be known,
+[00:01:06.000 --> 00:01:11.000]   it being a very desirable thing to lessen, if possible, the expense of lighting our apartments,
+[00:01:11.000 --> 00:01:17.000]   when every other article of family expense was so much augmented.
+[00:01:17.000 --> 00:01:20.000]   I was pleased to see this general concern for the economy,
+[00:01:20.000 --> 00:01:24.000]   for I loved the economy exceedingly.
+[00:01:24.000 --> 00:01:31.000]   I went home, and to bed, three or four hours after midnight, with my head full of the subject.
+[00:01:31.000 --> 00:01:35.000]   An accidental sudden noise wake me about six in the morning,
+[00:01:35.000 --> 00:01:38.000]   when I was surprised to find my room filled with light,
+[00:01:38.000 --> 00:01:43.000]   and I imagined at first that a number of those lamps had been brought into it,
+[00:01:43.000 --> 00:01:48.000]   but rubbing my eyes, I perceived the light came in at the windows.
+[00:01:48.000 --> 00:01:51.000]   I got up and looked out to see what might be the occasion of it.
+[00:01:51.000 --> 00:01:54.000]   When I saw the sun just rising above the horizon,
+[00:01:54.000 --> 00:01:57.000]   from whence he poured his rays plentiful into my chamber,
+[00:01:57.000 --> 00:02:05.000]   my domestic having negligently omitted the preceding evening to close the shutters.
+[00:02:05.000 --> 00:02:10.000]   I looked at my watch which goes very well, and found that it was but six o'clock,
+[00:02:10.000 --> 00:02:15.000]   and still thinking it's something extraordinary that the sun should rise so early.
+[00:02:15.000 --> 00:02:21.000]   I looked into the almanac, where I found it to be the hour given for his rising on that day.
+[00:02:21.000 --> 00:02:27.000]   I looked forward to, and found he was to rise still earlier every day till towards the end of June,
+[00:02:27.000 --> 00:02:33.000]   and that at no time in the year he retarded his rising so long as till eight o'clock.
+[00:02:33.000 --> 00:02:38.000]   Your readers, who with me have never seen any signs of sunshine before noon,
+[00:02:38.000 --> 00:02:41.000]   and seldom regard the astronomical part of the almanac,
+[00:02:41.000 --> 00:02:46.000]   will be as much astonished as I was when the hear of his rising so early,
+[00:02:46.000 --> 00:02:51.000]   and especially when I assure them that he gives light as soon as he rises.
+[00:02:51.000 --> 00:02:53.000]   I am convinced of this.
+[00:02:53.000 --> 00:02:55.000]   I am certain of my fact.
+[00:02:55.000 --> 00:03:00.000]   One cannot be more certain of any fact, I saw it with my own eyes.
+[00:03:00.000 --> 00:03:03.000]   And having repeated this observation the three following mornings,
+[00:03:03.000 --> 00:03:08.000]   I found always precisely the same result.
+[00:03:08.000 --> 00:03:13.000]   Yet it so happens that when I speak of this discovery to others,
+[00:03:13.000 --> 00:03:18.000]   I can easily perceive by their countenances, though they forbear expressing it in words,
+[00:03:18.000 --> 00:03:21.000]   that they do not quite believe me.
+[00:03:21.000 --> 00:03:24.000]   One indeed, who was a learned natural philosopher,
+[00:03:24.000 --> 00:03:30.000]   has assured me that I must certainly be mistaken as the circumstance of light coming into my room.
+[00:03:30.000 --> 00:03:34.000]   For it being well known, as he says, that there could be no light abroad at that hour,
+[00:03:34.000 --> 00:03:39.000]   it follows that none could enter from without, and that, of consequence,
+[00:03:39.000 --> 00:03:43.000]   my windows being accidentally left open, instead of letting in the light,
+[00:03:43.000 --> 00:03:46.000]   had only served to let out the darkness.
+[00:03:46.000 --> 00:03:53.000]   And he used many ingenious arguments to show me how I might, by that means, have been deceived.
+[00:03:53.000 --> 00:03:57.000]   I own that he puzzled me a little, but he did not satisfy me,
+[00:03:57.000 --> 00:04:01.000]   and the subsequent observations I made, as above mentioned,
+[00:04:01.000 --> 00:04:05.000]   confirmed me in my first opinion.
+[00:04:05.000 --> 00:04:10.000]   This event has given rise in my mind to several serious and important reflections.
+[00:04:10.000 --> 00:04:14.000]   I considered that, if I had not been awakened so early in the morning,
+[00:04:14.000 --> 00:04:17.000]   I should have slept six hours longer by the light of the sun,
+[00:04:17.000 --> 00:04:22.000]   and in exchange have lived six hours the following night by candlelight.
+[00:04:22.000 --> 00:04:26.000]   And, the latter being a much more expensive light than the former,
+[00:04:26.000 --> 00:04:30.000]   my love of economy induced me to muster up what little hourth my tikka was master of,
+[00:04:30.000 --> 00:04:33.000]   and to make some calculations, which I shall give you,
+[00:04:33.000 --> 00:04:38.000]   after observing that utility is, in my opinion, the test of value in matters of invention,
+[00:04:38.000 --> 00:04:45.000]   and that a discovery which can be applied to no use, or is not good for something, is good for nothing.
+[00:04:45.000 --> 00:04:52.000]   I took for the basis of my calculation the supposition that there are 100,000 families in Paris,
+[00:04:52.000 --> 00:04:58.000]   and that these families consume in the night half a pound of buoys or candles per hour.
+[00:04:58.000 --> 00:05:02.000]   I think this is a moderate allowance, taking one filming with another,
+[00:05:02.000 --> 00:05:07.000]   for though I believe some consume less, I know that many consume a great deal more.
+[00:05:07.000 --> 00:05:11.000]   Then estimating seven hours per day as the medium quantity,
+[00:05:11.000 --> 00:05:14.000]   between the time of the sun's rising in hours,
+[00:05:14.000 --> 00:05:18.000]   he rising during the six following months from six to eight hours before noon,
+[00:05:18.000 --> 00:05:22.000]   and there being seven hours of course per night in which we burn candles,
+[00:05:22.000 --> 00:05:25.000]   the account will stand thus.
+[00:05:25.000 --> 00:05:30.000]   In the six months between the 20th of March and the 20th of September,
+[00:05:30.000 --> 00:05:39.000]   there are nights, 183, hours of each night in which we burn candles, seven.
+[00:05:39.000 --> 00:05:45.000]   Multiplication gives for the total number of hours, 1,281.
+[00:05:45.000 --> 00:05:56.000]   These 1,281 hours, multiplied by 100,000, the number of inhabitants, gives 128 million, 100,000.
+[00:05:56.000 --> 00:06:02.000]   128 million and 100,000 hours, spent at Paris by candlelight, which,
+[00:06:02.000 --> 00:06:10.000]   at half a pound of wax and tallop per hour, gives the weight of 64 million, 50,000.
+[00:06:10.000 --> 00:06:18.000]   64 million's and 50,000 of pounds, which, as debating the hole at the median price of 30 saws the pound,
+[00:06:18.000 --> 00:06:24.000]   makes the sum of 96 million's and 75,000 levers tornua.
+[00:06:24.000 --> 00:06:30.000]   colon 96 million, 75,000, and immense sum,
+[00:06:30.000 --> 00:06:37.000]   that the city of Paris might save each year by the economy of using sunshine instead of candles.
+[00:06:37.000 --> 00:06:42.000]   If it should be said that people are apt to be obstinately attached to old customs,
+[00:06:42.000 --> 00:06:48.000]   and that it will be difficult to induce them the rise before noon, consequently my discovery can be of little use.
+[00:06:48.000 --> 00:06:52.000]   I answer nil-disparatum.
+[00:06:52.000 --> 00:06:58.000]   I believe all who have common sense, as soon as they have learned from this paper that it is daylight when the sun rises,
+[00:06:58.000 --> 00:07:04.000]   will contrive to rise with him, and to compel the rest I would propose the following regulations.
+[00:07:04.000 --> 00:07:12.000]   First, let attacks be laid of a Lewis per window on every window that is provided with shutters to keep out the light of the sun.
+[00:07:12.000 --> 00:07:19.000]   Second, let the same solitary operation of police be made use of to prevent our burning candles,
+[00:07:19.000 --> 00:07:23.000]   then climb this last winter to be more economical in burning wood.
+[00:07:23.000 --> 00:07:28.000]   That is, let guards be placed in the shops of the wax and tallow chandelers,
+[00:07:28.000 --> 00:07:33.000]   and no family be permitted to be supplied with more than one pound of candles per week.
+[00:07:33.000 --> 00:07:41.000]   Third, let guards also be posted to stop all the coaches etc. that would pass the streets after sunset,
+[00:07:41.000 --> 00:07:45.000]   except those of physicians, surgeons, and midwives.
+[00:07:45.000 --> 00:07:52.000]   Fourth, every morning, as soon as the sun rises, let all the bells in every church be set ringing,
+[00:07:52.000 --> 00:07:58.000]   and if that is not sufficient, let it cannon be fired in every street to wait the sluggards effectively,
+[00:07:58.000 --> 00:08:01.000]   and to make them open their eyes to see their true interest.
+[00:08:03.000 --> 00:08:06.000]   All the difficulty will be in the first two or three days,
+[00:08:06.000 --> 00:08:11.000]   after which the reformation will be as natural and as easy as the present irregularity,
+[00:08:11.000 --> 00:08:14.000]   for Senescole Premua Pacakut,
+[00:08:14.000 --> 00:08:18.000]   oblige a man to rise at four in the morning, and it is more than probable,
+[00:08:18.000 --> 00:08:21.000]   he will go willingly to bed at eight in the evening.
+[00:08:21.000 --> 00:08:28.000]   And, having had eight hours of sleep, he will rise more willingly at four in the morning following.
+[00:08:28.000 --> 00:08:36.000]   But this sum of 96 million's and 75,000 leavers is not the whole of what may be saved by my economical project.
+[00:08:36.000 --> 00:08:40.000]   You may observe that I have calculated upon only one half of the year,
+[00:08:40.000 --> 00:08:45.000]   and much may be saved in the other, though the days are shorter.
+[00:08:45.000 --> 00:08:53.000]   Besides, the immense stock of wax and towel left unconsumed during the summer will probably make candles much cheaper for the ensuing winter,
+[00:08:53.000 --> 00:08:57.000]   and continue them cheaper as long as the proposed reformation shall be supported.
+[00:08:57.000 --> 00:09:02.000]   For the great benefit of this discovery, thus freely communicated and bestowed by me on the public,
+[00:09:02.000 --> 00:09:08.000]   I demand neither place, pension, exclusive privilege, nor any reward whatever.
+[00:09:08.000 --> 00:09:11.000]   I expect only to have the honor of it.
+[00:09:11.000 --> 00:09:16.000]   And yet I know there are little envious minds who will, as usual, deny me this and say,
+[00:09:16.000 --> 00:09:23.000]   that my invention was known to the ancients, and perhaps they may bring passages out of the old books and proof of it.
+[00:09:23.000 --> 00:09:30.000]   I will not dispute with these people that the ancients knew not to some would rise at certain hours.
+[00:09:30.000 --> 00:09:34.000]   They possibly had, as we have, almanac that predicted it.
+[00:09:34.000 --> 00:09:39.000]   But it does not follow thence that they knew he gave light as soon as he rose.
+[00:09:39.000 --> 00:09:42.000]   This is what I claim is my discovery.
+[00:09:42.000 --> 00:09:46.000]   If the ancients knew it, it might have been long since forgotten.
+[00:09:46.000 --> 00:09:50.000]   For it certainly was unknown to the moderns, at least to the Parisians,
+[00:09:50.000 --> 00:09:55.000]   which to prove I need but one plain simple argument.
+[00:09:55.000 --> 00:10:03.000]   They are as well instructed, judicious, and prudent of people as exist anywhere in the world, all professing, like myself, to be lovers of economy.
+[00:10:03.000 --> 00:10:11.000]   And, from the many heavy taxes required from them by the necessities of the state, have surely an abundant reason to be economical.
+[00:10:11.000 --> 00:10:23.000]   I say it is impossible that so sensible of people, under such circumstances, should have lived so long by the smoky, unwholesome, and enormously expensive light of candles,
+[00:10:23.000 --> 00:10:29.000]   if they had really known that they might have had as much pure light of the sun for nothing.
+[00:10:29.000 --> 00:10:41.000]   I am, etc., a subscriber, signed Benjamin Franklin, and of article.
+[00:10:41.000 --> 00:10:45.000]   This recording is in the public domain.

@@ -39,7 +39,6 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import io.github.vinnih.androidtranscoder.utils.toWavReader
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
 import io.github.vinnih.kipty.ui.home.HomeController
@@ -92,7 +91,7 @@ fun CreateScreen(
             audio = audio.copy(description = it)
             scope.launch {
                 homeController.createAudio(
-                    audio.file!!.toWavReader(context.cacheDir),
+                    audio.file!!,
                     audio.name?.ifEmpty { null },
                     audio.description
                 )

@@ -11,6 +11,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -66,8 +67,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             var currentTopbar: (@Composable () -> Unit)? by remember { mutableStateOf(null) }
             val backstack = remember { mutableStateListOf<Any>(Loading) }
-            val scaffoldState = rememberBottomSheetScaffoldState()
             val scope = rememberCoroutineScope()
+            val scaffoldState = rememberBottomSheetScaffoldState(
+                bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
+            )
 
             this.EnableEdgeToEdge()
 

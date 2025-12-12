@@ -117,9 +117,20 @@ class MainActivity : ComponentActivity() {
                         entryProvider = { key ->
                             when (key) {
                                 is Home -> NavEntry(key) {
-                                    HomeScreen(controller = homeViewModel, onClick = {
-                                        backstack.add(Audio(it.uid))
-                                    }, onTopBarChange = { topbar -> currentTopbar = topbar })
+                                    HomeScreen(
+                                        controller = homeViewModel,
+                                        onClick = {
+                                            backstack.add(Audio(it.uid))
+                                        },
+                                        onNotificationClick = {},
+                                        onCreateClick = {
+                                            backstack.add(Create)
+                                        },
+                                        onTopBarChange = { topbar ->
+                                            currentTopbar =
+                                                topbar
+                                        }
+                                    )
                                 }
 
                                 is Audio -> NavEntry(key) {

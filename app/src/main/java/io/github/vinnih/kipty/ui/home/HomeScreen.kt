@@ -32,10 +32,11 @@ fun HomeScreen(
     val audioState = controller.value.collectAsState()
 
     LaunchedEffect(Unit) {
-        onTopBarChange {
-            KiptyTopBar("Home")
-        }
         controller.updateAudioFiles()
+    }
+
+    onTopBarChange {
+        KiptyTopBar("Home")
     }
 
     Column(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {

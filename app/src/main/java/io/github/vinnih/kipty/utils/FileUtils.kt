@@ -1,7 +1,6 @@
 package io.github.vinnih.kipty.utils
 
 import android.content.Context
-import android.net.Uri
 import io.github.nailik.androidresampler.Resampler
 import io.github.nailik.androidresampler.ResamplerConfiguration
 import io.github.nailik.androidresampler.data.ResamplerChannel
@@ -12,13 +11,20 @@ import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-fun Uri.copyFile(context: Context): File {
-    val inputStream = context.contentResolver.openInputStream(this)!!
-    val file = File(context.filesDir, "")
-    inputStream.use { input ->
-        file.outputStream().use { output -> input.copyTo(output) }
+fun File.createFile(): File {
+    if (!this.exists()) {
+        this.createNewFile()
     }
-    return file
+
+    return this
+}
+
+fun File.createFolder(): File {
+    if (!this.exists()) {
+        this.mkdirs()
+    }
+
+    return this
 }
 
 fun resample(channels: Int, inSampleRate: Int, outSampleRate: Int, pcmData: ByteArray): ByteArray {

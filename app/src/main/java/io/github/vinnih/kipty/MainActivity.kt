@@ -122,6 +122,7 @@ class MainActivity : ComponentActivity() {
                                 is Loading -> NavEntry(key) {
                                     LoadingScreen(
                                         homeController = homeViewModel,
+                                        audioController = audioViewModel,
                                         text = "Loading...",
                                         onLoad = {
                                             backstack.remove(Loading)

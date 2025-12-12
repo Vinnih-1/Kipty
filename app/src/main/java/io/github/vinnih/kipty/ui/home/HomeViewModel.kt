@@ -4,11 +4,10 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.vinnih.androidtranscoder.extractor.WavReader
-import io.github.vinnih.kipty.data.application.AppConfig
-import io.github.vinnih.kipty.data.application.ApplicationData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.AudioRepository
+import io.github.vinnih.kipty.utils.createFile
+import io.github.vinnih.kipty.utils.createFolder
 import jakarta.inject.Inject
 import java.io.File
 import java.time.LocalDateTime
@@ -21,46 +20,41 @@ import kotlinx.coroutines.withContext
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     @ApplicationContext val context: Context,
-    private val config: AppConfig,
     private val repository: AudioRepository
 ) : ViewModel(),
     HomeController {
     private var _value = MutableStateFlow<List<AudioEntity>>(emptyList())
     override val value = _value.asStateFlow()
 
-    private val modelsPath = File(context.filesDir, "models")
-    private val samplesPath = File(context.filesDir, "samples")
-    private val transcriptionsPath = File(context.filesDir, "transcriptions")
+    private val modelsPath = File(context.filesDir, "models").createFolder()
+    private val samplesPath = File(context.filesDir, "samples").createFolder()
+    private val transcriptionsPath = File(context.filesDir, "transcriptions").createFolder()
 
-    override suspend fun createAudio(
-        reader: WavReader,
-        name: String?,
-        description: String?
-    ): AudioEntity = withContext(Dispatchers.IO) {
-        if (!transcriptionsPath.exists()) {
-            transcriptionsPath.mkdirs()
-        }
+    override suspend fun createAudio(file: File, name: String?, description: String?): AudioEntity =
+        withContext(Dispatchers.IO) {
+            val path = File(transcriptionsPath, file.nameWithoutExtension).createFolder()
 
-        val path = File(transcriptionsPath, reader.data.nameWithoutExtension).also {
-            it.mkdirs()
-        }
-        reader.data.inputStream().use { inputStream ->
-            File(path, "audio.wav").also {
-                it.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
+            file.inputStream().use { inputStream ->
+                File(path, "audio.mp3").also {
+                    it.outputStream().use { outputStream ->
+                        inputStream.copyTo(outputStream)
+                    }
                 }
             }
-        }
-        val entity = AudioEntity(
-            name = name ?: reader.data.nameWithoutExtension,
-            description = description ?: "",
-            path = path.canonicalPath,
-            createdAt = LocalDateTime.now().toString(),
-            duration = reader.duration
-        )
-        repository.save(entity)
 
-        return@withContext entity
+            val entity = AudioEntity(
+                name = name ?: file.nameWithoutExtension,
+                description = description,
+                path = path.canonicalPath,
+                createdAt = LocalDateTime.now().toString(),
+                duration = 0L
+            )
+
+            return@withContext entity.copy(uid = saveAudio(entity).toInt())
+        }
+
+    override suspend fun saveAudio(audioEntity: AudioEntity): Long = withContext(Dispatchers.IO) {
+        return@withContext repository.save(audioEntity)
     }
 
     override suspend fun updateAudioFiles(): Unit = withContext(Dispatchers.IO) {
@@ -69,29 +63,34 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    override suspend fun copyAssets(): List<File> = withContext(Dispatchers.IO) {
-        val model = context.assets.list("models/")?.firstOrNull()
-        val samples = ArrayList<File>()
+    override suspend fun copyModel(): File = withContext(Dispatchers.IO) {
+        val model = context.assets.list("models/")?.firstOrNull()!!
 
-        if (model != null) {
-            modelsPath.mkdirs()
-            samplesPath.mkdirs()
-            config.write(ApplicationData(model, true))
-            context.assets.open("models/$model").use { inputStream ->
-                File(modelsPath, model).outputStream().use { outputStream ->
+        context.assets.open("models/$model").use { inputStream ->
+            File(modelsPath, model).outputStream().use { outputStream ->
+                inputStream.copyTo(outputStream)
+            }
+        }
+
+        return@withContext File(modelsPath, model)
+    }
+
+    override suspend fun copySamples(): List<Pair<File, File>> = withContext(Dispatchers.IO) {
+        context.assets.list("samples/")!!.map { sample ->
+            val audio = File(samplesPath, "$sample.mp3").createFile()
+            val transcription = File(samplesPath, "$sample.txt").createFile()
+
+            context.assets.open("samples/$sample/$sample.mp3").use { inputStream ->
+                audio.outputStream().use { outputStream ->
                     inputStream.copyTo(outputStream)
                 }
             }
-            context.assets.list("samples/")?.forEach { sample ->
-                val file = File(context.filesDir, "samples/$sample")
-                context.assets.open("samples/$sample").use { inputStream ->
-                    file.outputStream().use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
+            context.assets.open("samples/$sample/transcription.txt").use { inputStream ->
+                transcription.outputStream().use { outputStream ->
+                    inputStream.copyTo(outputStream)
                 }
-                samples.add(file)
             }
+            Pair(audio, transcription)
         }
-        return@withContext samples
     }
 }

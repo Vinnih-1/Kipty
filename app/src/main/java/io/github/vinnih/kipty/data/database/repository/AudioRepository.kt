@@ -8,7 +8,7 @@ interface AudioRepository {
 
     suspend fun getById(id: Int): AudioEntity?
 
-    suspend fun save(audio: AudioEntity)
+    suspend fun save(audio: AudioEntity): Long
 
     suspend fun delete(audio: AudioEntity)
 }

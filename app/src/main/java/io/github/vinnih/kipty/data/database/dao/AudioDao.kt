@@ -17,7 +17,7 @@ interface AudioDao {
     suspend fun getById(id: Int): AudioEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun save(audio: AudioEntity)
+    suspend fun save(audio: AudioEntity): Long
 
     @Delete
     suspend fun delete(audio: AudioEntity)

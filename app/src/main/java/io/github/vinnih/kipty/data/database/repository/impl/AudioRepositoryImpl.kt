@@ -17,10 +17,8 @@ class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : Audio
         return@withContext dao.getById(id)
     }
 
-    override suspend fun save(audio: AudioEntity) {
-        withContext(Dispatchers.IO) {
-            dao.save(audio)
-        }
+    override suspend fun save(audio: AudioEntity): Long = withContext(Dispatchers.IO) {
+        return@withContext dao.save(audio)
     }
 
     override suspend fun delete(audio: AudioEntity) {

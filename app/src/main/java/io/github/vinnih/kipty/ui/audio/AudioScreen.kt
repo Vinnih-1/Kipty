@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
@@ -72,7 +71,7 @@ fun AudioScreen(
 
     onTopBarChange {
         Box(
-            modifier = Modifier.fillMaxWidth().animateContentSize().clip(
+            modifier = modifier.fillMaxWidth().animateContentSize().clip(
                 shape = RoundedCornerShape(
                     bottomStart = 24.dp,
                     bottomEnd = 24.dp
@@ -85,7 +84,7 @@ fun AudioScreen(
                 )
             )
         ) {
-            AudioScreenTopBar(onBack = onBack, modifier = modifier.align(Alignment.TopCenter))
+            AudioScreenTopBar(onBack = onBack, modifier = Modifier.align(Alignment.TopCenter))
             if (expanded) {
                 Text(
                     text = audioEntity!!.name,
@@ -113,11 +112,11 @@ fun AudioScreen(
                         audioEntity =
                             it
                     })
-                }, enabled = !isTranscribing.value, modifier = modifier)
+                }, enabled = !isTranscribing.value, modifier = Modifier)
             } else {
                 PlayPauseButton(onClick = {
                     playerController.playAudio(audioEntity!!)
-                }, modifier = modifier)
+                }, modifier = Modifier)
             }
         }
     }

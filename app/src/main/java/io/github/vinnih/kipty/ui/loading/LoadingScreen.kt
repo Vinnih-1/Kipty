@@ -20,6 +20,7 @@ import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
 import io.github.vinnih.kipty.ui.home.HomeController
+import io.github.vinnih.kipty.utils.convertTranscription
 
 @Composable
 fun LoadingScreen(
@@ -36,13 +37,9 @@ fun LoadingScreen(
 
     LaunchedEffect(Unit) {
         if (!AppConfig(context).read().defaultSamplesLoaded) {
-            val model = homeController.copyModel()
-
             homeController.copySamples().forEach { (audio, transcription) ->
                 val audioEntity = homeController.createAudio(file = audio)
-                val transcriptionData = audioController.convertTranscription(
-                    transcription.readText()
-                )
+                val transcriptionData = transcription.readText().convertTranscription()
 
                 audioController.saveTranscription(
                     audioEntity.copy(transcription = transcriptionData)
@@ -51,7 +48,7 @@ fun LoadingScreen(
                     transcription.delete()
                 }
             }
-            AppConfig(context).write(ApplicationData(model.nameWithoutExtension, true))
+            AppConfig(context).write(ApplicationData("", true))
         }
         onLoad.invoke()
     }

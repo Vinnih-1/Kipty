@@ -1,5 +1,7 @@
 package io.github.vinnih.kipty.utils
 
+import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+
 private enum class Timestamp(val multiplier: Long) {
     HOUR(1000 * 60 * 60),
     MINUTE(1000 * 60),
@@ -74,3 +76,11 @@ fun Long.timestamp(): String {
         append("]")
     }
 }
+
+fun String.convertTranscription(): List<AudioTranscription> =
+    this.trimIndent().split("\n").map { line ->
+        val timestamp = line.take(31).timestamp()
+        val text = line.drop(31)
+
+        AudioTranscription(timestamp.first, timestamp.second, text)
+    }.toList()

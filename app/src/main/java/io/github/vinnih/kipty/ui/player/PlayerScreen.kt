@@ -3,6 +3,7 @@ package io.github.vinnih.kipty.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -80,10 +81,10 @@ fun PlayerScreen(
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        LinearProgressIndicator(progress = {
-            songPosition
-        }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
         AnimatedVisibility(visible) {
+            LinearProgressIndicator(progress = {
+                songPosition
+            }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -92,7 +93,8 @@ fun PlayerScreen(
                         scope.launch { scaffoldState.bottomSheetState.expand() }
                     }
                     .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = currentAudio.value?.name ?: "Nothing playing",

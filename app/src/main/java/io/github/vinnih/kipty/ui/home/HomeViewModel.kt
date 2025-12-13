@@ -26,7 +26,6 @@ class HomeViewModel @Inject constructor(
     private var _value = MutableStateFlow<List<AudioEntity>>(emptyList())
     override val value = _value.asStateFlow()
 
-    private val modelsPath = File(context.filesDir, "models").createFolder()
     private val samplesPath = File(context.filesDir, "samples").createFolder()
     private val transcriptionsPath = File(context.filesDir, "transcriptions").createFolder()
 
@@ -43,7 +42,7 @@ class HomeViewModel @Inject constructor(
             }
 
             val entity = AudioEntity(
-                name = name ?: file.nameWithoutExtension,
+                name = if (name.isNullOrEmpty()) file.nameWithoutExtension else name,
                 description = description,
                 path = path.canonicalPath,
                 createdAt = LocalDateTime.now().toString(),
@@ -61,18 +60,6 @@ class HomeViewModel @Inject constructor(
         _value.update {
             repository.getAll()
         }
-    }
-
-    override suspend fun copyModel(): File = withContext(Dispatchers.IO) {
-        val model = context.assets.list("models/")?.firstOrNull()!!
-
-        context.assets.open("models/$model").use { inputStream ->
-            File(modelsPath, model).outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
-        }
-
-        return@withContext File(modelsPath, model)
     }
 
     override suspend fun copySamples(): List<Pair<File, File>> = withContext(Dispatchers.IO) {

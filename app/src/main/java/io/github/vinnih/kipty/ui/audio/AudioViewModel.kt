@@ -34,7 +34,6 @@ class AudioViewModel @Inject constructor(
             .setInputData(Data.Builder().putInt("AUDIO_ID", audioEntity.uid).build())
             .build()
 
-        println(request.id)
         WorkManager.getInstance(context).enqueue(request)
     }
 

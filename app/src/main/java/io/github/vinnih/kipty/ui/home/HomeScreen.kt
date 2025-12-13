@@ -96,7 +96,7 @@ private fun HomeTopBar(
             }
         },
         modifier = modifier,
-        expandedHeight = 78.dp
+        expandedHeight = 90.dp
     )
 }
 

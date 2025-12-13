@@ -35,10 +35,6 @@ class FakeHomeViewModel : HomeController {
         TODO("Not yet implemented")
     }
 
-    override suspend fun copyModel(): File {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun copySamples(): List<Pair<File, File>> {
         TODO("Not yet implemented")
     }

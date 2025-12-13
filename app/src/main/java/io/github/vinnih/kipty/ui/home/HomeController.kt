@@ -17,7 +17,5 @@ interface HomeController {
 
     suspend fun updateAudioFiles()
 
-    suspend fun copyModel(): File
-
     suspend fun copySamples(): List<Pair<File, File>>
 }

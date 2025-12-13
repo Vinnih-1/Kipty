@@ -9,6 +9,7 @@ composeBom = "2025.11.01"
 fonts = "1.9.5"
 ksp = "2.3.3"
 hilt = "2.57.2"
+hiltWorker = "1.3.0"
 hiltNavigationCompose = "1.3.0"
 media3 = "1.8.0"
 vosk = "0.3.70"
@@ -21,6 +22,7 @@ resampler = "0.3"
 room = "2.8.4"
 nav3Core = "1.0.0"
 lottie = "6.6.6"
+worker = "2.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -33,6 +35,8 @@ androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "u
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-hilt-worker = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWorker" }
+androidx-hilt-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltWorker" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "nav3Core" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "nav3Core" }
 google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "fonts" }
@@ -47,6 +51,7 @@ android-resampler = { group = "io.github.nailik", name = "androidresampler", ver
 ktlint-compose = { group = "io.nlopez.compose.rules", name = "ktlint", version.ref = "ktlint-compose" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "json" }
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
+worker-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "worker" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

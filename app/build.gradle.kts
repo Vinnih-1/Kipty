@@ -61,6 +61,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.hilt.worker)
     implementation(libs.google.fonts)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
@@ -69,7 +70,9 @@ dependencies {
     implementation(libs.vosk.api)
     implementation(libs.serialization.json)
     implementation(libs.lottie.compose)
+    implementation(libs.worker.runtime.ktx)
 
+    ksp(libs.androidx.hilt.compiler)
     ksp(libs.androidx.compiler)
     ksp(libs.hilt.compiler)
 

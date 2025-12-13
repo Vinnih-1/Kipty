@@ -6,22 +6,27 @@ import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +36,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.LottieComposition
@@ -40,6 +47,7 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.theme.AppTheme
@@ -62,6 +70,7 @@ private data class AudioCreator(
 @Composable
 fun CreateScreen(
     homeController: HomeController,
+    audioController: AudioController,
     onBack: () -> Unit,
     onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
@@ -69,11 +78,11 @@ fun CreateScreen(
     var audio by remember { mutableStateOf(AudioCreator()) }
     var stage by remember { mutableStateOf(Stage.FILE) }
     val scope = rememberCoroutineScope()
-    val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        onTopBarChange {
-        }
+    onTopBarChange {
+        CreateScreenTopBar(currentStage = stage, onBack = {
+            stage = Stage.entries.get(stage.ordinal - 1)
+        }, onClose = onBack)
     }
 
     when (stage) {
@@ -91,14 +100,58 @@ fun CreateScreen(
             audio = audio.copy(description = it)
             scope.launch {
                 homeController.createAudio(
-                    audio.file!!,
-                    audio.name?.ifEmpty { null },
-                    audio.description
+                    file = audio.file!!,
+                    name = audio.name,
+                    description = audio.description
                 )
                 onBack.invoke()
             }
         })
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CreateScreenTopBar(
+    currentStage: Stage,
+    onBack: () -> Unit,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    var progress by remember { mutableFloatStateOf(0f) }
+
+    progress = currentStage.ordinal.toFloat() / Stage.entries.size
+
+    CenterAlignedTopAppBar(
+        title = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "${currentStage.ordinal} of ${Stage.entries.size}",
+                    style = typography.bodySmall,
+                    color = colors.secondary
+                )
+                LinearProgressIndicator(progress = {
+                    progress
+                }, drawStopIndicator = {}, gapSize = 0.dp)
+            }
+        },
+        navigationIcon = {
+            IconButton(onClick = if (currentStage != Stage.FILE) onBack else onClose) {
+                Icon(
+                    painter = painterResource(R.drawable.arrow_back),
+                    contentDescription = "Arrow back button",
+                    modifier = Modifier.size(38.dp).padding(top = 4.dp)
+                )
+            }
+        },
+        expandedHeight = 90.dp,
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -116,22 +169,19 @@ private fun BasicCreateScreen(
         speed = 1.0f
     )
 
-    Box(
-        modifier = modifier.fillMaxSize().padding(
-            start = 48.dp,
-            end = 48.dp,
-            top = 100.dp,
-            bottom = 100.dp
-        )
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceAround,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(modifier = Modifier.align(Alignment.TopCenter)) {
+        Column(modifier = Modifier.height(200.dp).padding(bottom = 24.dp)) {
             LottieAnimation(
                 composition = composition,
                 progress = { progress },
-                modifier = Modifier.size(200.dp)
+                modifier = Modifier
             )
         }
-        Box(modifier = Modifier.align(Alignment.Center)) {
+        Column(modifier = Modifier.fillMaxSize().weight(.1f)) {
             content.invoke()
         }
         CreateAudioButton(
@@ -144,7 +194,9 @@ private fun BasicCreateScreen(
             },
             enabled = enabled,
             onClick = onNext,
-            modifier = Modifier.fillMaxWidth().height(50.dp).align(Alignment.BottomCenter)
+            modifier = Modifier.fillMaxWidth().height(
+                64.dp
+            ).padding(horizontal = 24.dp)
         )
     }
 }
@@ -152,6 +204,7 @@ private fun BasicCreateScreen(
 @Composable
 private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animations/speaker-icon.json")
     )
@@ -197,20 +250,36 @@ private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modi
         }
 
     BasicCreateScreen(composition = composition, enabled = selectedFile != null, content = {
-        OutlinedIconButton(
-            border = BorderStroke(0.dp, Color.Transparent),
-            shape = RoundedCornerShape(16.dp),
-            onClick = { audioPickerLauncher.launch(intent) },
-            modifier = Modifier.fillMaxWidth().height(128.dp).dashedBorder(
-                color = colors.primary
-            )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(48.dp)
         ) {
-            Icon(
-                painter = painterResource(R.drawable.audio_file),
-                contentDescription = "Audio file icon",
-                tint = colors.primary,
-                modifier = Modifier.size(72.dp)
+            Text(
+                text = selectedFile?.name ?: "Select a file",
+                style = typography.displayMedium,
+                color = colors.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
             )
+            OutlinedIconButton(
+                border = BorderStroke(0.dp, Color.Transparent),
+                shape = RoundedCornerShape(16.dp),
+                onClick = { audioPickerLauncher.launch(intent) },
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = 24.dp
+                ).height(128.dp).dashedBorder(
+                    color = colors.primary
+                )
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.audio_file),
+                    contentDescription = "Audio file icon",
+                    tint = colors.primary,
+                    modifier = Modifier.size(72.dp)
+                )
+            }
         }
     }, onNext = {
         if (selectedFile != null) onComplete(selectedFile!!)
@@ -219,6 +288,8 @@ private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modi
 
 @Composable
 private fun AudioNameStage(onComplete: (String) -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
     var name by remember { mutableStateOf("") }
     val composition by rememberLottieComposition(
         LottieCompositionSpec.Asset("animations/creative-idea.json")
@@ -227,46 +298,72 @@ private fun AudioNameStage(onComplete: (String) -> Unit, modifier: Modifier = Mo
     BasicCreateScreen(onNext = {
         onComplete(name)
     }, Stage.NAME, modifier = modifier, composition = composition) {
-        TextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("My audio example") },
-            supportingText = { Text("Audio name") },
-            singleLine = true,
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.audio_file),
-                    contentDescription = "Audio file icon",
-                    modifier = Modifier.size(38.dp)
-                )
-            }
-        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(48.dp)
+        ) {
+            Text(text = "Audio name", style = typography.displayMedium, color = colors.primary)
+            TextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("My audio example") },
+                supportingText = { Text("Audio name") },
+                singleLine = true,
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.audio_file),
+                        contentDescription = "Audio file icon",
+                        modifier = Modifier.size(38.dp)
+                    )
+                }
+            )
+        }
     }
 }
 
 @Composable
 private fun AudioDescriptionStage(onComplete: (String) -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
     var description by remember { mutableStateOf("") }
     val composition by rememberLottieComposition(
-        LottieCompositionSpec.Asset("animations/creative-idea.json")
+        LottieCompositionSpec.Asset("animations/book-loading.json")
     )
 
     BasicCreateScreen(onNext = {
         onComplete(description)
     }, Stage.DESCRIPTION, modifier = modifier, composition = composition) {
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("My audio description example") },
-            supportingText = { Text("Audio description") },
-            leadingIcon = {
-                Icon(
-                    painter = painterResource(R.drawable.description),
-                    contentDescription = "Audio description icon",
-                    modifier = Modifier.size(38.dp)
-                )
-            }
-        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(48.dp)
+        ) {
+            Text(
+                text = "Audio description",
+                style = typography.displayMedium,
+                color = colors.primary
+            )
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = {
+                    Text(
+                        text = "My audio description example",
+                        style = typography.bodyMedium,
+                        color = colors.secondary
+                    )
+                },
+                supportingText = { Text("Audio description") },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.description),
+                        contentDescription = "Audio description icon",
+                        modifier = Modifier.size(38.dp)
+                    )
+                }
+            )
+        }
     }
 }
 

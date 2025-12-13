@@ -11,7 +11,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -68,9 +67,7 @@ class MainActivity : ComponentActivity() {
             var currentTopbar: (@Composable () -> Unit)? by remember { mutableStateOf(null) }
             val backstack = remember { mutableStateListOf<Any>(Loading) }
             val scope = rememberCoroutineScope()
-            val scaffoldState = rememberBottomSheetScaffoldState(
-                bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
-            )
+            val scaffoldState = rememberBottomSheetScaffoldState()
 
             this.EnableEdgeToEdge()
 
@@ -144,9 +141,11 @@ class MainActivity : ComponentActivity() {
                                 }
 
                                 is Create -> NavEntry(key) {
-                                    CreateScreen(homeController = homeViewModel, onBack = {
+                                    CreateScreen(homeController = homeViewModel, audioController = audioViewModel, onBack = {
                                         backstack.removeLastOrNull()
-                                    }, onTopBarChange = { topbar -> currentTopbar = null })
+                                    }, onTopBarChange = { topbar ->
+                                        currentTopbar = topbar
+                                    })
                                 }
 
                                 is Loading -> NavEntry(key) {

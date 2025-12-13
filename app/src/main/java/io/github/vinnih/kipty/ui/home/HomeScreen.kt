@@ -2,13 +2,14 @@ package io.github.vinnih.kipty.ui.home
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,8 +47,8 @@ fun HomeScreen(
         HomeTopBar(onNotificationClick = onNotificationClick, onCreateClick = onCreateClick)
     }
 
-    Column(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
-        audioState.value.forEach { audioData ->
+    LazyColumn(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
+        items(audioState.value) { audioData ->
             AudioCard(audioEntity = audioData, onClick = {
                 onClick(audioData)
             }, modifier = Modifier.fillMaxWidth().height(128.dp))

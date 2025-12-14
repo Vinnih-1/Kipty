@@ -5,16 +5,13 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.repository.AudioRepository
+import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.utils.createFile
 import io.github.vinnih.kipty.utils.createFolder
 import jakarta.inject.Inject
 import java.io.File
 import java.time.LocalDateTime
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 
 @HiltViewModel
@@ -23,9 +20,6 @@ class HomeViewModel @Inject constructor(
     private val repository: AudioRepository
 ) : ViewModel(),
     HomeController {
-    private var _value = MutableStateFlow<List<AudioEntity>>(emptyList())
-    override val value = _value.asStateFlow()
-
     private val samplesPath = File(context.filesDir, "samples").createFolder()
     private val transcriptionsPath = File(context.filesDir, "transcriptions").createFolder()
 
@@ -54,12 +48,6 @@ class HomeViewModel @Inject constructor(
 
     override suspend fun saveAudio(audioEntity: AudioEntity): Long = withContext(Dispatchers.IO) {
         return@withContext repository.save(audioEntity)
-    }
-
-    override suspend fun updateAudioFiles(): Unit = withContext(Dispatchers.IO) {
-        _value.update {
-            repository.getAll()
-        }
     }
 
     override suspend fun copySamples(): List<Pair<File, File>> = withContext(Dispatchers.IO) {

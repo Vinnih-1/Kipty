@@ -36,8 +36,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.ui.components.BackButton
+import io.github.vinnih.kipty.ui.components.CancelAudioButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
 import io.github.vinnih.kipty.ui.components.TextViewer
@@ -56,16 +57,16 @@ fun AudioScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
-    val isTranscribing = audioController.isTranscribing.collectAsState()
+    val audioEntity = audioController.audioUiState.collectAsState()
     var expanded by remember { mutableStateOf(true) }
     val scroll = rememberScrollState()
+    var transcription by remember { mutableStateOf(audioEntity.value?.transcription) }
 
     LaunchedEffect(Unit) {
-        audioEntity = audioController.getById(id)
+        audioController.getCurrent(id)
     }
 
-    if (audioEntity == null) return
+    if (audioEntity.value == null) return
 
     expanded = scroll.value < 100
 
@@ -87,7 +88,7 @@ fun AudioScreen(
             AudioScreenTopBar(onBack = onBack, modifier = Modifier.align(Alignment.TopCenter))
             if (expanded) {
                 Text(
-                    text = audioEntity!!.name,
+                    text = audioEntity.value!!.name,
                     modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
                     textAlign = TextAlign.Center,
                     style = typography.displayMedium,
@@ -97,7 +98,7 @@ fun AudioScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = audioEntity!!.description ?: "",
+                    text = audioEntity.value!!.description ?: "",
                     modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
                     textAlign = TextAlign.Center,
                     style = typography.bodyLarge,
@@ -106,24 +107,36 @@ fun AudioScreen(
                     color = colors.secondary
                 )
             }
-            if (audioEntity!!.transcription.isNullOrEmpty()) {
-                TranscriptionButton(onClick = {
-                    audioController.transcribeAudio(audioEntity!!, onSuccess = {
-                        audioEntity =
-                            it
+
+            when (audioEntity.value?.state) {
+                TranscriptionState.NONE -> {
+                    TranscriptionButton(onClick = {
+                        audioController.transcribeAudio(audioEntity.value!!, onSuccess = {
+                            transcription = it
+                        })
+                    }, modifier = Modifier)
+                }
+
+                TranscriptionState.TRANSCRIBING -> {
+                    CancelButton(onClick = {
+                        audioController.cancelTranscriptionWork(audioEntity.value!!)
                     })
-                }, enabled = !isTranscribing.value, modifier = Modifier)
-            } else {
-                PlayPauseButton(onClick = {
-                    playerController.playAudio(audioEntity!!)
-                }, modifier = Modifier)
+                }
+
+                TranscriptionState.TRANSCRIBED -> {
+                    PlayPauseButton(onClick = {
+                        playerController.playAudio(audioEntity.value!!)
+                    }, modifier = Modifier)
+                }
+
+                else -> {}
             }
         }
     }
 
-    if (!audioEntity?.transcription.isNullOrEmpty()) {
-        TextViewer(transcription = audioEntity!!.transcription!!, onClick = { start, end ->
-            playerController.playSection(audioEntity!!, start, end)
+    if (!transcription.isNullOrEmpty()) {
+        TextViewer(transcription = transcription!!, onClick = { start, end ->
+            playerController.playSection(audioEntity.value!!, start, end)
         }, modifier = Modifier.verticalScroll(scroll).padding(top = if (expanded) 24.dp else 90.dp))
     }
 }
@@ -167,18 +180,27 @@ private fun BoxScope.PlayPauseButton(onClick: () -> Unit, modifier: Modifier = M
 }
 
 @Composable
-private fun BoxScope.TranscriptionButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    modifier: Modifier = Modifier
-) {
-    GenerateTranscriptionButton(
+private fun BoxScope.CancelButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    CancelAudioButton(
         onClick = onClick,
-        enabled = enabled,
         modifier = modifier.width(
             240.dp
         ).height(
-            64.dp
+            70.dp
+        ).align(
+            Alignment.BottomCenter
+        ).padding(bottom = 8.dp).shadow(elevation = 16.dp)
+    )
+}
+
+@Composable
+private fun BoxScope.TranscriptionButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    GenerateTranscriptionButton(
+        onClick = onClick,
+        modifier = modifier.width(
+            240.dp
+        ).height(
+            70.dp
         ).align(
             Alignment.BottomCenter
         ).padding(bottom = 8.dp).shadow(elevation = 16.dp)

@@ -16,6 +16,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.data.application.AppConfig
 import io.github.vinnih.kipty.data.application.ApplicationData
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
@@ -42,7 +43,10 @@ fun LoadingScreen(
                 val transcriptionData = transcription.readText().convertTranscription()
 
                 audioController.saveTranscription(
-                    audioEntity.copy(transcription = transcriptionData)
+                    audioEntity.copy(
+                        transcription = transcriptionData,
+                        state = TranscriptionState.TRANSCRIBED
+                    )
                 ).also {
                     audio.delete()
                     transcription.delete()

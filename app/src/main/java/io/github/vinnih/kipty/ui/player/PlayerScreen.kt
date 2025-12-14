@@ -69,7 +69,7 @@ fun PlayerScreen(
         while (true) {
             val offset = scaffoldState.bottomSheetState.requireOffset()
             visible = offset > 1000f
-            delay(10)
+            delay(100)
 
             if (playerController.player.isPlaying) {
                 val current = playerController.player.currentPosition.toFloat()

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeAudioViewModel : AudioController {
-    override val audioUiState: StateFlow<AudioEntity?>
+    override val allAudios: StateFlow<List<AudioEntity>>
         get() = TODO("Not yet implemented")
 
     override fun transcribeAudio(
@@ -29,11 +29,7 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getById(id: Int): AudioEntity {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getCurrent(id: Int) {
+    override fun getById(id: Int): Flow<AudioEntity?> {
         TODO("Not yet implemented")
     }
 }

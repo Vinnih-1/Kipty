@@ -6,15 +6,16 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AudioDao {
 
     @Query("SELECT * FROM audios")
-    suspend fun getAll(): List<AudioEntity>
+    fun getAll(): Flow<List<AudioEntity>>
 
     @Query("SELECT * FROM audios WHERE uid = :id")
-    suspend fun getById(id: Int): AudioEntity?
+    fun getById(id: Int): Flow<AudioEntity?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(audio: AudioEntity): Long

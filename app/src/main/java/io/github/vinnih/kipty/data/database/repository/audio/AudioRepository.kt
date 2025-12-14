@@ -1,12 +1,13 @@
-package io.github.vinnih.kipty.data.database.repository
+package io.github.vinnih.kipty.data.database.repository.audio
 
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import kotlinx.coroutines.flow.Flow
 
 interface AudioRepository {
 
-    suspend fun getAll(): List<AudioEntity>
+    fun getAll(): Flow<List<AudioEntity>>
 
-    suspend fun getById(id: Int): AudioEntity?
+    fun getById(id: Int): Flow<AudioEntity?>
 
     suspend fun save(audio: AudioEntity): Long
 

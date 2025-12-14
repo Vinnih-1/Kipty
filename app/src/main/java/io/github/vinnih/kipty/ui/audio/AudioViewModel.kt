@@ -13,17 +13,16 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
-import io.github.vinnih.kipty.data.database.repository.AudioRepository
+import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
 import io.github.vinnih.kipty.json
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 private const val TRANSCRIPTION_QUEUE = "transcription_queue"
 
@@ -34,9 +33,11 @@ class AudioViewModel @Inject constructor(
 ) : ViewModel(),
     AudioController {
     private val workManager = WorkManager.getInstance(context)
-
-    private val _audioUiState = MutableStateFlow<AudioEntity?>(null)
-    override val audioUiState: StateFlow<AudioEntity?> = _audioUiState.asStateFlow()
+    override val allAudios: StateFlow<List<AudioEntity>> = repository.getAll().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
 
     override fun transcribeAudio(
         audioEntity: AudioEntity,
@@ -86,8 +87,6 @@ class AudioViewModel @Inject constructor(
 
     private fun updateAudioState(audioEntity: AudioEntity, state: TranscriptionState) {
         val entityCopy = audioEntity.copy(state = state)
-
-        _audioUiState.value = entityCopy
         saveTranscription(entityCopy)
     }
 
@@ -102,14 +101,7 @@ class AudioViewModel @Inject constructor(
 
     override fun cancelTranscriptionWork(audioEntity: AudioEntity) {
         workManager.cancelAllWorkByTag("${audioEntity.uid}")
-        _audioUiState.value = audioEntity.copy(state = TranscriptionState.NONE)
     }
 
-    override suspend fun getById(id: Int): AudioEntity = withContext(Dispatchers.IO) {
-        return@withContext repository.getById(id)!!
-    }
-
-    override suspend fun getCurrent(id: Int) = withContext(Dispatchers.IO) {
-        _audioUiState.value = getById(id)
-    }
+    override fun getById(id: Int): Flow<AudioEntity?> = repository.getById(id)
 }

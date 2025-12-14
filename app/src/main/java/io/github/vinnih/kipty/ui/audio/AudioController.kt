@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface AudioController {
 
-    val audioUiState: StateFlow<AudioEntity?>
+    val allAudios: StateFlow<List<AudioEntity>>
 
     fun transcribeAudio(audioEntity: AudioEntity, onSuccess: (List<AudioTranscription>) -> Unit)
 
@@ -18,7 +18,5 @@ interface AudioController {
 
     fun cancelTranscriptionWork(audioEntity: AudioEntity)
 
-    suspend fun getById(id: Int): AudioEntity
-
-    suspend fun getCurrent(id: Int)
+    fun getById(id: Int): Flow<AudioEntity?>
 }

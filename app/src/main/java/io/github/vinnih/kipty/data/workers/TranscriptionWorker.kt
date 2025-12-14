@@ -9,12 +9,13 @@ import androidx.work.workDataOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
-import io.github.vinnih.kipty.data.database.repository.AudioRepository
+import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.service.NOTIFICATION_ID
 import io.github.vinnih.kipty.data.service.createNotification
 import io.github.vinnih.kipty.data.transcriptor.Transcriptor
 import io.github.vinnih.kipty.json
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @HiltWorker
@@ -40,7 +41,7 @@ class TranscriptionWorker @AssistedInject constructor(
                 )
             )
         )
-        val audioEntity = transcriptor.transcribe(audioRepository.getById(audioId)!!)
+        val audioEntity = transcriptor.transcribe(audioRepository.getById(audioId).first()!!)
         val data = workDataOf(
             "transcription" to json.encodeToString(audioEntity.transcription)
         )

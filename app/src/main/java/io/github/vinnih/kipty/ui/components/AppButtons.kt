@@ -92,7 +92,6 @@ fun EditButton(modifier: Modifier = Modifier, tint: Color = MaterialTheme.colorS
 @Composable
 fun GenerateTranscriptionButton(
     onClick: () -> Unit,
-    enabled: Boolean,
     modifier: Modifier = Modifier,
     container: Color = MaterialTheme.colorScheme.onPrimary,
     content: Color = MaterialTheme.colorScheme.primary
@@ -100,7 +99,6 @@ fun GenerateTranscriptionButton(
     Button(
         onClick = onClick,
         modifier = modifier,
-        enabled = enabled,
         shape = RoundedCornerShape(size = 8.dp),
         contentPadding = PaddingValues(0.dp),
         colors = ButtonDefaults.buttonColors(
@@ -147,6 +145,27 @@ fun CreateAudioButton(
         )
     ) {
         Text(text = text)
+    }
+}
+
+@Composable
+fun CancelAudioButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    container: Color = MaterialTheme.colorScheme.primaryContainer,
+    content: Color = MaterialTheme.colorScheme.onPrimaryContainer
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(size = 8.dp),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = container,
+            contentColor = content
+        )
+    ) {
+        Text(text = "Cancel")
     }
 }
 
@@ -294,7 +313,7 @@ private fun PlayPauseButtonPreview() {
 private fun GenerateTranscriptionButtonPreview() {
     AppTheme {
         GenerateTranscriptionButton(onClick = {
-        }, enabled = true, modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
+        }, modifier = Modifier.width(200.dp).height(60.dp).padding(4.dp))
     }
 }
 

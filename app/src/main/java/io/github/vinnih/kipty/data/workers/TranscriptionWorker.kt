@@ -5,12 +5,15 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.AudioRepository
 import io.github.vinnih.kipty.data.service.NOTIFICATION_ID
 import io.github.vinnih.kipty.data.service.createNotification
 import io.github.vinnih.kipty.data.transcriptor.Transcriptor
+import io.github.vinnih.kipty.json
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -38,15 +41,11 @@ class TranscriptionWorker @AssistedInject constructor(
             )
         )
         val audioEntity = transcriptor.transcribe(audioRepository.getById(audioId)!!)
-
-        setForegroundAsync(
-            ForegroundInfo(
-                NOTIFICATION_ID,
-                createNotification(applicationContext, false, "Your transcription is finished.")
-            )
+        val data = workDataOf(
+            "transcription" to json.encodeToString(audioEntity.transcription)
         )
-        audioRepository.save(audioEntity)
+        audioRepository.save(audioEntity.copy(state = TranscriptionState.TRANSCRIBED))
 
-        return@withContext Result.success()
+        return@withContext Result.success(data)
     }
 }

@@ -14,8 +14,16 @@ data class AudioEntity(
     val duration: Long,
     val createdAt: String,
     val transcription: List<AudioTranscription>? = null,
-    val path: String
+    val path: String,
+    val state: TranscriptionState = TranscriptionState.NONE
 )
 
 @Serializable
 data class AudioTranscription(val start: Long, val end: Long, val text: String)
+
+@Serializable
+enum class TranscriptionState {
+    TRANSCRIBED,
+    TRANSCRIBING,
+    NONE
+}

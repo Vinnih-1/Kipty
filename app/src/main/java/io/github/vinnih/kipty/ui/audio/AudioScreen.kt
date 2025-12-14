@@ -18,11 +18,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,14 +42,17 @@ import io.github.vinnih.kipty.ui.components.CancelAudioButton
 import io.github.vinnih.kipty.ui.components.GenerateTranscriptionButton
 import io.github.vinnih.kipty.ui.components.PlayPauseAudioButton
 import io.github.vinnih.kipty.ui.components.TextViewer
+import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioScreen(
     audioController: AudioController,
     playerController: PlayerController,
+    notificationController: NotificationController,
     id: Int,
     onBack: () -> Unit,
     onTopBarChange: (@Composable () -> Unit) -> Unit,
@@ -57,16 +60,11 @@ fun AudioScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val audioEntity = audioController.audioUiState.collectAsState()
+    val audios = audioController.allAudios.collectAsState()
     var expanded by remember { mutableStateOf(true) }
     val scroll = rememberScrollState()
-    var transcription by remember { mutableStateOf(audioEntity.value?.transcription) }
-
-    LaunchedEffect(Unit) {
-        audioController.getCurrent(id)
-    }
-
-    if (audioEntity.value == null) return
+    val scope = rememberCoroutineScope()
+    val audioEntity = audios.value.first { it.uid == id }
 
     expanded = scroll.value < 100
 
@@ -88,7 +86,7 @@ fun AudioScreen(
             AudioScreenTopBar(onBack = onBack, modifier = Modifier.align(Alignment.TopCenter))
             if (expanded) {
                 Text(
-                    text = audioEntity.value!!.name,
+                    text = audioEntity.name,
                     modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
                     textAlign = TextAlign.Center,
                     style = typography.displayMedium,
@@ -98,7 +96,7 @@ fun AudioScreen(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = audioEntity.value!!.description ?: "",
+                    text = audioEntity.description ?: "",
                     modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
                     textAlign = TextAlign.Center,
                     style = typography.bodyLarge,
@@ -108,24 +106,30 @@ fun AudioScreen(
                 )
             }
 
-            when (audioEntity.value?.state) {
+            when (audioEntity.state) {
                 TranscriptionState.NONE -> {
                     TranscriptionButton(onClick = {
-                        audioController.transcribeAudio(audioEntity.value!!, onSuccess = {
-                            transcription = it
+                        scope.launch {
+                            val notification = notificationController.createNotification(
+                                title = "Creating a new transcription",
+                                content = "Preparing ${audioEntity.name} to be transcript."
+                            )
+                            notificationController.submitNotification(notification)
+                        }
+                        audioController.transcribeAudio(audioEntity, onSuccess = {
                         })
                     }, modifier = Modifier)
                 }
 
                 TranscriptionState.TRANSCRIBING -> {
                     CancelButton(onClick = {
-                        audioController.cancelTranscriptionWork(audioEntity.value!!)
+                        audioController.cancelTranscriptionWork(audioEntity)
                     })
                 }
 
                 TranscriptionState.TRANSCRIBED -> {
                     PlayPauseButton(onClick = {
-                        playerController.playAudio(audioEntity.value!!)
+                        playerController.playAudio(audioEntity)
                     }, modifier = Modifier)
                 }
 
@@ -134,9 +138,9 @@ fun AudioScreen(
         }
     }
 
-    if (!transcription.isNullOrEmpty()) {
-        TextViewer(transcription = transcription!!, onClick = { start, end ->
-            playerController.playSection(audioEntity.value!!, start, end)
+    if (!audioEntity.transcription.isNullOrEmpty()) {
+        TextViewer(transcription = audioEntity.transcription, onClick = { start, end ->
+            playerController.playSection(audioEntity, start, end)
         }, modifier = Modifier.verticalScroll(scroll).padding(top = if (expanded) 24.dp else 90.dp))
     }
 }

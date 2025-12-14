@@ -26,7 +26,11 @@ class AppModule {
 
     @Provides
     @Singleton
-    fun getDao(database: AppDatabase) = database.audioDao()
+    fun getAudioDao(database: AppDatabase) = database.audioDao()
+
+    @Provides
+    @Singleton
+    fun getNotificationDao(database: AppDatabase) = database.notificationDao()
 
     @Provides
     @Singleton

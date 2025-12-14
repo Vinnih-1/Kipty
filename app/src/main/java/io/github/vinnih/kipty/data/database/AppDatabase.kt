@@ -5,10 +5,14 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import io.github.vinnih.kipty.data.database.converter.TranscriptionConverter
 import io.github.vinnih.kipty.data.database.dao.AudioDao
+import io.github.vinnih.kipty.data.database.dao.NotificationDao
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 
 @TypeConverters(TranscriptionConverter::class)
-@Database(entities = [AudioEntity::class], version = 1)
+@Database(entities = [AudioEntity::class, NotificationEntity::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun audioDao(): AudioDao
+
+    abstract fun notificationDao(): NotificationDao
 }

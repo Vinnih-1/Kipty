@@ -30,6 +30,8 @@ import io.github.vinnih.kipty.ui.create.CreateScreen
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.loading.LoadingScreen
+import io.github.vinnih.kipty.ui.notification.NotificationScreen
+import io.github.vinnih.kipty.ui.notification.NotificationViewModel
 import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
@@ -46,6 +48,8 @@ private data class Audio(val id: Int)
 
 private data object Create
 
+private data object Notification
+
 @OptIn(ExperimentalSerializationApi::class)
 val json = Json {
     allowTrailingComma = true
@@ -58,6 +62,7 @@ class MainActivity : ComponentActivity() {
     private val homeViewModel: HomeViewModel by viewModels()
     private val playerViewModel: PlayerViewModel by viewModels()
     private val audioViewModel: AudioViewModel by viewModels()
+    private val notificationViewModel: NotificationViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,17 +120,19 @@ class MainActivity : ComponentActivity() {
                             when (key) {
                                 is Home -> NavEntry(key) {
                                     HomeScreen(
-                                        controller = homeViewModel,
+                                        audioController = audioViewModel,
+                                        notificationController = notificationViewModel,
                                         onClick = {
                                             backstack.add(Audio(it.uid))
                                         },
-                                        onNotificationClick = {},
+                                        onNotificationClick = {
+                                            backstack.add(Notification)
+                                        },
                                         onCreateClick = {
                                             backstack.add(Create)
                                         },
                                         onTopBarChange = { topbar ->
-                                            currentTopbar =
-                                                topbar
+                                            currentTopbar = topbar
                                         }
                                     )
                                 }
@@ -134,6 +141,7 @@ class MainActivity : ComponentActivity() {
                                     AudioScreen(
                                         audioController = audioViewModel,
                                         playerController = playerViewModel,
+                                        notificationController = notificationViewModel,
                                         id = key.id,
                                         onBack = { backstack.removeLastOrNull() },
                                         onTopBarChange = { topbar -> currentTopbar = topbar }
@@ -159,6 +167,15 @@ class MainActivity : ComponentActivity() {
                                         },
                                         modifier = Modifier.padding(paddingValues),
                                         onTopBarChange = { topbar -> currentTopbar = null }
+                                    )
+                                }
+
+                                is Notification -> NavEntry(key) {
+                                    NotificationScreen(
+                                        notificationController = notificationViewModel,
+                                        modifier = Modifier.padding(paddingValues),
+                                        onBack = { backstack.removeLastOrNull() },
+                                        onTopBarChange = { topbar -> currentTopbar = topbar }
                                     )
                                 }
 

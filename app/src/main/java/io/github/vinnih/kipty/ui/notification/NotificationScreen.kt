@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,7 +48,6 @@ fun NotificationScreen(
         Text(
             text = "Most recent",
             style = typography.titleLarge,
-            color = colors.scrim,
             fontWeight = FontWeight.Normal
         )
         LazyColumn(verticalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -66,7 +66,6 @@ fun NotificationScreen(
                             Text(
                                 text = notification.title,
                                 style = typography.titleMedium,
-                                color = colors.scrim,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 modifier = Modifier.fillMaxWidth(.7f)
@@ -98,23 +97,22 @@ fun NotificationScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
     LargeTopAppBar(title = {
         Text(
             text = "Notifications",
             style = typography.titleLarge,
-            color = colors.scrim,
             fontWeight = FontWeight.Bold
         )
     }, navigationIcon = {
-        BackButton(onClick = onBack)
+        BackButton(onClick = onBack, container = Color.Transparent, modifier = Modifier.size(36.dp))
     }, actions = {
         IconButton(onClick = {}) {
             Icon(
                 painter = painterResource(id = R.drawable.settings),
-                contentDescription = "Settings icon button"
+                contentDescription = "Settings icon button",
+                modifier = Modifier.size(36.dp)
             )
         }
     }, modifier = modifier)

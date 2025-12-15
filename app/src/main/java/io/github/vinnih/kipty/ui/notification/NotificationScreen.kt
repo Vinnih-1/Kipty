@@ -34,17 +34,11 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 @Composable
 fun NotificationScreen(
     notificationController: NotificationController,
-    onBack: () -> Unit,
-    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val notifications = notificationController.allNotifications.collectAsState()
-
-    onTopBarChange {
-        NotificationTopBar(onBack = onBack)
-    }
 
     Column(
         modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 48.dp),
@@ -103,7 +97,7 @@ fun NotificationScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun NotificationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun NotificationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -139,7 +133,6 @@ private fun NotificationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier
 @Composable
 private fun NotificationScreenPreview() {
     AppTheme {
-        NotificationScreen(notificationController = FakeNotificationViewModel(), onBack = {
-        }, onTopBarChange = {})
+        NotificationScreen(notificationController = FakeNotificationViewModel())
     }
 }

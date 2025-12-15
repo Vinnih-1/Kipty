@@ -27,9 +27,7 @@ import io.github.vinnih.kipty.utils.convertTranscription
 fun LoadingScreen(
     homeController: HomeController,
     audioController: AudioController,
-    text: String,
-    onLoad: () -> Unit,
-    onTopBarChange: (@Composable () -> Unit) -> Unit,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -54,16 +52,13 @@ fun LoadingScreen(
             }
             AppConfig(context).write(ApplicationData("", true))
         }
-        onLoad.invoke()
-    }
-
-    onTopBarChange {
+        onBack.invoke()
     }
 
     Column(modifier = modifier) {
         Box(modifier = Modifier.fillMaxSize().padding(48.dp)) {
             Text(
-                text = text,
+                text = "Loading...",
                 color = colors.primary,
                 style = typography.displayMedium,
                 modifier = Modifier.align(Alignment.TopCenter)
@@ -87,8 +82,6 @@ private fun LoadingScreenPreview() {
     LoadingScreen(
         homeController = FakeHomeViewModel(),
         audioController = FakeAudioViewModel(),
-        text = "Kipty",
-        onLoad = {},
-        onTopBarChange = {}
+        onBack = {}
     )
 }

@@ -26,34 +26,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioCard
-import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
 fun HomeScreen(
     audioController: AudioController,
-    notificationController: NotificationController,
-    onNotificationClick: () -> Unit,
-    onCreateClick: () -> Unit,
     onClick: (AudioEntity) -> Unit,
-    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val audioState = audioController.allAudios.collectAsState()
-    val notificationState = notificationController.unreadNotifications.collectAsState()
-
-    onTopBarChange {
-        HomeTopBar(
-            onNotificationClick = onNotificationClick,
-            onCreateClick = onCreateClick,
-            notifications = notificationState.value
-        )
-    }
 
     LazyColumn(modifier = modifier.fillMaxSize().padding(top = 20.dp)) {
         items(audioState.value) { audioData ->
@@ -66,12 +51,13 @@ fun HomeScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun HomeTopBar(
+fun HomeTopBar(
+    notificationController: NotificationController,
     onNotificationClick: () -> Unit,
     onCreateClick: () -> Unit,
-    notifications: List<NotificationEntity>,
     modifier: Modifier = Modifier
 ) {
+    val notificationState = notificationController.unreadNotifications.collectAsState()
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -89,7 +75,7 @@ private fun HomeTopBar(
             ) {
                 IconButton(onClick = onNotificationClick, Modifier.size(48.dp)) {
                     BadgedBox(badge = {
-                        if (notifications.isNotEmpty()) {
+                        if (notificationState.value.isNotEmpty()) {
                             Badge()
                         }
                     }) {
@@ -129,8 +115,6 @@ private fun HomeTopBar(
 @Composable
 private fun HomeScreenPreview() {
     AppTheme {
-        HomeScreen(audioController = FakeAudioViewModel(), notificationController = FakeNotificationViewModel(), onClick = {
-        }, onNotificationClick = {}, onCreateClick = {}, onTopBarChange = {
-        }, modifier = Modifier)
+        HomeScreen(audioController = FakeAudioViewModel(), onClick = {}, modifier = Modifier)
     }
 }

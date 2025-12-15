@@ -19,11 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,121 +48,113 @@ import kotlinx.coroutines.launch
 fun AudioScreen(
     audioController: AudioController,
     playerController: PlayerController,
-    notificationController: NotificationController,
     id: Int,
-    onBack: () -> Unit,
-    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
     val audios = audioController.allAudios.collectAsState()
-    var expanded by remember { mutableStateOf(true) }
     val scroll = rememberScrollState()
-    val scope = rememberCoroutineScope()
     val audioEntity = audios.value.first { it.uid == id }
-
-    expanded = scroll.value < 100
-
-    onTopBarChange {
-        Box(
-            modifier = modifier.fillMaxWidth().animateContentSize().clip(
-                shape = RoundedCornerShape(
-                    bottomStart = 24.dp,
-                    bottomEnd = 24.dp
-                )
-            ).height(if (expanded) 400.dp else 150.dp).background(
-                brush = Brush.linearGradient(
-                    colors = listOf(colors.primary, colors.onPrimary),
-                    start = Offset.Zero,
-                    end = Offset.Infinite
-                )
-            )
-        ) {
-            AudioScreenTopBar(onBack = onBack, modifier = Modifier.align(Alignment.TopCenter))
-            if (expanded) {
-                Text(
-                    text = audioEntity.name,
-                    modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
-                    textAlign = TextAlign.Center,
-                    style = typography.displayMedium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    color = colors.onPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = audioEntity.description ?: "",
-                    modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
-                    textAlign = TextAlign.Center,
-                    style = typography.bodyLarge,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis,
-                    color = colors.secondary
-                )
-            }
-
-            when (audioEntity.state) {
-                TranscriptionState.NONE -> {
-                    TranscriptionButton(onClick = {
-                        scope.launch {
-                            val notification = notificationController.createNotification(
-                                title = "Creating a new transcription",
-                                content = "Preparing ${audioEntity.name} to be transcript."
-                            )
-                            notificationController.submitNotification(notification)
-                        }
-                        audioController.transcribeAudio(audioEntity, onSuccess = {
-                        })
-                    }, modifier = Modifier)
-                }
-
-                TranscriptionState.TRANSCRIBING -> {
-                    CancelButton(onClick = {
-                        audioController.cancelTranscriptionWork(audioEntity)
-                    })
-                }
-
-                TranscriptionState.TRANSCRIBED -> {
-                    PlayPauseButton(onClick = {
-                        playerController.playAudio(audioEntity)
-                    }, modifier = Modifier)
-                }
-
-                else -> {}
-            }
-        }
-    }
 
     if (!audioEntity.transcription.isNullOrEmpty()) {
         TextViewer(transcription = audioEntity.transcription, onClick = { start, end ->
             playerController.playSection(audioEntity, start, end)
-        }, modifier = Modifier.verticalScroll(scroll).padding(top = if (expanded) 24.dp else 90.dp))
+        }, modifier = modifier.verticalScroll(scroll))
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AudioScreenTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
+fun AudioTopBar(
+    id: Int,
+    notificationController: NotificationController,
+    audioController: AudioController,
+    playerController: PlayerController,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val audios = audioController.allAudios.collectAsState()
+    val audioEntity = audios.value.first { it.uid == id }
+    val scope = rememberCoroutineScope()
 
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                text = "ggml-tiny.en-q5_1",
-                color = colors.onPrimary,
-                style = typography.titleMedium
+    Box(
+        modifier = modifier.fillMaxWidth().animateContentSize().clip(
+            shape = RoundedCornerShape(
+                bottomStart = 24.dp,
+                bottomEnd = 24.dp
             )
-        },
-        navigationIcon = {
-            BackButton(onClick = onBack, modifier = Modifier.padding(start = 10.dp))
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
-        ),
-        modifier = modifier
-    )
+        ).height(400.dp).background(
+            brush = Brush.linearGradient(
+                colors = listOf(colors.primary, colors.onPrimary),
+                start = Offset.Zero,
+                end = Offset.Infinite
+            )
+        )
+    ) {
+        CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    text = "ggml-tiny.en-q5_1",
+                    color = colors.onPrimary,
+                    style = typography.titleMedium
+                )
+            },
+            navigationIcon = {
+                BackButton(onClick = onBack, modifier = Modifier.padding(start = 10.dp))
+            },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent
+            )
+        )
+        Text(
+            text = audioEntity.name,
+            modifier = Modifier.align(Alignment.Center).padding(bottom = 100.dp),
+            textAlign = TextAlign.Center,
+            style = typography.displayMedium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            color = colors.onPrimary,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = audioEntity.description ?: "",
+            modifier = Modifier.align(Alignment.Center).padding(top = 130.dp),
+            textAlign = TextAlign.Center,
+            style = typography.bodyLarge,
+            maxLines = 4,
+            overflow = TextOverflow.Ellipsis,
+            color = colors.secondary
+        )
+
+        when (audioEntity.state) {
+            TranscriptionState.NONE -> {
+                TranscriptionButton(onClick = {
+                    scope.launch {
+                        val notification = notificationController.createNotification(
+                            title = "Creating a new transcription",
+                            content = "Preparing ${audioEntity.name} to be transcript."
+                        )
+                        notificationController.submitNotification(notification)
+                    }
+                    audioController.transcribeAudio(audioEntity, onSuccess = {
+                    })
+                }, modifier = Modifier)
+            }
+
+            TranscriptionState.TRANSCRIBING -> {
+                CancelButton(onClick = {
+                    audioController.cancelTranscriptionWork(audioEntity)
+                })
+            }
+
+            TranscriptionState.TRANSCRIBED -> {
+                PlayPauseButton(onClick = {
+                    playerController.playAudio(audioEntity)
+                }, modifier = Modifier)
+            }
+        }
+    }
 }
 
 @Composable

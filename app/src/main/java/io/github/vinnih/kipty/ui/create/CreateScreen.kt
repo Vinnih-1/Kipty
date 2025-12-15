@@ -18,7 +18,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -47,7 +45,6 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.theme.AppTheme
@@ -70,20 +67,12 @@ private data class AudioCreator(
 @Composable
 fun CreateScreen(
     homeController: HomeController,
-    audioController: AudioController,
     onBack: () -> Unit,
-    onTopBarChange: (@Composable () -> Unit) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var audio by remember { mutableStateOf(AudioCreator()) }
     var stage by remember { mutableStateOf(Stage.FILE) }
     val scope = rememberCoroutineScope()
-
-    onTopBarChange {
-        CreateScreenTopBar(currentStage = stage, onBack = {
-            stage = Stage.entries.get(stage.ordinal - 1)
-        }, onClose = onBack)
-    }
 
     when (stage) {
         Stage.FILE -> AudioFileStage(modifier = modifier, onComplete = {
@@ -112,36 +101,12 @@ fun CreateScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CreateScreenTopBar(
-    currentStage: Stage,
-    onBack: () -> Unit,
-    onClose: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-    var progress by remember { mutableFloatStateOf(0f) }
-
-    progress = currentStage.ordinal.toFloat() / Stage.entries.size
-
+fun CreateTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(
         title = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = "${currentStage.ordinal} of ${Stage.entries.size}",
-                    style = typography.bodySmall,
-                    color = colors.secondary
-                )
-                LinearProgressIndicator(progress = {
-                    progress
-                }, drawStopIndicator = {}, gapSize = 0.dp)
-            }
         },
         navigationIcon = {
-            IconButton(onClick = if (currentStage != Stage.FILE) onBack else onClose) {
+            IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
                     contentDescription = "Arrow back button",

@@ -21,19 +21,12 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.kipty.ui.audio.AudioController
-import io.github.vinnih.kipty.ui.audio.AudioScreen
-import io.github.vinnih.kipty.ui.audio.AudioTopBar
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
-import io.github.vinnih.kipty.ui.create.CreateScreen
-import io.github.vinnih.kipty.ui.create.CreateTopBar
+import io.github.vinnih.kipty.ui.components.AppNavigation
+import io.github.vinnih.kipty.ui.components.AppTopBar
 import io.github.vinnih.kipty.ui.home.HomeController
-import io.github.vinnih.kipty.ui.home.HomeScreen
-import io.github.vinnih.kipty.ui.home.HomeTopBar
 import io.github.vinnih.kipty.ui.home.HomeViewModel
-import io.github.vinnih.kipty.ui.loading.LoadingScreen
 import io.github.vinnih.kipty.ui.notification.NotificationController
-import io.github.vinnih.kipty.ui.notification.NotificationScreen
-import io.github.vinnih.kipty.ui.notification.NotificationTopBar
 import io.github.vinnih.kipty.ui.notification.NotificationViewModel
 import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.player.PlayerScreen
@@ -148,101 +141,6 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             )
-        }
-    }
-
-    @Composable
-    fun AppTopBar(
-        currentScreen: Screen,
-        notificationController: NotificationController,
-        audioController: AudioController,
-        playerController: PlayerController,
-        onNavigate: (Screen) -> Unit,
-        onBack: () -> Unit
-    ) {
-        when (currentScreen) {
-            is Screen.Home -> {
-                HomeTopBar(
-                    notificationController = notificationController,
-                    onNotificationClick = { onNavigate(Screen.Notification) },
-                    onCreateClick = { onNavigate(Screen.Create) }
-                )
-            }
-
-            is Screen.Audio -> {
-                AudioTopBar(
-                    id = currentScreen.id,
-                    notificationController = notificationController,
-                    audioController = audioController,
-                    playerController = playerController,
-                    onBack = onBack
-                )
-            }
-
-            is Screen.Create -> {
-                CreateTopBar(onBack = onBack)
-            }
-
-            is Screen.Loading -> {
-            }
-
-            is Screen.Notification -> {
-                NotificationTopBar(onBack = onBack)
-            }
-        }
-    }
-
-    @Composable
-    fun AppNavigation(
-        currentScreen: Screen,
-        homeController: HomeController,
-        audioController: AudioController,
-        playerController: PlayerController,
-        notificationController: NotificationController,
-        onNavigate: (Screen) -> Unit,
-        onBack: () -> Unit
-    ) {
-        when (currentScreen) {
-            is Screen.Home -> {
-                HomeScreen(
-                    audioController = audioController,
-                    onClick = {
-                        onNavigate(Screen.Audio(it.uid))
-                    }
-                )
-            }
-
-            is Screen.Audio -> {
-                AudioScreen(
-                    audioController = audioController,
-                    playerController = playerController,
-                    id = currentScreen.id
-                )
-            }
-
-            is Screen.Create -> {
-                CreateScreen(
-                    homeController = homeController,
-                    onBack = onBack
-                )
-            }
-
-            is Screen.Loading -> {
-                LoadingScreen(
-                    homeController = homeController,
-                    audioController = audioController,
-                    onBack = {
-                        onBack.invoke()
-                        onNavigate(Screen.Home)
-                    }
-                )
-            }
-
-            is Screen.Notification -> {
-                NotificationScreen(
-                    notificationController = notificationController
-                )
-            }
         }
     }
 }

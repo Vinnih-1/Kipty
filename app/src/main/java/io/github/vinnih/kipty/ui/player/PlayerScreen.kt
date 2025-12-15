@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -146,11 +147,13 @@ fun PlayerScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
 private fun PlayerScreenPreview() {
+    val scaffoldState = rememberBottomSheetScaffoldState()
+
     AppTheme {
-//        PlayerScreen(playerController = FakePlayerViewModel(), onDismiss = {
-//        }, onTopBarChange = {})
+        PlayerScreen(playerController = FakePlayerViewModel(), scaffoldState = scaffoldState)
     }
 }

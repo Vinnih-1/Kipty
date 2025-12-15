@@ -1,6 +1,9 @@
 package io.github.vinnih.kipty
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -17,6 +20,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
+import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
@@ -65,13 +71,31 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        splashScreen.setOnExitAnimationListener { splashScreenView ->
+            val iconView = splashScreenView.iconView
+
+            val scaleX = ObjectAnimator.ofFloat(iconView, View.SCALE_X, 1f, 1.5f)
+            val scaleY = ObjectAnimator.ofFloat(iconView, View.SCALE_Y, 1f, 1.5f)
+
+            val alpha = ObjectAnimator.ofFloat(splashScreenView.view, View.ALPHA, 1f, 0f)
+
+            AnimatorSet().apply {
+                playTogether(scaleX, scaleY, alpha)
+                duration = 500L
+                doOnEnd { splashScreenView.remove() }
+                start()
+            }
+        }
 
         setContent {
             this.EnableEdgeToEdge()
 
             AppTheme {
                 AppScaffold(
+                    splashScreen = splashScreen,
                     homeController = homeViewModel,
                     audioController = audioViewModel,
                     playerController = playerViewModel,
@@ -84,6 +108,7 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun AppScaffold(
+        splashScreen: SplashScreen,
         homeController: HomeController,
         audioController: AudioController,
         playerController: PlayerController,
@@ -92,6 +117,8 @@ class MainActivity : ComponentActivity() {
         val backstack = remember { mutableStateListOf<Screen>(Screen.Loading) }
         val scaffoldState = rememberBottomSheetScaffoldState()
         val scope = rememberCoroutineScope()
+
+        splashScreen.setKeepOnScreenCondition { backstack.contains(Screen.Loading) }
 
         BackHandler(
             enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded

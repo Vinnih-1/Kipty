@@ -65,7 +65,8 @@ fun HomeTopBar(
         title = {
             Text(
                 text = "Home",
-                style = typography.displayMedium
+                style = typography.displayMedium,
+                color = colors.onBackground
             )
         },
         actions = {
@@ -82,7 +83,6 @@ fun HomeTopBar(
                         Icon(
                             painter = painterResource(R.drawable.notifications),
                             contentDescription = "Notification icon button",
-                            tint = colors.primary,
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -91,8 +91,7 @@ fun HomeTopBar(
                     Icon(
                         painter = painterResource(R.drawable.speech_to_text),
                         contentDescription = "Create new audio icon button",
-                        modifier = Modifier.size(36.dp),
-                        tint = colors.primary
+                        modifier = Modifier.size(36.dp)
                     )
                 }
             }

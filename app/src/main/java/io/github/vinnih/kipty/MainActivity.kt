@@ -8,30 +8,34 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
+import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.AudioScreen
+import io.github.vinnih.kipty.ui.audio.AudioTopBar
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.create.CreateScreen
+import io.github.vinnih.kipty.ui.create.CreateTopBar
+import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeScreen
+import io.github.vinnih.kipty.ui.home.HomeTopBar
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.loading.LoadingScreen
+import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.notification.NotificationScreen
+import io.github.vinnih.kipty.ui.notification.NotificationTopBar
 import io.github.vinnih.kipty.ui.notification.NotificationViewModel
+import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
@@ -40,15 +44,17 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
-private data object Loading
+sealed interface Screen {
+    data object Loading : Screen
 
-private data object Home
+    data object Home : Screen
 
-private data class Audio(val id: Int)
+    data class Audio(val id: Int) : Screen
 
-private data object Create
+    data object Create : Screen
 
-private data object Notification
+    data object Notification : Screen
+}
 
 @OptIn(ExperimentalSerializationApi::class)
 val json = Json {
@@ -69,123 +75,173 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            var currentTopbar: (@Composable () -> Unit)? by remember { mutableStateOf(null) }
-            val backstack = remember { mutableStateListOf<Any>(Loading) }
-            val scope = rememberCoroutineScope()
-            val scaffoldState = rememberBottomSheetScaffoldState()
-
             this.EnableEdgeToEdge()
 
             AppTheme {
-                BackHandler(
-                    enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-                ) {
-                    scope.launch {
-                        scaffoldState.bottomSheetState.partialExpand()
+                AppScaffold(
+                    homeController = homeViewModel,
+                    audioController = audioViewModel,
+                    playerController = playerViewModel,
+                    notificationController = notificationViewModel
+                )
+            }
+        }
+    }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun AppScaffold(
+        homeController: HomeController,
+        audioController: AudioController,
+        playerController: PlayerController,
+        notificationController: NotificationController
+    ) {
+        val backstack = remember { mutableStateListOf<Screen>(Screen.Loading) }
+        val scaffoldState = rememberBottomSheetScaffoldState()
+        val scope = rememberCoroutineScope()
+
+        BackHandler(
+            enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+        ) {
+            scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+        }
+
+        BottomSheetScaffold(
+            topBar = {
+                AppTopBar(
+                    currentScreen = backstack.last(),
+                    notificationController = notificationController,
+                    audioController = audioController,
+                    playerController = playerController,
+                    onNavigate = { screen -> backstack.add(screen) },
+                    onBack = { backstack.removeLastOrNull() }
+                )
+            },
+            scaffoldState = scaffoldState,
+            sheetPeekHeight = 148.dp,
+            sheetContent = {
+                PlayerScreen(
+                    playerController = playerController,
+                    scaffoldState = scaffoldState
+                )
+            },
+            sheetShape = RectangleShape,
+            sheetDragHandle = null
+        ) { paddingValues ->
+            NavDisplay(
+                modifier = Modifier.padding(paddingValues),
+                backStack = backstack,
+                onBack = { backstack.removeLastOrNull() },
+                entryProvider = { key ->
+                    when (key) {
+                        is Screen -> NavEntry(key) {
+                            AppNavigation(
+                                currentScreen = key,
+                                homeController = homeController,
+                                audioController = audioController,
+                                playerController = playerController,
+                                notificationController = notificationController,
+                                onNavigate = { screen -> backstack.add(screen) },
+                                onBack = { backstack.removeLastOrNull() }
+                            )
+                        }
                     }
                 }
+            )
+        }
+    }
 
-                BottomSheetScaffold(
-                    topBar = { currentTopbar?.invoke() },
-                    scaffoldState = scaffoldState,
-                    sheetPeekHeight = 148.dp,
-                    sheetContent = {
-                        PlayerScreen(
-                            playerController = playerViewModel,
-                            scaffoldState = scaffoldState
-                        )
-                    },
-                    sheetShape = RectangleShape,
-                    sheetDragHandle = null,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainer
-                ) { paddingValues ->
-                    NavDisplay(
-                        modifier = Modifier.padding(
-                            paddingValues
-                        ),
-                        backStack = backstack,
-                        onBack = {
-                            if (scaffoldState.bottomSheetState.currentValue ==
-                                SheetValue.Expanded
-                            ) {
-                                scope.launch {
-                                    scaffoldState.bottomSheetState.partialExpand()
-                                }
-                                return@NavDisplay
-                            }
+    @Composable
+    fun AppTopBar(
+        currentScreen: Screen,
+        notificationController: NotificationController,
+        audioController: AudioController,
+        playerController: PlayerController,
+        onNavigate: (Screen) -> Unit,
+        onBack: () -> Unit
+    ) {
+        when (currentScreen) {
+            is Screen.Home -> {
+                HomeTopBar(
+                    notificationController = notificationController,
+                    onNotificationClick = { onNavigate(Screen.Notification) },
+                    onCreateClick = { onNavigate(Screen.Create) }
+                )
+            }
 
-                            backstack.removeLastOrNull()
-                        },
-                        entryProvider = { key ->
-                            when (key) {
-                                is Home -> NavEntry(key) {
-                                    HomeScreen(
-                                        audioController = audioViewModel,
-                                        notificationController = notificationViewModel,
-                                        onClick = {
-                                            backstack.add(Audio(it.uid))
-                                        },
-                                        onNotificationClick = {
-                                            backstack.add(Notification)
-                                        },
-                                        onCreateClick = {
-                                            backstack.add(Create)
-                                        },
-                                        onTopBarChange = { topbar ->
-                                            currentTopbar = topbar
-                                        }
-                                    )
-                                }
+            is Screen.Audio -> {
+                AudioTopBar(
+                    id = currentScreen.id,
+                    notificationController = notificationController,
+                    audioController = audioController,
+                    playerController = playerController,
+                    onBack = onBack
+                )
+            }
 
-                                is Audio -> NavEntry(key) {
-                                    AudioScreen(
-                                        audioController = audioViewModel,
-                                        playerController = playerViewModel,
-                                        notificationController = notificationViewModel,
-                                        id = key.id,
-                                        onBack = { backstack.removeLastOrNull() },
-                                        onTopBarChange = { topbar -> currentTopbar = topbar }
-                                    )
-                                }
+            is Screen.Create -> {
+                CreateTopBar(onBack = onBack)
+            }
 
-                                is Create -> NavEntry(key) {
-                                    CreateScreen(homeController = homeViewModel, audioController = audioViewModel, onBack = {
-                                        backstack.removeLastOrNull()
-                                    }, onTopBarChange = { topbar ->
-                                        currentTopbar = topbar
-                                    })
-                                }
+            is Screen.Loading -> {
+            }
 
-                                is Loading -> NavEntry(key) {
-                                    LoadingScreen(
-                                        homeController = homeViewModel,
-                                        audioController = audioViewModel,
-                                        text = "Loading...",
-                                        onLoad = {
-                                            backstack.remove(Loading)
-                                            backstack.add(Home)
-                                        },
-                                        modifier = Modifier.padding(paddingValues),
-                                        onTopBarChange = { topbar -> currentTopbar = null }
-                                    )
-                                }
+            is Screen.Notification -> {
+                NotificationTopBar(onBack = onBack)
+            }
+        }
+    }
 
-                                is Notification -> NavEntry(key) {
-                                    NotificationScreen(
-                                        notificationController = notificationViewModel,
-                                        modifier = Modifier.padding(paddingValues),
-                                        onBack = { backstack.removeLastOrNull() },
-                                        onTopBarChange = { topbar -> currentTopbar = topbar }
-                                    )
-                                }
+    @Composable
+    fun AppNavigation(
+        currentScreen: Screen,
+        homeController: HomeController,
+        audioController: AudioController,
+        playerController: PlayerController,
+        notificationController: NotificationController,
+        onNavigate: (Screen) -> Unit,
+        onBack: () -> Unit
+    ) {
+        when (currentScreen) {
+            is Screen.Home -> {
+                HomeScreen(
+                    audioController = audioController,
+                    onClick = {
+                        onNavigate(Screen.Audio(it.uid))
+                    }
+                )
+            }
 
-                                else -> {
-                                    error("Unknown key: $key")
-                                }
-                            }
-                        }
-                    )
-                }
+            is Screen.Audio -> {
+                AudioScreen(
+                    audioController = audioController,
+                    playerController = playerController,
+                    id = currentScreen.id
+                )
+            }
+
+            is Screen.Create -> {
+                CreateScreen(
+                    homeController = homeController,
+                    onBack = onBack
+                )
+            }
+
+            is Screen.Loading -> {
+                LoadingScreen(
+                    homeController = homeController,
+                    audioController = audioController,
+                    onBack = {
+                        onBack.invoke()
+                        onNavigate(Screen.Home)
+                    }
+                )
+            }
+
+            is Screen.Notification -> {
+                NotificationScreen(
+                    notificationController = notificationController
+                )
             }
         }
     }

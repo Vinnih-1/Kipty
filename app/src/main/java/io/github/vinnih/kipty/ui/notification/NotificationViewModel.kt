@@ -19,16 +19,18 @@ class NotificationViewModel @Inject constructor(private val repository: Notifica
     ViewModel(),
     NotificationController {
 
-    override val allNotifications: StateFlow<List<NotificationEntity>> = repository.getAll().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
-    override val unreadNotifications: StateFlow<List<NotificationEntity>> = repository.getAllUnread().stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
+    override val allNotifications: StateFlow<List<NotificationEntity>> = repository.getAll()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+    override val unreadNotifications: StateFlow<List<NotificationEntity>> = repository
+        .getAllUnread().stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     override suspend fun createNotification(title: String, content: String): NotificationEntity =
         withContext(Dispatchers.IO) {

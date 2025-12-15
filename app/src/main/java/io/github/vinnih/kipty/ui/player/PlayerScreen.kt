@@ -2,6 +2,7 @@
 package io.github.vinnih.kipty.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -80,7 +81,7 @@ fun PlayerScreen(
         }
     }
 
-    Column(modifier = modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize().background(color = colors.surfaceContainer)) {
         AnimatedVisibility(visible) {
             LinearProgressIndicator(progress = {
                 songPosition

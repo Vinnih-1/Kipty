@@ -37,7 +37,7 @@ class HomeViewModel @Inject constructor(
 
             val entity = AudioEntity(
                 name = if (name.isNullOrEmpty()) file.nameWithoutExtension else name,
-                description = description,
+                description = description?.ifEmpty { null },
                 path = path.canonicalPath,
                 createdAt = LocalDateTime.now().toString(),
                 duration = 0L
@@ -60,7 +60,7 @@ class HomeViewModel @Inject constructor(
                     inputStream.copyTo(outputStream)
                 }
             }
-            context.assets.open("samples/$sample/transcription.txt").use { inputStream ->
+            context.assets.open("samples/$sample/raw_transcription.txt").use { inputStream ->
                 transcription.outputStream().use { outputStream ->
                     inputStream.copyTo(outputStream)
                 }

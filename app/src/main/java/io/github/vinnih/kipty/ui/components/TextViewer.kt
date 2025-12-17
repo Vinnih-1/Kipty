@@ -76,7 +76,7 @@ private fun TextViewerBase(
         transcription.forEach { transcription ->
             Column(
                 modifier = Modifier.clickable(onClick = {
-                    onClick((transcription.start - 150).coerceAtLeast(0), transcription.end - 100)
+                    onClick(transcription.start, transcription.end)
                 })
             ) {
                 if (showTimestamp) {

@@ -35,6 +35,7 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 @Composable
 fun NotificationScreen(
     notificationController: NotificationController,
+    onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -45,6 +46,7 @@ fun NotificationScreen(
         modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 48.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        NotificationTopBar(onBack = onBack)
         Text(
             text = "Most recent",
             style = typography.titleLarge,
@@ -131,6 +133,6 @@ fun NotificationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
 @Composable
 private fun NotificationScreenPreview() {
     AppTheme {
-        NotificationScreen(notificationController = FakeNotificationViewModel())
+        NotificationScreen(notificationController = FakeNotificationViewModel(), onBack = {})
     }
 }

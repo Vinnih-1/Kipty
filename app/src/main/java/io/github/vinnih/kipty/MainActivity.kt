@@ -29,7 +29,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.AppNavigation
-import io.github.vinnih.kipty.ui.components.AppTopBar
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -127,16 +126,6 @@ class MainActivity : ComponentActivity() {
         }
 
         BottomSheetScaffold(
-            topBar = {
-                AppTopBar(
-                    currentScreen = backstack.last(),
-                    notificationController = notificationController,
-                    audioController = audioController,
-                    playerController = playerController,
-                    onNavigate = { screen -> backstack.add(screen) },
-                    onBack = { backstack.removeLastOrNull() }
-                )
-            },
             scaffoldState = scaffoldState,
             sheetPeekHeight = 148.dp,
             sheetContent = {

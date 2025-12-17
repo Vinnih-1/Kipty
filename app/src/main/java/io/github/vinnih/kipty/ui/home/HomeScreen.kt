@@ -40,10 +40,11 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioCard
+import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
@@ -52,13 +53,20 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 fun HomeScreen(
     homeController: HomeController,
     audioController: AudioController,
-    onClick: (AudioEntity) -> Unit,
+    notificationController: NotificationController,
+    onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val audioState = audioController.allAudios.collectAsState()
     var notificationWarn by remember { mutableStateOf(true) }
 
     Column(modifier = modifier.fillMaxSize()) {
+        HomeTopBar(
+            notificationController = notificationController,
+            onNotificationClick = { onNavigate(Screen.Notification) },
+            onCreateClick = { onNavigate(Screen.Create) }
+        )
+
         if (notificationWarn) {
             NotificationPermissionWarn(
                 onEnable = {
@@ -71,7 +79,7 @@ fun HomeScreen(
         LazyColumn {
             items(audioState.value) { audioData ->
                 AudioCard(audioEntity = audioData, onClick = {
-                    onClick(audioData)
+                    onNavigate(Screen.Audio(audioData.uid))
                 }, modifier = Modifier.fillMaxWidth().height(128.dp))
             }
         }
@@ -204,7 +212,7 @@ private fun NotificationPermissionWarn(onEnable: () -> Unit, onDismiss: () -> Un
 @Composable
 private fun HomeScreenPreview() {
     AppTheme {
-        HomeScreen(homeController = FakeHomeViewModel(), audioController = FakeAudioViewModel(), onClick = {
+        HomeScreen(homeController = FakeHomeViewModel(), audioController = FakeAudioViewModel(), notificationController = FakeNotificationViewModel(), onNavigate = {
         }, modifier = Modifier)
     }
 }

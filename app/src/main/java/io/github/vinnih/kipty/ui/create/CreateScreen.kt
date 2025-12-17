@@ -74,28 +74,32 @@ fun CreateScreen(
     var stage by remember { mutableStateOf(Stage.FILE) }
     val scope = rememberCoroutineScope()
 
-    when (stage) {
-        Stage.FILE -> AudioFileStage(modifier = modifier, onComplete = {
-            stage = Stage.NAME
-            audio = audio.copy(file = it)
-        })
+    Column(modifier = modifier.fillMaxSize()) {
+        CreateTopBar(onBack = onBack)
 
-        Stage.NAME -> AudioNameStage(modifier = modifier, onComplete = {
-            stage = Stage.DESCRIPTION
-            audio = audio.copy(name = it)
-        })
+        when (stage) {
+            Stage.FILE -> AudioFileStage(modifier = modifier, onComplete = {
+                stage = Stage.NAME
+                audio = audio.copy(file = it)
+            })
 
-        Stage.DESCRIPTION -> AudioDescriptionStage(modifier = modifier, onComplete = {
-            audio = audio.copy(description = it)
-            scope.launch {
-                homeController.createAudio(
-                    file = audio.file!!,
-                    name = audio.name,
-                    description = audio.description
-                )
-                onBack.invoke()
-            }
-        })
+            Stage.NAME -> AudioNameStage(modifier = modifier, onComplete = {
+                stage = Stage.DESCRIPTION
+                audio = audio.copy(name = it)
+            })
+
+            Stage.DESCRIPTION -> AudioDescriptionStage(modifier = modifier, onComplete = {
+                audio = audio.copy(description = it)
+                scope.launch {
+                    homeController.createAudio(
+                        file = audio.file!!,
+                        name = audio.name,
+                        description = audio.description
+                    )
+                    onBack.invoke()
+                }
+            })
+        }
     }
 }
 

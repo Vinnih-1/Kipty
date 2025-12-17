@@ -25,6 +25,7 @@ fun AppNavigation(
     when (currentScreen) {
         is Screen.Home -> {
             HomeScreen(
+                homeController = homeController,
                 audioController = audioController,
                 onClick = {
                     onNavigate(Screen.Audio(it.uid))

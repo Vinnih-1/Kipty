@@ -1,6 +1,8 @@
 package io.github.vinnih.kipty.ui.home
 
 import android.content.Context
+import android.content.Intent
+import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -22,6 +24,14 @@ class HomeViewModel @Inject constructor(
     HomeController {
     private val samplesPath = File(context.filesDir, "samples").createFolder()
     private val transcriptionsPath = File(context.filesDir, "transcriptions").createFolder()
+
+    override fun openNotificationSettings() {
+        val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    }
 
     override suspend fun createAudio(file: File, name: String?, description: String?): AudioEntity =
         withContext(Dispatchers.IO) {

@@ -4,6 +4,9 @@ import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import java.io.File
 
 interface HomeController {
+
+    fun openNotificationSettings()
+
     suspend fun createAudio(
         file: File,
         name: String? = null,

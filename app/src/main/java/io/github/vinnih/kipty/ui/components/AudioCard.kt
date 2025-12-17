@@ -34,12 +34,13 @@ fun AudioCard(audioEntity: AudioEntity, onClick: () -> Unit, modifier: Modifier 
             defaultElevation = 12.dp
         ),
         colors = CardDefaults.elevatedCardColors(
-            containerColor = colors.primaryContainer
+            containerColor = colors.secondaryContainer,
+            contentColor = colors.onSecondaryContainer
         ),
         onClick = onClick
     ) {
         Row(
-            modifier = Modifier.padding(8.dp).fillMaxSize(),
+            modifier = Modifier.fillMaxSize().padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(

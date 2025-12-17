@@ -1,6 +1,8 @@
 package io.github.vinnih.kipty.data.workers
 
 import android.content.Context
+import android.content.pm.ServiceInfo
+import android.os.Build
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -31,16 +33,8 @@ class TranscriptionWorker @AssistedInject constructor(
 
         if (audioId == -1) return@withContext Result.failure()
 
-        setForegroundAsync(
-            ForegroundInfo(
-                NOTIFICATION_ID,
-                createNotification(
-                    applicationContext,
-                    true,
-                    "Your transcription is running, please wait."
-                )
-            )
-        )
+        setForegroundAsync(createForegroundInfo())
+
         val audioEntity = transcriptor.transcribe(audioRepository.getById(audioId).first()!!)
         val data = workDataOf(
             "transcription" to json.encodeToString(audioEntity.transcription)
@@ -48,5 +42,23 @@ class TranscriptionWorker @AssistedInject constructor(
         audioRepository.save(audioEntity.copy(state = TranscriptionState.TRANSCRIBED))
 
         return@withContext Result.success(data)
+    }
+
+    private fun createForegroundInfo(): ForegroundInfo {
+        val notification = createNotification(
+            applicationContext,
+            true,
+            "Your transcription is running, please wait."
+        )
+
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ForegroundInfo(
+                NOTIFICATION_ID,
+                notification,
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+            )
+        } else {
+            ForegroundInfo(NOTIFICATION_ID, notification)
+        }
     }
 }

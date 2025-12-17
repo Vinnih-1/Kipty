@@ -68,10 +68,10 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.uicompose)
-    implementation(libs.vosk.api)
     implementation(libs.serialization.json)
     implementation(libs.lottie.compose)
     implementation(libs.worker.runtime.ktx)
+    implementation(libs.google.accompanist.permission)
 
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.androidx.compiler)

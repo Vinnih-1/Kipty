@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -65,47 +66,61 @@ private fun TextViewerBase(
     modifier: Modifier = Modifier,
     showTimestamp: Boolean = true
 ) {
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-    val scroll = rememberScrollState()
-
-    Column(
+    LazyColumn(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        transcription.forEach { transcription ->
-            Column(
-                modifier = Modifier.clickable(onClick = {
-                    onClick(transcription.start, transcription.end)
-                })
-            ) {
-                if (showTimestamp) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = transcription.start.timestamp(),
-                            color = colors.secondary,
-                            style = typography.bodyMedium
-                        )
-                        Text(
-                            text = transcription.end.timestamp(),
-                            color = colors.secondary,
-                            style = typography.bodyMedium
-                        )
-                    }
-                }
-                Text(
-                    text = transcription.text.removePrefix(":  "),
-                    color = colors.secondary,
-                    style = typography.headlineMedium
-                )
-            }
+        items(transcription) {
+            TextSection(
+                transcription = it,
+                onClick = onClick,
+                showTimestamp = showTimestamp
+            )
         }
     }
 }
 
+@Composable
+private fun TextSection(
+    transcription: AudioTranscription,
+    onClick: (Long, Long) -> Unit,
+    showTimestamp: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
+    Column(
+        modifier = modifier.clickable(onClick = {
+            onClick(transcription.start, transcription.end)
+        })
+    ) {
+        if (showTimestamp) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = transcription.start.timestamp(),
+                    color = colors.secondary,
+                    style = typography.bodyMedium
+                )
+                Text(
+                    text = transcription.end.timestamp(),
+                    color = colors.secondary,
+                    style = typography.bodyMedium
+                )
+            }
+        }
+        Text(
+            text = transcription.text.removePrefix(":  "),
+            color = colors.secondary,
+            style = typography.headlineMedium
+        )
+    }
+}
+
+@Suppress("unused")
 @OptIn(ExperimentalSerializationApi::class)
 @Preview(
     name = "Light",

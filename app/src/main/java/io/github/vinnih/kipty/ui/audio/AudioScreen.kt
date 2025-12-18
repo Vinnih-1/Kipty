@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,7 +39,6 @@ fun AudioScreen(
     modifier: Modifier = Modifier
 ) {
     val audios = audioController.allAudios.collectAsState()
-    val scroll = rememberScrollState()
     val audioEntity = audios.value.first { it.uid == id }
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -56,7 +53,7 @@ fun AudioScreen(
         if (!audioEntity.transcription.isNullOrEmpty()) {
             TextViewer(transcription = audioEntity.transcription, onClick = { start, end ->
                 playerController.playSection(audioEntity, start, end)
-            }, modifier = modifier.verticalScroll(scroll))
+            })
         }
     }
 }

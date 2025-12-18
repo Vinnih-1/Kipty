@@ -52,7 +52,7 @@ fun AudioScreen(
 
         if (!audioEntity.transcription.isNullOrEmpty()) {
             TextViewer(transcription = audioEntity.transcription, onClick = { start, end ->
-                playerController.playSection(audioEntity, start, end)
+                playerController.seekTo(audioEntity, start, end)
             })
         }
     }

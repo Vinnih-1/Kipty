@@ -8,13 +8,15 @@ interface PlayerController {
 
     val player: ExoPlayer
 
+    val uiState: StateFlow<PlayerUiState>
+
     val currentAudio: StateFlow<AudioEntity?>
+
+    val progress: StateFlow<Float>
 
     fun playAudio(audioEntity: AudioEntity)
 
-    fun playSection(audioEntity: AudioEntity, start: Long, end: Long)
-
     fun pauseAudio()
 
-    fun seekTo(position: Long)
+    fun seekTo(audioEntity: AudioEntity, start: Long, end: Long)
 }

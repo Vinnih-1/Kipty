@@ -24,11 +24,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,7 +42,6 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -54,35 +53,25 @@ fun PlayerScreen(
     modifier: Modifier = Modifier,
     peekHeight: Dp = 100.dp
 ) {
-    val currentAudio = playerController.currentAudio.collectAsState()
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    var songPosition by remember { mutableFloatStateOf(0f) }
+    val uiState by playerController.uiState.collectAsState()
     var visible by remember { mutableStateOf(true) }
-    val currentPositionMs = (songPosition * playerController.player.duration).toLong()
     val playPause = rememberPlayPauseButtonState(playerController.player)
-    val totalDurationMs = playerController.player.duration
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(scaffoldState.bottomSheetState.currentValue) {
-        while (true) {
-            val offset = scaffoldState.bottomSheetState.requireOffset()
-            visible = offset > 1000f
-            delay(100)
-
-            if (playerController.player.isPlaying) {
-                val current = playerController.player.currentPosition.toFloat()
-                val duration = playerController.player.duration.toFloat()
-
-                songPosition = (current / duration)
-            }
+    LaunchedEffect(scaffoldState.bottomSheetState) {
+        snapshotFlow {
+            scaffoldState.bottomSheetState.requireOffset()
+        }.collect {
+            visible = it > 1000f
         }
     }
 
     Column(modifier = modifier.fillMaxSize().background(color = colors.surfaceContainer)) {
         AnimatedVisibility(visible) {
             LinearProgressIndicator(progress = {
-                songPosition
+                uiState.progress
             }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
             Row(
                 modifier = Modifier
@@ -96,7 +85,7 @@ fun PlayerScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = currentAudio.value?.name ?: "Nothing playing",
+                    text = uiState.audioEntity?.name ?: "Nothing playing",
                     style = typography.titleMedium,
                     color = colors.primary,
                     maxLines = 1,
@@ -104,7 +93,9 @@ fun PlayerScreen(
                     modifier = Modifier.fillMaxWidth(.7f)
                 )
                 Text(
-                    text = "${currentPositionMs.formatTime()} / ${totalDurationMs.formatTime()}",
+                    text = "${
+                        (uiState.progress * playerController.player.duration).toLong().formatTime()
+                    } / ${playerController.player.duration.formatTime()}",
                     style = typography.bodySmall,
                     color = colors.primary
                 )
@@ -139,7 +130,7 @@ fun PlayerScreen(
             }
         }
         TextViewer(playerController = playerController, onClick = { start, _ ->
-            playerController.seekTo(start)
+            playerController.seekTo(uiState.audioEntity!!, start, 0)
         }, modifier = Modifier.padding(bottom = 48.dp))
     }
 }

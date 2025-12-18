@@ -45,14 +45,15 @@ fun TextViewer(
     modifier: Modifier = Modifier,
     showTimestamp: Boolean = true
 ) {
-    val currentAudio = playerController.currentAudio.collectAsState()
+    val uiState = playerController.uiState.collectAsState()
+    val audioEntity = uiState.value.audioEntity
 
-    if (currentAudio.value == null || currentAudio.value?.transcription.isNullOrEmpty()) {
+    if (audioEntity == null || audioEntity.transcription.isNullOrEmpty()) {
         return
     }
 
     TextViewerBase(
-        transcription = currentAudio.value!!.transcription!!,
+        transcription = audioEntity.transcription,
         onClick = onClick,
         modifier = modifier,
         showTimestamp = showTimestamp

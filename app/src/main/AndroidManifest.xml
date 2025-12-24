@@ -25,6 +25,7 @@
             tools:node="merge" />
         <activity
             android:name=".MainActivity"
+            android:screenOrientation="portrait"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.App.Starting">

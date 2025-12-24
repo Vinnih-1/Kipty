@@ -25,4 +25,7 @@ interface NotificationDao {
 
     @Delete
     suspend fun delete(audio: NotificationEntity)
+
+    @Query("UPDATE notifications SET read = 1 WHERE read = 0")
+    suspend fun readAll()
 }

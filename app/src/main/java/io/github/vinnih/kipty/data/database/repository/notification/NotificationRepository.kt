@@ -13,4 +13,6 @@ interface NotificationRepository {
     suspend fun save(notificationEntity: NotificationEntity): Long
 
     suspend fun delete(notificationEntity: NotificationEntity)
+
+    suspend fun readAll()
 }

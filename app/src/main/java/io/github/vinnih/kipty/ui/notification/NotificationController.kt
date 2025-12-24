@@ -21,4 +21,6 @@ interface NotificationController {
     suspend fun getNotificationById(id: Int): Flow<NotificationEntity?>
 
     suspend fun deleteNotification(notificationEntity: NotificationEntity)
+
+    suspend fun readAllNotifications()
 }

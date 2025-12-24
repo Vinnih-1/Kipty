@@ -60,4 +60,10 @@ class NotificationViewModel @Inject constructor(private val repository: Notifica
             repository.delete(notificationEntity)
         }
     }
+
+    override suspend fun readAllNotifications() {
+        withContext(Dispatchers.IO) {
+            repository.readAll()
+        }
+    }
 }

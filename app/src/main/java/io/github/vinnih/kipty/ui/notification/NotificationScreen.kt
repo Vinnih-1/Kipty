@@ -19,6 +19,7 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,8 +43,12 @@ fun NotificationScreen(
     val typography = MaterialTheme.typography
     val notifications = notificationController.allNotifications.collectAsState()
 
+    LaunchedEffect(Unit) {
+        notificationController.readAllNotifications()
+    }
+
     Column(
-        modifier = modifier.fillMaxSize().padding(start = 8.dp, end = 8.dp, top = 48.dp),
+        modifier = modifier.fillMaxSize().padding(top = 48.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         NotificationTopBar(onBack = onBack)
@@ -53,7 +58,10 @@ fun NotificationScreen(
             fontWeight = FontWeight.Normal,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        LazyColumn(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
             items(notifications.value) { notification ->
                 Row(
                     modifier = Modifier.fillMaxWidth(),

@@ -26,4 +26,10 @@ class NotificationRepositoryImpl @Inject constructor(private val dao: Notificati
             dao.delete(notificationEntity)
         }
     }
+
+    override suspend fun readAll() {
+        withContext(Dispatchers.IO) {
+            dao.readAll()
+        }
+    }
 }

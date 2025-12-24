@@ -60,4 +60,8 @@ class FakeNotificationViewModel : NotificationController {
     override suspend fun deleteNotification(notificationEntity: NotificationEntity) {
         TODO("Not yet implemented")
     }
+
+    override suspend fun readAllNotifications() {
+        TODO("Not yet implemented")
+    }
 }

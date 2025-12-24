@@ -43,14 +43,15 @@ fun NotificationScreen(
     val notifications = notificationController.allNotifications.collectAsState()
 
     Column(
-        modifier = modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 48.dp),
+        modifier = modifier.fillMaxSize().padding(start = 8.dp, end = 8.dp, top = 48.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         NotificationTopBar(onBack = onBack)
         Text(
             text = "Most recent",
             style = typography.titleLarge,
-            fontWeight = FontWeight.Normal
+            fontWeight = FontWeight.Normal,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
         LazyColumn(verticalArrangement = Arrangement.spacedBy(24.dp)) {
             items(notifications.value) { notification ->

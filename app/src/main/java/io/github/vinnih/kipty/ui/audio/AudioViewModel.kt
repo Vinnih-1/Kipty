@@ -104,4 +104,10 @@ class AudioViewModel @Inject constructor(
     }
 
     override fun getById(id: Int): Flow<AudioEntity?> = repository.getById(id)
+
+    override fun incrementPlayCount(id: Int) {
+        viewModelScope.launch {
+            repository.incrementPlayCount(id)
+        }
+    }
 }

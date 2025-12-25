@@ -23,4 +23,10 @@ class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : Audio
             dao.delete(audio)
         }
     }
+
+    override suspend fun incrementPlayCount(id: Int) {
+        withContext(Dispatchers.IO) {
+            dao.incrementPlayCount(id)
+        }
+    }
 }

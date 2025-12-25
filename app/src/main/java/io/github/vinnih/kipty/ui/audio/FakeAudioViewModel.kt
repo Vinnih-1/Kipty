@@ -32,4 +32,8 @@ class FakeAudioViewModel : AudioController {
     override fun getById(id: Int): Flow<AudioEntity?> {
         TODO("Not yet implemented")
     }
+
+    override fun incrementPlayCount(id: Int) {
+        TODO("Not yet implemented")
+    }
 }

@@ -1,6 +1,6 @@
 package io.github.vinnih.kipty.data
 
-object FakeAudio {
+object FakeAudioData {
 
     @Suppress("ktlint:standard:property-naming")
     var audio_1865_02_01 = """

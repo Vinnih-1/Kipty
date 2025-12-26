@@ -11,11 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinnih.kipty.data.application.AppConfig
-import io.github.vinnih.kipty.data.application.ApplicationData
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
@@ -32,25 +29,27 @@ fun LoadingScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        if (!AppConfig(context).read().defaultSamplesLoaded) {
-            homeController.copySamples().forEach { (audio, transcription) ->
-                val audioEntity = homeController.createAudio(file = audio)
-                val transcriptionData = transcription.readText().convertTranscription()
+        homeController.createDefault { audio, transcription, image, description ->
+            val audioEntity = homeController.createAudio(
+                audio = audio,
+                image = image,
+                description = description.readText()
+            )
+            val transcriptionData = transcription.readText().convertTranscription()
 
-                audioController.saveTranscription(
-                    audioEntity.copy(
-                        transcription = transcriptionData,
-                        state = TranscriptionState.TRANSCRIBED
-                    )
-                ).also {
-                    audio.delete()
-                    transcription.delete()
-                }
+            audioController.saveTranscription(
+                audioEntity.copy(
+                    transcription = transcriptionData,
+                    state = TranscriptionState.TRANSCRIBED
+                )
+            ).also {
+                audio.delete()
+                transcription.delete()
+                image.delete()
+                description.delete()
             }
-            AppConfig(context).write(ApplicationData("", true))
         }
         onBack.invoke()
     }

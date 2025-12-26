@@ -92,7 +92,7 @@ fun CreateScreen(
                 audio = audio.copy(description = it)
                 scope.launch {
                     homeController.createAudio(
-                        file = audio.file!!,
+                        audio = audio.file!!,
                         name = audio.name,
                         description = audio.description
                     )

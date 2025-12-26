@@ -6,8 +6,11 @@ import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.vinnih.kipty.data.application.AppConfig
+import io.github.vinnih.kipty.data.application.ApplicationData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
+import io.github.vinnih.kipty.utils.copyTo
 import io.github.vinnih.kipty.utils.createFile
 import io.github.vinnih.kipty.utils.createFolder
 import jakarta.inject.Inject
@@ -22,7 +25,7 @@ class HomeViewModel @Inject constructor(
     private val repository: AudioRepository
 ) : ViewModel(),
     HomeController {
-    private val samplesPath = File(context.filesDir, "samples").createFolder()
+
     private val transcriptionsPath = File(context.filesDir, "transcriptions").createFolder()
 
     override fun openNotificationSettings() {
@@ -33,49 +36,56 @@ class HomeViewModel @Inject constructor(
         context.startActivity(intent)
     }
 
-    override suspend fun createAudio(file: File, name: String?, description: String?): AudioEntity =
-        withContext(Dispatchers.IO) {
-            val path = File(transcriptionsPath, file.nameWithoutExtension).createFolder()
+    override suspend fun createAudio(
+        audio: File,
+        image: File?,
+        name: String?,
+        description: String?
+    ): AudioEntity = withContext(Dispatchers.IO) {
+        val path = File(transcriptionsPath, audio.nameWithoutExtension).createFolder()
 
-            file.inputStream().use { inputStream ->
-                File(path, "audio.mp3").also {
-                    it.outputStream().use { outputStream ->
-                        inputStream.copyTo(outputStream)
-                    }
-                }
-            }
+        audio.inputStream().copyTo(File(path, "audio.mp3").createFile())
+        image?.inputStream()?.copyTo(File(path, "image.jpg").createFile())
 
-            val entity = AudioEntity(
-                name = if (name.isNullOrEmpty()) file.nameWithoutExtension else name,
-                description = description?.ifEmpty { null },
-                path = path.canonicalPath,
-                createdAt = LocalDateTime.now().toString(),
-                duration = 0L
-            )
+        val entity = AudioEntity(
+            name = if (name.isNullOrEmpty()) audio.nameWithoutExtension else name,
+            description = description?.ifEmpty { null },
+            path = path.canonicalPath,
+            createdAt = LocalDateTime.now().toString(),
+            duration = 0L
+        )
 
-            return@withContext entity.copy(uid = saveAudio(entity).toInt())
-        }
+        return@withContext entity.copy(uid = saveAudio(entity).toInt())
+    }
 
     override suspend fun saveAudio(audioEntity: AudioEntity): Long = withContext(Dispatchers.IO) {
         return@withContext repository.save(audioEntity)
     }
 
-    override suspend fun copySamples(): List<Pair<File, File>> = withContext(Dispatchers.IO) {
-        context.assets.list("samples/")!!.map { sample ->
-            val audio = File(samplesPath, "$sample.mp3").createFile()
-            val transcription = File(samplesPath, "$sample.txt").createFile()
+    override suspend fun createDefault(data: suspend (File, File, File, File) -> Unit) {
+        if (AppConfig(context).read().defaultSamplesLoaded) return
 
-            context.assets.open("samples/$sample/$sample.mp3").use { inputStream ->
-                audio.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
+        withContext(Dispatchers.IO) {
+            val samplesPath = File(context.cacheDir, "samples").createFolder()
+
+            context.assets.list("samples/")!!.map { folder ->
+                val sample = context.assets.list("samples/$folder")!!
+                    .filter { it.endsWith(".mp3") }
+                    .map { File(it) }
+                    .first()
+                val audio = File(samplesPath, "${sample.name}").createFile()
+                val transcription = File(samplesPath, "raw_transcription.txt").createFile()
+                val image = File(samplesPath, "image.jpg").createFile()
+                val description = File(samplesPath, "description.txt")
+
+                context.assets.open("samples/$folder/${sample.name}").copyTo(audio)
+                context.assets.open("samples/$folder/raw_transcription.txt").copyTo(transcription)
+                context.assets.open("samples/$folder/image.jpg").copyTo(image)
+                context.assets.open("samples/$folder/description.txt").copyTo(description)
+
+                data.invoke(audio, transcription, image, description)
             }
-            context.assets.open("samples/$sample/raw_transcription.txt").use { inputStream ->
-                transcription.outputStream().use { outputStream ->
-                    inputStream.copyTo(outputStream)
-                }
-            }
-            Pair(audio, transcription)
+            AppConfig(context).write(ApplicationData("", true))
         }
     }
 }

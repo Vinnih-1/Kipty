@@ -5,63 +5,69 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.github.vinnih.kipty.R
+import coil3.compose.AsyncImage
+import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import java.io.File
 
 @Composable
 fun AudioCard(audioEntity: AudioEntity, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val image = File(audioEntity.path, "image.jpg")
+
+    println(image.absolutePath)
 
     ElevatedCard(
         modifier = modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 12.dp
         ),
-        colors = CardDefaults.elevatedCardColors(
-            containerColor = colors.secondaryContainer,
-            contentColor = colors.onSecondaryContainer
-        ),
         onClick = onClick
     ) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxSize()
         ) {
-            Icon(
-                painter = painterResource(R.drawable.broken_image),
-                contentDescription = "Card without image icon",
-                modifier = Modifier.size(72.dp)
-            )
-            Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(top = 16.dp, start = 8.dp).weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Text(
                     text = audioEntity.name,
                     style = typography.titleMedium,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = audioEntity.description ?: "Audio without any description",
                     style = typography.bodySmall,
-                    maxLines = 2,
+                    maxLines = 7,
                     overflow = TextOverflow.Ellipsis
                 )
             }
+            AsyncImage(
+                model = image,
+                contentDescription = null,
+                contentScale = ContentScale.FillHeight,
+                modifier = Modifier.width(144.dp).height(200.dp)
+            )
         }
     }
 }
@@ -78,8 +84,10 @@ fun AudioCard(audioEntity: AudioEntity, onClick: () -> Unit, modifier: Modifier 
 )
 @Composable
 private fun AudioCardPreview() {
+    val audioEntity = json.decodeFromString<AudioEntity>(FakeAudioData.audio_1865_02_01)
+
     AppTheme {
-        // AudioCard(audioEntity = audioEntity, onClick = {
-        // }, modifier = Modifier.fillMaxWidth().height(128.dp))
+        AudioCard(audioEntity = audioEntity, onClick = {
+        }, modifier = Modifier.fillMaxWidth().height(200.dp))
     }
 }

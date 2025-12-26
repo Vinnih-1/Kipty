@@ -80,7 +80,7 @@ fun HomeScreen(
             items(audioState.value) { audioData ->
                 AudioCard(audioEntity = audioData, onClick = {
                     onNavigate(Screen.Audio(audioData.uid))
-                }, modifier = Modifier.fillMaxWidth().height(128.dp))
+                }, modifier = Modifier.fillMaxWidth().height(200.dp))
             }
         }
     }

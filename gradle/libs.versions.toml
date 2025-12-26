@@ -24,6 +24,7 @@ lottie = "6.6.6"
 worker = "2.11.0"
 splashscreen = "1.0.0"
 permission = "0.37.3"
+coil = "3.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serializ
 lottie-compose = { group = "com.airbnb.android", name = "lottie-compose", version.ref = "lottie" }
 worker-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "worker" }
 google-accompanist-permission = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "permission" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

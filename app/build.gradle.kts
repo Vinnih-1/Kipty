@@ -72,6 +72,7 @@ dependencies {
     implementation(libs.lottie.compose)
     implementation(libs.worker.runtime.ktx)
     implementation(libs.google.accompanist.permission)
+    implementation(libs.coil.compose)
 
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.androidx.compiler)

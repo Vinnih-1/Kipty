@@ -32,8 +32,6 @@ fun AudioCard(audioEntity: AudioEntity, onClick: () -> Unit, modifier: Modifier 
     val typography = MaterialTheme.typography
     val image = File(audioEntity.path, "image.jpg")
 
-    println(image.absolutePath)
-
     ElevatedCard(
         modifier = modifier.padding(8.dp),
         elevation = CardDefaults.cardElevation(

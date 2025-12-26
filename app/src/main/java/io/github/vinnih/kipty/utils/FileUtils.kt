@@ -8,6 +8,7 @@ import io.github.nailik.androidresampler.data.ResamplerQuality
 import io.github.vinnih.androidtranscoder.utils.toWavReader
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -39,6 +40,7 @@ fun resample(channels: Int, inSampleRate: Int, outSampleRate: Int, pcmData: Byte
 
     return resampler.resample(pcmData)
 }
+
 fun File.toFloatArray(context: Context): FloatArray {
     val reader = this.toWavReader(context.cacheDir)
     val baos = ByteArrayOutputStream()
@@ -65,4 +67,10 @@ fun File.toFloatArray(context: Context): FloatArray {
     }
 
     return finalFloatArray
+}
+
+fun InputStream.copyTo(file: File) {
+    file.outputStream().use { outputStream ->
+        this.copyTo(outputStream)
+    }
 }

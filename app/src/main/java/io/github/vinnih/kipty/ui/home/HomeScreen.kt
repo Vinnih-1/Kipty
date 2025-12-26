@@ -101,7 +101,7 @@ fun HomeTopBar(
     TopAppBar(
         title = {
             Text(
-                text = "Home",
+                text = "Kipty",
                 style = typography.displayMedium,
                 color = colors.onBackground
             )

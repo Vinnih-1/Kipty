@@ -44,6 +44,8 @@ To run locally:
 ## 🧩 Roadmap
 - [ ] Highlight section currently being spoken
 - [ ] Manage transcriptions locally
+- [ ] Press audio card to open menu
+- [ ] Split audio into chunks during transcription to support longer files without exceeding memory limits
 ---
 
 ## 🤝 [Contributing](https://github.com/Vinnih-1/Kipty/blob/develop/CONTRIBUTING.md)

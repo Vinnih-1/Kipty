@@ -78,17 +78,17 @@ fun CreateScreen(
         CreateTopBar(onBack = onBack)
 
         when (stage) {
-            Stage.FILE -> AudioFileStage(modifier = modifier, onComplete = {
+            Stage.FILE -> AudioFileStage(modifier = Modifier, onComplete = {
                 stage = Stage.NAME
                 audio = audio.copy(file = it)
             })
 
-            Stage.NAME -> AudioNameStage(modifier = modifier, onComplete = {
+            Stage.NAME -> AudioNameStage(modifier = Modifier, onComplete = {
                 stage = Stage.DESCRIPTION
                 audio = audio.copy(name = it)
             })
 
-            Stage.DESCRIPTION -> AudioDescriptionStage(modifier = modifier, onComplete = {
+            Stage.DESCRIPTION -> AudioDescriptionStage(modifier = Modifier, onComplete = {
                 audio = audio.copy(description = it)
                 scope.launch {
                     homeController.createAudio(

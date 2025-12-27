@@ -212,7 +212,12 @@ private fun NotificationPermissionWarn(onEnable: () -> Unit, onDismiss: () -> Un
 @Composable
 private fun HomeScreenPreview() {
     AppTheme {
-        HomeScreen(homeController = FakeHomeViewModel(), audioController = FakeAudioViewModel(), notificationController = FakeNotificationViewModel(), onNavigate = {
-        }, modifier = Modifier)
+        HomeScreen(
+            homeController = FakeHomeViewModel(),
+            audioController = FakeAudioViewModel(),
+            notificationController = FakeNotificationViewModel(),
+            onNavigate = {},
+            modifier = Modifier
+        )
     }
 }

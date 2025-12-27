@@ -48,7 +48,7 @@ To run locally:
 - [ ] Split audio into chunks during transcription to support longer files without exceeding memory limits
 ---
 
-## 🤝 [Contributing](https://github.com/Vinnih-1/Kipty/blob/develop/CONTRIBUTING.md)
+## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome.  
 Feel free to open a pull request or an issue.

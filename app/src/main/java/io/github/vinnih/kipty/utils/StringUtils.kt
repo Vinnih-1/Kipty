@@ -1,12 +1,27 @@
 package io.github.vinnih.kipty.utils
 
+import android.text.format.DateUtils
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 private enum class Timestamp(val multiplier: Long) {
     HOUR(1000 * 60 * 60),
     MINUTE(1000 * 60),
     SECOND(1000),
     MILLISECOND(1)
+}
+
+fun String.toRelativeTime(): String {
+    val millis = LocalDateTime.parse(this).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val now = System.currentTimeMillis()
+
+    return DateUtils.getRelativeTimeSpanString(
+        millis,
+        now,
+        DateUtils.MINUTE_IN_MILLIS,
+        DateUtils.FORMAT_ABBREV_RELATIVE
+    ).toString()
 }
 
 fun Long.formatTime(): String {

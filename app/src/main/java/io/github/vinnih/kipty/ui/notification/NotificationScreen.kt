@@ -33,6 +33,7 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import io.github.vinnih.kipty.utils.toRelativeTime
 
 @Composable
 fun NotificationScreen(
@@ -97,7 +98,7 @@ private fun NotificationComponent(
                 )
 
                 Text(
-                    text = notificationEntity.createdAt,
+                    text = notificationEntity.createdAt.toRelativeTime(),
                     style = typography.bodyMedium,
                     color = colors.secondary,
                     maxLines = 1,

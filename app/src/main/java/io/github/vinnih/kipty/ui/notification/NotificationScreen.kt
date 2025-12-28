@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.ui.components.BackButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
@@ -39,7 +40,6 @@ fun NotificationScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val notifications = notificationController.allNotifications.collectAsState()
 
@@ -63,44 +63,55 @@ fun NotificationScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             items(notifications.value) { notification ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.notification_icon),
-                        contentDescription = "Notification icon",
-                        modifier = Modifier.size(48.dp).clip(CircleShape)
-                    )
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Row {
-                            Text(
-                                text = notification.title,
-                                style = typography.titleMedium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.fillMaxWidth(.7f)
-                            )
-
-                            Text(
-                                text = notification.createdAt,
-                                style = typography.bodyMedium,
-                                color = colors.secondary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                        Text(
-                            text = notification.content,
-                            style = typography.bodyMedium,
-                            color = colors.secondary,
-                            maxLines = 3,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
+                NotificationComponent(notificationEntity = notification)
             }
+        }
+    }
+}
+
+@Composable
+private fun NotificationComponent(
+    notificationEntity: NotificationEntity,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.notification_icon),
+            contentDescription = "Notification icon",
+            modifier = Modifier.size(48.dp).clip(CircleShape)
+        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row {
+                Text(
+                    text = notificationEntity.title,
+                    style = typography.titleMedium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth(.7f)
+                )
+
+                Text(
+                    text = notificationEntity.createdAt,
+                    style = typography.bodyMedium,
+                    color = colors.secondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            Text(
+                text = notificationEntity.content,
+                style = typography.bodyMedium,
+                color = colors.secondary,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

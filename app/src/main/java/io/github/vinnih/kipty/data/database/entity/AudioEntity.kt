@@ -11,7 +11,6 @@ data class AudioEntity(
     val name: String,
     val description: String? = null,
     val totalListened: Int = 0,
-    val duration: Long,
     val createdAt: String,
     val transcription: List<AudioTranscription>? = null,
     val path: String,

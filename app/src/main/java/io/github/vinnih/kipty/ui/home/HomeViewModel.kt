@@ -51,8 +51,7 @@ class HomeViewModel @Inject constructor(
             name = if (name.isNullOrEmpty()) audio.nameWithoutExtension else name,
             description = description?.ifEmpty { null },
             path = path.canonicalPath,
-            createdAt = LocalDateTime.now().toString(),
-            duration = 0L
+            createdAt = LocalDateTime.now().toString()
         )
 
         return@withContext entity.copy(uid = saveAudio(entity).toInt())

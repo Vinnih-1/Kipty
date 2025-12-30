@@ -32,26 +32,6 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
-fun FloatingAddButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    container: Color = MaterialTheme.colorScheme.onPrimaryContainer,
-    content: Color = MaterialTheme.colorScheme.onPrimary
-) {
-    FloatingActionButton(
-        onClick = onClick,
-        modifier = modifier,
-        containerColor = container,
-        contentColor = content
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.add_box_48px),
-            contentDescription = "Floating add button"
-        )
-    }
-}
-
-@Composable
 fun BackButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -228,23 +208,6 @@ fun PlayPauseAudioButton(
                 modifier = Modifier.size(24.dp)
             )
         }
-    }
-}
-
-@Preview(
-    name = "Light",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_TYPE_NORMAL
-)
-@Preview(
-    name = "Dark",
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
-@Composable
-private fun FloatingActionButtonPreview() {
-    AppTheme {
-        FloatingAddButton(onClick = {})
     }
 }
 

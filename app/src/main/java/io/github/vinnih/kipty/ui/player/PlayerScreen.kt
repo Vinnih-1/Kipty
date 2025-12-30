@@ -102,36 +102,39 @@ fun PlayerScreen(
             }
         }
         AnimatedVisibility(!visible) {
-            Box(
-                modifier = Modifier.fillMaxWidth().height(
-                    peekHeight
-                ).padding(top = 24.dp, start = 16.dp, end = 16.dp)
-            ) {
-                IconButton(onClick = {
-                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-                }, modifier = Modifier.align(Alignment.CenterStart)) {
-                    Icon(
-                        painter = painterResource(R.drawable.keyboard_arrow_down),
-                        contentDescription = "Dismiss player screen modal"
-                    )
-                }
-                Text(text = "Player", modifier = Modifier.align(Alignment.Center))
-                IconButton(
-                    onClick = playPause::onClick,
-                    modifier = Modifier.align(Alignment.CenterEnd)
+            Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(
+                        peekHeight
+                    ).padding(top = 24.dp, start = 16.dp, end = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        painter = painterResource(
-                            if (playPause.showPlay) R.drawable.play else R.drawable.pause
-                        ),
-                        contentDescription = "Play and pause button"
-                    )
+                    IconButton(onClick = {
+                        scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                    }) {
+                        Icon(
+                            painter = painterResource(R.drawable.keyboard_arrow_down),
+                            contentDescription = "Dismiss player screen modal"
+                        )
+                    }
+                    Text(text = "Player")
+                    IconButton(
+                        onClick = playPause::onClick
+                    ) {
+                        Icon(
+                            painter = painterResource(
+                                if (playPause.showPlay) R.drawable.play else R.drawable.pause
+                            ),
+                            contentDescription = "Play and pause button"
+                        )
+                    }
                 }
+                TextViewer(playerController = playerController, onClick = { start, _ ->
+                    playerController.seekTo(uiState.audioEntity!!, start, 0)
+                }, modifier = Modifier.padding(bottom = 48.dp))
             }
         }
-        TextViewer(playerController = playerController, onClick = { start, _ ->
-            playerController.seekTo(uiState.audioEntity!!, start, 0)
-        }, modifier = Modifier.padding(bottom = 48.dp))
     }
 }
 

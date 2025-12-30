@@ -21,6 +21,10 @@ class FakePlayerViewModel : PlayerController {
         TODO("Not yet implemented")
     }
 
+    override fun stopAudio() {
+        TODO("Not yet implemented")
+    }
+
     override fun seekTo(audioEntity: AudioEntity, start: Long, end: Long) {
         TODO("Not yet implemented")
     }

@@ -14,6 +14,8 @@ interface AudioController {
 
     fun saveTranscription(audioEntity: AudioEntity)
 
+    fun deleteAudio(audioEntity: AudioEntity)
+
     fun observeTranscriptionWork(): Flow<List<WorkInfo>>
 
     fun cancelTranscriptionWork(audioEntity: AudioEntity)

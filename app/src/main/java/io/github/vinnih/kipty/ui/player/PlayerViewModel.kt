@@ -55,6 +55,12 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         player.pause()
     }
 
+    override fun stopAudio() {
+        _currentAudio.value = null
+        player.clearMediaItems()
+        player.stop()
+    }
+
     override fun seekTo(audioEntity: AudioEntity, start: Long, end: Long) {
         _currentAudio.value = audioEntity
         val extras = Bundle().apply {

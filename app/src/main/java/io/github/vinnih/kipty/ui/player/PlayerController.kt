@@ -18,5 +18,7 @@ interface PlayerController {
 
     fun pauseAudio()
 
+    fun stopAudio()
+
     fun seekTo(audioEntity: AudioEntity, start: Long, end: Long)
 }

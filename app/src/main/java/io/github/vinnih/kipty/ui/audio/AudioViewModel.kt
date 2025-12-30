@@ -16,6 +16,7 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
 import io.github.vinnih.kipty.json
+import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -93,6 +94,13 @@ class AudioViewModel @Inject constructor(
     override fun saveTranscription(audioEntity: AudioEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.save(audioEntity)
+        }
+    }
+
+    override fun deleteAudio(audioEntity: AudioEntity) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.delete(audioEntity)
+            File(audioEntity.path).deleteRecursively()
         }
     }
 

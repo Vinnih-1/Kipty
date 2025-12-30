@@ -21,6 +21,10 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
+    override fun deleteAudio(audioEntity: AudioEntity) {
+        TODO("Not yet implemented")
+    }
+
     override fun observeTranscriptionWork(): Flow<List<WorkInfo>> {
         TODO("Not yet implemented")
     }

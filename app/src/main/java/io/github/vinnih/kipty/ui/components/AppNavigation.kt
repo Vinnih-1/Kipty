@@ -27,6 +27,7 @@ fun AppNavigation(
             HomeScreen(
                 homeController = homeController,
                 audioController = audioController,
+                playerController = playerController,
                 notificationController = notificationController,
                 onNavigate = { onNavigate(it) }
             )

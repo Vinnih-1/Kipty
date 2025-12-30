@@ -46,6 +46,8 @@ import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioCard
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
+import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
+import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
@@ -53,6 +55,7 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 fun HomeScreen(
     homeController: HomeController,
     audioController: AudioController,
+    playerController: PlayerController,
     notificationController: NotificationController,
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
@@ -78,9 +81,20 @@ fun HomeScreen(
 
         LazyColumn {
             items(audioState.value) { audioData ->
-                AudioCard(audioEntity = audioData, onClick = {
-                    onNavigate(Screen.Audio(audioData.uid))
-                }, modifier = Modifier.fillMaxWidth().height(200.dp))
+                AudioCard(
+                    audioEntity = audioData,
+                    onNavigate = {
+                        onNavigate(Screen.Audio(audioData.uid))
+                    },
+                    onPlay = { playerController.playAudio(audioData) },
+                    onDelete = {
+                        audioController.deleteAudio(audioData)
+                        if (audioData.uid == playerController.currentAudio.value?.uid) {
+                            playerController.stopAudio()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                )
             }
         }
     }
@@ -215,6 +229,7 @@ private fun HomeScreenPreview() {
         HomeScreen(
             homeController = FakeHomeViewModel(),
             audioController = FakeAudioViewModel(),
+            playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
             onNavigate = {},
             modifier = Modifier

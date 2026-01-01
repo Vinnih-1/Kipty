@@ -99,7 +99,7 @@ private fun TextViewerBase(
     val audioEntity = uiState.value.audioEntity
     val listState = rememberLazyListState()
 
-    val activeIndex by remember(playerController.uiState.value.currentPosition) {
+    val activeIndex by remember(uiState.value.currentPosition) {
         derivedStateOf {
             audioEntity!!.transcription!!.indexOfLast {
                 it.start <=

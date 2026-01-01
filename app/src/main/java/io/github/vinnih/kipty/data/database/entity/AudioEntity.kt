@@ -10,7 +10,6 @@ data class AudioEntity(
     @PrimaryKey(autoGenerate = true) val uid: Int = 0,
     val name: String,
     val description: String? = null,
-    val totalListened: Int = 0,
     val createdAt: String,
     val transcription: List<AudioTranscription>? = null,
     val path: String,

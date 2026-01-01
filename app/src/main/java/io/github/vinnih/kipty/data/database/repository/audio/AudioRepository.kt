@@ -12,6 +12,4 @@ interface AudioRepository {
     suspend fun save(audio: AudioEntity): Long
 
     suspend fun delete(audio: AudioEntity)
-
-    suspend fun incrementPlayCount(id: Int)
 }

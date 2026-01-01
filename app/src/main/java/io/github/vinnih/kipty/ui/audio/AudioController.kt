@@ -21,6 +21,4 @@ interface AudioController {
     fun cancelTranscriptionWork(audioEntity: AudioEntity)
 
     fun getById(id: Int): Flow<AudioEntity?>
-
-    fun incrementPlayCount(id: Int)
 }

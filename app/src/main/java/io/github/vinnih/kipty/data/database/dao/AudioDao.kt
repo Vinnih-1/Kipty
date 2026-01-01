@@ -22,7 +22,4 @@ interface AudioDao {
 
     @Delete
     suspend fun delete(audio: AudioEntity)
-
-    @Query("UPDATE audios SET totalListened = totalListened + 1 WHERE uid = :id")
-    suspend fun incrementPlayCount(id: Int)
 }

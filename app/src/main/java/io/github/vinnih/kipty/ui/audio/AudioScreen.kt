@@ -101,7 +101,6 @@ fun AudioTopBar(
                     TranscriptionState.TRANSCRIBED -> {
                         PlayPauseButton(onClick = {
                             playerController.playAudio(audioEntity)
-                            audioController.incrementPlayCount(audioEntity.uid)
                         }, modifier = Modifier)
                     }
                 }

@@ -35,21 +35,18 @@ fun LoadingScreen(
             val audioEntity = homeController.createAudio(
                 audio = audio,
                 image = image,
-                description = description.readText()
+                name = audio.substringAfterLast("/"),
+                isDefault = true,
+                description = description
             )
-            val transcriptionData = transcription.readText().convertTranscription()
+            val transcriptionData = transcription.convertTranscription()
 
             audioController.saveTranscription(
                 audioEntity.copy(
                     transcription = transcriptionData,
                     state = TranscriptionState.TRANSCRIBED
                 )
-            ).also {
-                audio.delete()
-                transcription.delete()
-                image.delete()
-                description.delete()
-            }
+            )
         }
         onBack.invoke()
     }

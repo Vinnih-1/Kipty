@@ -9,10 +9,11 @@ class FakeHomeViewModel : HomeController {
     }
 
     override suspend fun createAudio(
-        audio: File,
-        image: File?,
-        name: String?,
-        description: String?
+        audio: String,
+        image: String,
+        name: String,
+        description: String?,
+        isDefault: Boolean
     ): AudioEntity {
         TODO("Not yet implemented")
     }
@@ -21,7 +22,7 @@ class FakeHomeViewModel : HomeController {
         TODO("Not yet implemented")
     }
 
-    override suspend fun createDefault(data: suspend (File, File, File, File) -> Unit) {
+    override suspend fun createDefault(data: suspend (String, String, String, String) -> Unit) {
         TODO("Not yet implemented")
     }
 }

@@ -10,7 +10,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -98,7 +97,12 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         }
         val mediaItem = MediaItem.Builder().apply {
             setMediaMetadata(medatada.build())
-            setUri(Uri.fromFile(File(audioEntity.path, "audio.mp3")))
+            setUri(
+                Uri.Builder()
+                    .scheme(if (audioEntity.isDefault) "asset" else "file")
+                    .path(audioEntity.audioPath)
+                    .build()
+            )
         }
 
         player.setMediaItem(mediaItem.build())

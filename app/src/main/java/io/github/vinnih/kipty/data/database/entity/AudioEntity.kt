@@ -12,7 +12,9 @@ data class AudioEntity(
     val description: String? = null,
     val createdAt: String,
     val transcription: List<AudioTranscription>? = null,
-    val path: String,
+    val audioPath: String,
+    val imagePath: String,
+    val isDefault: Boolean,
     val state: TranscriptionState = TranscriptionState.NONE
 )
 

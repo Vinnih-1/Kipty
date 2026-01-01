@@ -51,9 +51,13 @@ fun AudioCard(
     modifier: Modifier = Modifier
 ) {
     val typography = MaterialTheme.typography
-    val image = File(audioEntity.path, "image.jpg")
     var showModal by remember { mutableStateOf(false) }
     val haptics = LocalHapticFeedback.current
+    val image = if (audioEntity.isDefault) {
+        "file:///android_asset/${audioEntity.imagePath}"
+    } else {
+        File(audioEntity.audioPath, "image.jpg")
+    }
 
     ElevatedCard(
         modifier = modifier.padding(8.dp).combinedClickable(

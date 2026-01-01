@@ -10,9 +10,6 @@ import io.github.vinnih.kipty.data.application.AppConfig
 import io.github.vinnih.kipty.data.application.ApplicationData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.utils.copyTo
-import io.github.vinnih.kipty.utils.createFile
-import io.github.vinnih.kipty.utils.createFolder
 import jakarta.inject.Inject
 import java.io.File
 import java.time.LocalDateTime
@@ -26,8 +23,6 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel(),
     HomeController {
 
-    private val transcriptionsPath = File(context.filesDir, "transcriptions").createFolder()
-
     override fun openNotificationSettings() {
         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
             putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
@@ -37,20 +32,18 @@ class HomeViewModel @Inject constructor(
     }
 
     override suspend fun createAudio(
-        audio: File,
-        image: File?,
-        name: String?,
-        description: String?
+        audio: String,
+        image: String,
+        name: String,
+        description: String?,
+        isDefault: Boolean
     ): AudioEntity = withContext(Dispatchers.IO) {
-        val path = File(transcriptionsPath, audio.nameWithoutExtension).createFolder()
-
-        audio.inputStream().copyTo(File(path, "audio.mp3").createFile())
-        image?.inputStream()?.copyTo(File(path, "image.jpg").createFile())
-
         val entity = AudioEntity(
-            name = if (name.isNullOrEmpty()) audio.nameWithoutExtension else name,
+            name = name,
             description = description?.ifEmpty { null },
-            path = path.canonicalPath,
+            audioPath = audio,
+            imagePath = image,
+            isDefault = isDefault,
             createdAt = LocalDateTime.now().toString()
         )
 
@@ -61,28 +54,24 @@ class HomeViewModel @Inject constructor(
         return@withContext repository.save(audioEntity)
     }
 
-    override suspend fun createDefault(data: suspend (File, File, File, File) -> Unit) {
+    override suspend fun createDefault(data: suspend (String, String, String, String) -> Unit) {
         if (AppConfig(context).read().defaultSamplesLoaded) return
 
         withContext(Dispatchers.IO) {
-            val samplesPath = File(context.cacheDir, "samples").createFolder()
-
             context.assets.list("samples/")!!.map { folder ->
                 val sample = context.assets.list("samples/$folder")!!
                     .filter { it.endsWith(".mp3") }
                     .map { File(it) }
                     .first()
-                val audio = File(samplesPath, "${sample.name}").createFile()
-                val transcription = File(samplesPath, "raw_transcription.txt").createFile()
-                val image = File(samplesPath, "image.jpg").createFile()
-                val description = File(samplesPath, "description.txt")
+                val transcription = context.assets.open("samples/$folder/raw_transcription.txt")
+                val description = context.assets.open("samples/$folder/description.txt")
 
-                context.assets.open("samples/$folder/${sample.name}").copyTo(audio)
-                context.assets.open("samples/$folder/raw_transcription.txt").copyTo(transcription)
-                context.assets.open("samples/$folder/image.jpg").copyTo(image)
-                context.assets.open("samples/$folder/description.txt").copyTo(description)
-
-                data.invoke(audio, transcription, image, description)
+                data.invoke(
+                    "/samples/$folder/${sample.name}",
+                    transcription.bufferedReader().readText(),
+                    "samples/$folder/image.jpg",
+                    description.bufferedReader().readText()
+                )
             }
             AppConfig(context).write(ApplicationData("", true))
         }

@@ -92,8 +92,9 @@ fun CreateScreen(
                 audio = audio.copy(description = it)
                 scope.launch {
                     homeController.createAudio(
-                        audio = audio.file!!,
-                        name = audio.name,
+                        audio = audio.file!!.absolutePath,
+                        image = File("").absolutePath, // TODO: Add image support
+                        name = audio.name!!,
                         description = audio.description
                     )
                     onBack.invoke()

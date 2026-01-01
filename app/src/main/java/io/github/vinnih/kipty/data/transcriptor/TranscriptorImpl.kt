@@ -44,7 +44,7 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
     }
 
     override suspend fun transcribe(audioEntity: AudioEntity): AudioEntity {
-        val audio = File(audioEntity.path).resolve("audio.mp3")
+        val audio = File(audioEntity.audioPath).resolve("audio.mp3")
         val reader = audio.toWavReader(context.cacheDir)
         val transcription = whisperContext.transcribeData(reader.data.toFloatArray(context))
             .convertTranscription()

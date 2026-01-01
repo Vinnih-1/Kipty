@@ -8,13 +8,14 @@ interface HomeController {
     fun openNotificationSettings()
 
     suspend fun createAudio(
-        audio: File,
-        image: File? = null,
-        name: String? = null,
-        description: String? = null
+        audio: String,
+        image: String,
+        name: String,
+        description: String? = null,
+        isDefault: Boolean = false
     ): AudioEntity
 
     suspend fun saveAudio(audioEntity: AudioEntity): Long
 
-    suspend fun createDefault(data: suspend (File, File, File, File) -> Unit)
+    suspend fun createDefault(data: suspend (String, String, String, String) -> Unit)
 }

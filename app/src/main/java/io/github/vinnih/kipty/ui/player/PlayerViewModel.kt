@@ -9,6 +9,7 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.currentCoroutineContext
@@ -23,7 +24,11 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.json.Json
 
-data class PlayerUiState(val audioEntity: AudioEntity? = null, val progress: Float = 0f)
+data class PlayerUiState(
+    val audioEntity: AudioEntity? = null,
+    val progress: Float = 0f,
+    val currentPosition: Long = 0L
+)
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
@@ -33,7 +38,7 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
     private val _currentAudio = MutableStateFlow<AudioEntity?>(null)
     override val currentAudio: StateFlow<AudioEntity?> = _currentAudio.asStateFlow()
 
-    override val progress: StateFlow<Float> = createProgressFlow()
+    override val progress: StateFlow<Pair<Float, Long>> = createProgressFlow()
 
     override val uiState: StateFlow<PlayerUiState> = combine(currentAudio, progress) {
             audio,
@@ -41,7 +46,8 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         ->
         PlayerUiState(
             audioEntity = audio,
-            progress = progress
+            progress = progress.first,
+            currentPosition = progress.second
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
@@ -71,6 +77,14 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         player.play()
     }
 
+    override fun currentSection(): AudioTranscription? {
+        val transcription = _currentAudio.value?.transcription ?: return null
+        return transcription.find {
+            it.start <= player.currentPosition &&
+                it.end >= player.currentPosition
+        }
+    }
+
     private fun preparePlayer(audioEntity: AudioEntity, extras: Bundle = Bundle()) {
         player.clearMediaItems()
 
@@ -91,15 +105,20 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         player.prepare()
     }
 
-    private fun createProgressFlow(): StateFlow<Float> = flow {
+    private fun createProgressFlow(): StateFlow<Pair<Float, Long>> = flow {
         while (currentCoroutineContext().isActive) {
             if (player.isPlaying) {
                 checkSectionEnd()
-                emit(player.currentPosition.toFloat() / player.duration.toFloat())
+                emit(
+                    Pair(
+                        player.currentPosition.toFloat() / player.duration.toFloat(),
+                        player.currentPosition
+                    )
+                )
             }
             delay(100)
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0f)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Pair(0f, 0L))
 
     private fun checkSectionEnd() {
         val end = player.currentMediaItem?.mediaMetadata?.extras?.getLong("end") ?: 0L

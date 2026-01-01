@@ -9,10 +9,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,7 +59,7 @@ fun TextViewer(
     }
 
     TextViewerBase(
-        transcription = audioEntity.transcription,
+        playerController = playerController,
         onClick = onClick,
         modifier = modifier,
         showTimestamp = showTimestamp
@@ -75,7 +81,50 @@ private fun TextViewerBase(
             TextSection(
                 transcription = it,
                 onClick = onClick,
-                showTimestamp = showTimestamp
+                showTimestamp = showTimestamp,
+                selected = true
+            )
+        }
+    }
+}
+
+@Composable
+private fun TextViewerBase(
+    playerController: PlayerController,
+    onClick: (Long, Long) -> Unit,
+    modifier: Modifier = Modifier,
+    showTimestamp: Boolean = true
+) {
+    val uiState = playerController.uiState.collectAsState()
+    val audioEntity = uiState.value.audioEntity
+    val listState = rememberLazyListState()
+
+    val activeIndex by remember(playerController.uiState.value.currentPosition) {
+        derivedStateOf {
+            audioEntity!!.transcription!!.indexOfLast {
+                it.start <=
+                    playerController.uiState.value.currentPosition
+            }
+        }
+    }
+
+    LaunchedEffect(activeIndex) {
+        listState.animateScrollToItem(index = activeIndex, scrollOffset = -400)
+    }
+
+    LazyColumn(
+        state = listState,
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        itemsIndexed(audioEntity!!.transcription!!) { index, item ->
+            val isActive = index == activeIndex
+
+            TextSection(
+                transcription = item,
+                onClick = onClick,
+                showTimestamp = showTimestamp,
+                selected = isActive
             )
         }
     }
@@ -86,6 +135,7 @@ private fun TextSection(
     transcription: AudioTranscription,
     onClick: (Long, Long) -> Unit,
     showTimestamp: Boolean,
+    selected: Boolean,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -115,7 +165,7 @@ private fun TextSection(
         }
         Text(
             text = transcription.text.removePrefix(":  "),
-            color = colors.secondary,
+            color = colors.secondary.copy(alpha = if (selected) 1f else 0.5f),
             style = typography.headlineMedium
         )
     }

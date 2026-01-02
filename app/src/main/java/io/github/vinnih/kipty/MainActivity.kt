@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -129,10 +130,12 @@ class MainActivity : ComponentActivity() {
             scaffoldState = scaffoldState,
             sheetPeekHeight = 148.dp,
             sheetContent = {
-                PlayerScreen(
-                    playerController = playerController,
-                    scaffoldState = scaffoldState
-                )
+                AnimatedVisibility(visible = !backstack.contains(Screen.Create)) {
+                    PlayerScreen(
+                        playerController = playerController,
+                        scaffoldState = scaffoldState
+                    )
+                }
             },
             sheetShape = RectangleShape,
             sheetDragHandle = null

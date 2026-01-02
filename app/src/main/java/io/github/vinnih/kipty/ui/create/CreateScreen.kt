@@ -215,6 +215,15 @@ private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modi
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
         type = "audio/*"
+        putExtra(
+            Intent.EXTRA_MIME_TYPES,
+            arrayOf(
+                "audio/mpeg",
+                "audio/wav",
+                "audio/x-wav",
+                "audio/wave"
+            )
+        )
     }
     val context = LocalContext.current
     val audioPickerLauncher =

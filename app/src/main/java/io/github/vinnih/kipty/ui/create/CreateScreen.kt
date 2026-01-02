@@ -18,6 +18,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
@@ -123,15 +124,31 @@ fun CreateScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateTopBar(stage: Stage, onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     CenterAlignedTopAppBar(
         title = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "${stage.ordinal + 1} of ${Stage.entries.size}",
+                    style = typography.titleMedium,
+                    color = colors.secondary
+                )
+                LinearProgressIndicator(
+                    progress = { ((stage.ordinal + 1).toFloat() / Stage.entries.size) },
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
+                )
+            }
         },
         navigationIcon = {
             IconButton(onClick = onBack) {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
                     contentDescription = "Arrow back button",
-                    modifier = Modifier.size(38.dp).padding(top = 4.dp)
+                    modifier = Modifier.size(38.dp).padding(top = 4.dp),
+                    tint = colors.primary
                 )
             }
         },

@@ -95,7 +95,7 @@ fun AudioCard(
             AsyncImage(
                 model = image,
                 contentDescription = null,
-                contentScale = ContentScale.FillHeight,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier.width(144.dp).height(200.dp)
             )
         }

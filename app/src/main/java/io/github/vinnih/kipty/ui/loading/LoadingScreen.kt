@@ -32,7 +32,7 @@ fun LoadingScreen(
 
     LaunchedEffect(Unit) {
         homeController.createDefault { audio, transcription, image, description ->
-            val audioEntity = homeController.createAudio(
+            val audioEntity = audioController.createAudio(
                 audio = audio,
                 image = image,
                 name = audio.substringAfterLast("/"),
@@ -41,7 +41,7 @@ fun LoadingScreen(
             )
             val transcriptionData = transcription.convertTranscription()
 
-            audioController.saveTranscription(
+            audioController.saveAudio(
                 audioEntity.copy(
                     transcription = transcriptionData,
                     state = TranscriptionState.TRANSCRIBED

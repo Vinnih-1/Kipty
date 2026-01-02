@@ -45,7 +45,7 @@ fun AppNavigation(
 
         is Screen.Create -> {
             CreateScreen(
-                homeController = homeController,
+                audioController = audioController,
                 onBack = onBack
             )
         }

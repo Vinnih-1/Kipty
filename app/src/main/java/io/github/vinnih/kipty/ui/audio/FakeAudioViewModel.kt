@@ -10,6 +10,16 @@ class FakeAudioViewModel : AudioController {
     override val allAudios: StateFlow<List<AudioEntity>>
         get() = TODO("Not yet implemented")
 
+    override suspend fun createAudio(
+        audio: String,
+        image: String,
+        name: String,
+        description: String?,
+        isDefault: Boolean
+    ): AudioEntity {
+        TODO("Not yet implemented")
+    }
+
     override fun transcribeAudio(
         audioEntity: AudioEntity,
         onSuccess: (List<AudioTranscription>) -> Unit
@@ -17,7 +27,7 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
-    override fun saveTranscription(audioEntity: AudioEntity) {
+    override suspend fun saveAudio(audioEntity: AudioEntity): Long {
         TODO("Not yet implemented")
     }
 

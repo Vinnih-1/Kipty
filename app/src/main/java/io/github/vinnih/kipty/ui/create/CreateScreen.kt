@@ -46,8 +46,8 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
-import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.dashedBorder
 import java.io.File
@@ -69,7 +69,7 @@ private data class AudioCreator(
 
 @Composable
 fun CreateScreen(
-    homeController: HomeController,
+    audioController: AudioController,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -108,7 +108,7 @@ fun CreateScreen(
 
             Stage.IMAGE -> AudioImageStage(modifier = Modifier, onComplete = {
                 scope.launch {
-                    homeController.createAudio(
+                    audioController.createAudio(
                         audio = audio.file.absolutePath,
                         image = if (it == null) audio.image.absolutePath else it.absolutePath,
                         name = audio.name.ifEmpty { audio.file.nameWithoutExtension },

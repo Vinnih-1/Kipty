@@ -17,6 +17,7 @@ import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
 import io.github.vinnih.kipty.json
 import java.io.File
+import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TRANSCRIPTION_QUEUE = "transcription_queue"
 
@@ -39,6 +41,25 @@ class AudioViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
+
+    override suspend fun createAudio(
+        audio: String,
+        image: String,
+        name: String,
+        description: String?,
+        isDefault: Boolean
+    ): AudioEntity = withContext(Dispatchers.IO) {
+        val entity = AudioEntity(
+            name = name,
+            description = description?.ifEmpty { null },
+            audioPath = audio,
+            imagePath = image,
+            isDefault = isDefault,
+            createdAt = LocalDateTime.now().toString()
+        )
+
+        return@withContext entity.copy(uid = saveAudio(entity).toInt())
+    }
 
     override fun transcribeAudio(
         audioEntity: AudioEntity,
@@ -88,13 +109,11 @@ class AudioViewModel @Inject constructor(
 
     private fun updateAudioState(audioEntity: AudioEntity, state: TranscriptionState) {
         val entityCopy = audioEntity.copy(state = state)
-        saveTranscription(entityCopy)
+        viewModelScope.launch { saveAudio(entityCopy) }
     }
 
-    override fun saveTranscription(audioEntity: AudioEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.save(audioEntity)
-        }
+    override suspend fun saveAudio(audioEntity: AudioEntity): Long = withContext(Dispatchers.IO) {
+        return@withContext repository.save(audioEntity)
     }
 
     override fun deleteAudio(audioEntity: AudioEntity) {

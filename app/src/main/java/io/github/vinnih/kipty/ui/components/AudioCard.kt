@@ -56,7 +56,7 @@ fun AudioCard(
     val image = if (audioEntity.isDefault) {
         "file:///android_asset/${audioEntity.imagePath}"
     } else {
-        File(audioEntity.audioPath, "image.jpg")
+        File(audioEntity.imagePath)
     }
 
     ElevatedCard(

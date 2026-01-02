@@ -10,6 +10,7 @@ import io.github.vinnih.kipty.data.application.AppConfig
 import io.github.vinnih.kipty.data.application.ApplicationData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
+import io.github.vinnih.kipty.utils.copyTo
 import jakarta.inject.Inject
 import java.io.File
 import java.time.LocalDateTime
@@ -58,6 +59,9 @@ class HomeViewModel @Inject constructor(
         if (AppConfig(context).read().defaultSamplesLoaded) return
 
         withContext(Dispatchers.IO) {
+            context.assets.open("icons/default-icon.png")
+                .copyTo(File(context.filesDir, "default-icon.png"))
+
             context.assets.list("samples/")!!.map { folder ->
                 val sample = context.assets.list("samples/$folder")!!
                     .filter { it.endsWith(".mp3") }

@@ -55,13 +55,15 @@ import kotlinx.coroutines.launch
 private enum class Stage {
     FILE,
     NAME,
-    DESCRIPTION
+    DESCRIPTION,
+    IMAGE
 }
 
 private data class AudioCreator(
-    val file: File? = null,
-    val name: String? = null,
-    val description: String? = null
+    val file: File,
+    val image: File,
+    val name: String,
+    val description: String
 )
 
 @Composable
@@ -70,12 +72,22 @@ fun CreateScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var audio by remember { mutableStateOf(AudioCreator()) }
+    val context = LocalContext.current
+    var audio by remember {
+        mutableStateOf(
+            AudioCreator(
+                file = File(""),
+                image = File(context.filesDir, "default-icon.png"),
+                name = "",
+                description = ""
+            )
+        )
+    }
     var stage by remember { mutableStateOf(Stage.FILE) }
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxSize()) {
-        CreateTopBar(onBack = onBack)
+        CreateTopBar(stage = stage, onBack = onBack)
 
         when (stage) {
             Stage.FILE -> AudioFileStage(modifier = Modifier, onComplete = {
@@ -89,12 +101,16 @@ fun CreateScreen(
             })
 
             Stage.DESCRIPTION -> AudioDescriptionStage(modifier = Modifier, onComplete = {
+                stage = Stage.IMAGE
                 audio = audio.copy(description = it)
+            })
+
+            Stage.IMAGE -> AudioImageStage(modifier = Modifier, onComplete = {
                 scope.launch {
                     homeController.createAudio(
-                        audio = audio.file!!.absolutePath,
-                        image = File("").absolutePath, // TODO: Add image support
-                        name = audio.name!!,
+                        audio = audio.file.absolutePath,
+                        image = if (it == null) audio.image.absolutePath else it.absolutePath,
+                        name = audio.name.ifEmpty { audio.file.nameWithoutExtension },
                         description = audio.description
                     )
                     onBack.invoke()
@@ -106,7 +122,7 @@ fun CreateScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
+private fun CreateTopBar(stage: Stage, onBack: () -> Unit, modifier: Modifier = Modifier) {
     CenterAlignedTopAppBar(
         title = {
         },
@@ -335,6 +351,91 @@ private fun AudioDescriptionStage(onComplete: (String) -> Unit, modifier: Modifi
             )
         }
     }
+}
+
+@Composable
+private fun AudioImageStage(onComplete: (File?) -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    val composition by rememberLottieComposition(
+        LottieCompositionSpec.Asset("animations/image-anime.json")
+    )
+    var selectedFile by remember { mutableStateOf<File?>(null) }
+    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+        addCategory(Intent.CATEGORY_OPENABLE)
+        type = "image/*"
+    }
+    val context = LocalContext.current
+    val audioPickerLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            val uri = result.data?.data ?: return@rememberLauncherForActivityResult
+            val name = context.contentResolver.query(
+                uri,
+                arrayOf(OpenableColumns.DISPLAY_NAME),
+                null,
+                null,
+                null
+            ).use {
+                if (it == null) return@use null
+
+                it.moveToFirst()
+                val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+
+                if (index != -1) {
+                    return@use it.getString(index)
+                } else {
+                    return@use null
+                }
+            }
+
+            context.contentResolver.openInputStream(uri).use { input ->
+                if (input == null || name == null) return@use
+
+                val file = File(context.cacheDir, name)
+                file.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+                selectedFile = file
+            }
+        }
+
+    BasicCreateScreen(composition = composition, content = {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(48.dp)
+        ) {
+            Text(
+                text = selectedFile?.name ?: "Select an image",
+                style = typography.displayMedium,
+                color = colors.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center
+            )
+            OutlinedIconButton(
+                border = BorderStroke(0.dp, Color.Transparent),
+                shape = RoundedCornerShape(16.dp),
+                onClick = { audioPickerLauncher.launch(intent) },
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = 24.dp
+                ).height(128.dp).dashedBorder(
+                    color = colors.primary
+                )
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.image_search),
+                    contentDescription = "Image file icon",
+                    tint = colors.primary,
+                    modifier = Modifier.size(72.dp)
+                )
+            }
+        }
+    }, onNext = {
+        onComplete(selectedFile)
+    }, stage = Stage.FILE, modifier = modifier)
 }
 
 @Preview(

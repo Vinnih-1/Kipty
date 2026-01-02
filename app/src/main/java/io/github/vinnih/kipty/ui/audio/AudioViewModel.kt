@@ -16,6 +16,9 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.utils.createFile
+import io.github.vinnih.kipty.utils.createFolder
+import io.github.vinnih.kipty.utils.moveTo
 import java.io.File
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -49,11 +52,21 @@ class AudioViewModel @Inject constructor(
         description: String?,
         isDefault: Boolean
     ): AudioEntity = withContext(Dispatchers.IO) {
+        val path = File(
+            context.filesDir,
+            "transcriptions" + File.separatorChar + name
+        ).createFolder()
+        val audioFile = File(path, audio.substringAfterLast("/"))
+        val imageFile = File(path, image.substringAfterLast("/"))
+
+        File(audio).moveTo(audioFile)
+        File(image).moveTo(imageFile)
+
         val entity = AudioEntity(
             name = name,
             description = description?.ifEmpty { null },
-            audioPath = audio,
-            imagePath = image,
+            audioPath = audioFile.absolutePath,
+            imagePath = imageFile.absolutePath,
             isDefault = isDefault,
             createdAt = LocalDateTime.now().toString()
         )

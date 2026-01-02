@@ -74,3 +74,8 @@ fun InputStream.copyTo(file: File) {
         this.copyTo(outputStream)
     }
 }
+
+fun File.moveTo(file: File) {
+    this.copyTo(file, overwrite = true)
+    this.deleteRecursively()
+}

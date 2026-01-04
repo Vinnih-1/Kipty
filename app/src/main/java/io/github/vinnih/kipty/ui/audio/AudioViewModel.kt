@@ -49,8 +49,7 @@ class AudioViewModel @Inject constructor(
         audio: String,
         image: String,
         name: String,
-        description: String?,
-        isDefault: Boolean
+        description: String?
     ): AudioEntity = withContext(Dispatchers.IO) {
         val path = File(
             context.filesDir,
@@ -62,11 +61,27 @@ class AudioViewModel @Inject constructor(
         File(audio).moveTo(audioFile)
         File(image).moveTo(imageFile)
 
+        return@withContext createAudio(
+            audio = audioFile.absolutePath,
+            image = imageFile.absolutePath,
+            name = name,
+            description = description,
+            isDefault = false
+        )
+    }
+
+    override suspend fun createAudio(
+        audio: String,
+        image: String,
+        name: String,
+        description: String?,
+        isDefault: Boolean
+    ): AudioEntity = withContext(Dispatchers.IO) {
         val entity = AudioEntity(
             name = name,
             description = description?.ifEmpty { null },
-            audioPath = audioFile.absolutePath,
-            imagePath = imageFile.absolutePath,
+            audioPath = audio,
+            imagePath = image,
             isDefault = isDefault,
             createdAt = LocalDateTime.now().toString()
         )

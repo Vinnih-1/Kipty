@@ -14,8 +14,15 @@ interface AudioController {
         audio: String,
         image: String,
         name: String,
+        description: String?
+    ): AudioEntity
+
+    suspend fun createAudio(
+        audio: String,
+        image: String,
+        name: String,
         description: String?,
-        isDefault: Boolean = false
+        isDefault: Boolean
     ): AudioEntity
 
     fun transcribeAudio(audioEntity: AudioEntity, onSuccess: (List<AudioTranscription>) -> Unit)

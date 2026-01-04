@@ -59,7 +59,7 @@ class AudioViewModel @Inject constructor(
         val imageFile = File(path, image.substringAfterLast("/"))
 
         File(audio).moveTo(audioFile)
-        File(image).moveTo(imageFile)
+        File(image).copyTo(imageFile)
 
         return@withContext createAudio(
             audio = audioFile.absolutePath,
@@ -93,8 +93,6 @@ class AudioViewModel @Inject constructor(
         audioEntity: AudioEntity,
         onSuccess: (List<AudioTranscription>) -> Unit
     ) {
-        workManager.pruneWork()
-
         val request = OneTimeWorkRequestBuilder<TranscriptionWorker>()
             .setInputData(Data.Builder().putInt("AUDIO_ID", audioEntity.uid).build())
             .addTag("${audioEntity.uid}")
@@ -157,7 +155,9 @@ class AudioViewModel @Inject constructor(
         workManager.getWorkInfosForUniqueWorkFlow(TRANSCRIPTION_QUEUE)
 
     override fun cancelTranscriptionWork(audioEntity: AudioEntity) {
+        workManager.pruneWork()
         workManager.cancelAllWorkByTag("${audioEntity.uid}")
+        updateAudioState(audioEntity, TranscriptionState.NONE)
     }
 
     override fun getById(id: Int): Flow<AudioEntity?> = repository.getById(id)

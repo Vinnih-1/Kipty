@@ -16,7 +16,6 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
 import io.github.vinnih.kipty.json
-import io.github.vinnih.kipty.utils.createFile
 import io.github.vinnih.kipty.utils.createFolder
 import io.github.vinnih.kipty.utils.moveTo
 import java.io.File
@@ -93,6 +92,7 @@ class AudioViewModel @Inject constructor(
         audioEntity: AudioEntity,
         onSuccess: (List<AudioTranscription>) -> Unit
     ) {
+        workManager.pruneWork()
         val request = OneTimeWorkRequestBuilder<TranscriptionWorker>()
             .setInputData(Data.Builder().putInt("AUDIO_ID", audioEntity.uid).build())
             .addTag("${audioEntity.uid}")
@@ -109,8 +109,11 @@ class AudioViewModel @Inject constructor(
             workManager.getWorkInfoByIdFlow(request.id).collect { workInfo ->
                 when (workInfo?.state) {
                     WorkInfo.State.SUCCEEDED -> {
-                        val transcription = json.decodeFromString<List<AudioTranscription>>(
+                        val file = File(
                             workInfo.outputData.getString("transcription")!!
+                        )
+                        val transcription = json.decodeFromString<List<AudioTranscription>>(
+                            file.readText()
                         )
                         onSuccess(transcription)
                         updateAudioState(

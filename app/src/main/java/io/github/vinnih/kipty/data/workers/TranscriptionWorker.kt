@@ -16,6 +16,8 @@ import io.github.vinnih.kipty.data.service.NOTIFICATION_ID
 import io.github.vinnih.kipty.data.service.createNotification
 import io.github.vinnih.kipty.data.transcriptor.Transcriptor
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.utils.createFile
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -33,22 +35,33 @@ class TranscriptionWorker @AssistedInject constructor(
 
         if (audioId == -1) return@withContext Result.failure()
 
-        setForegroundAsync(createForegroundInfo())
+        setForegroundAsync(createForegroundInfo(0))
 
-        val audioEntity = transcriptor.transcribe(audioRepository.getById(audioId).first()!!)
+        val audioEntity = transcriptor.transcribe(
+            audioRepository.getById(audioId).first()!!,
+            onProgress = {
+                setForegroundAsync(createForegroundInfo(it))
+            }
+        )
+        val transcription = File(applicationContext.cacheDir, "${this@TranscriptionWorker.id}.json")
+            .createFile()
+            .also {
+                it.writeText(json.encodeToString(audioEntity.transcription))
+            }
         val data = workDataOf(
-            "transcription" to json.encodeToString(audioEntity.transcription)
+            "transcription" to transcription.absolutePath
         )
         audioRepository.save(audioEntity.copy(state = TranscriptionState.TRANSCRIBED))
 
         return@withContext Result.success(data)
     }
 
-    private fun createForegroundInfo(): ForegroundInfo {
+    private fun createForegroundInfo(progress: Int): ForegroundInfo {
         val notification = createNotification(
             applicationContext,
             true,
-            "Your transcription is running, please wait."
+            "Your transcription is $progress%, please wait.",
+            progress
         )
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {

@@ -6,7 +6,6 @@ import io.github.nailik.androidresampler.ResamplerConfiguration
 import io.github.nailik.androidresampler.data.ResamplerChannel
 import io.github.nailik.androidresampler.data.ResamplerQuality
 import io.github.vinnih.androidtranscoder.utils.toWavReader
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -41,32 +40,55 @@ fun resample(channels: Int, inSampleRate: Int, outSampleRate: Int, pcmData: Byte
     return resampler.resample(pcmData)
 }
 
-fun File.toFloatArray(context: Context): FloatArray {
+suspend fun File.processAudioSegments(
+    context: Context,
+    segmentDurationSeconds: Int = 30,
+    onSegmentProcessed: suspend (segmentNumber: Int, floatArray: FloatArray, progress: Int) -> Unit
+) {
     val reader = this.toWavReader(context.cacheDir)
-    val baos = ByteArrayOutputStream()
-    reader.data.inputStream().use { it.copyTo(baos) }
 
-    val fullData = baos.toByteArray()
-    val buffer = ByteBuffer.wrap(fullData)
-    buffer.order(ByteOrder.LITTLE_ENDIAN)
-    buffer.position(44)
+    val bytesPerSample = 2
+    val bytesPerSecond = reader.sampleRate * reader.channels * bytesPerSample
+    val segmentSizeBytes = bytesPerSecond * segmentDurationSeconds
+    val audioDataSize = reader.data.length() - 44
+    val totalSegments = (audioDataSize + segmentSizeBytes - 1) / segmentSizeBytes
 
-    val pcmDataLength = buffer.limit() - buffer.position()
-    val pcmData = ByteArray(pcmDataLength)
-    buffer.get(pcmData, 0, pcmDataLength)
+    val inputStream = reader.data.inputStream()
+    inputStream.skip(44)
 
-    val resampledPcm = resample(reader.channels, reader.sampleRate, 16000, pcmData)
-    val finalFloatArray = FloatArray(resampledPcm.size / 2)
-    val shortBuffer = ByteBuffer.wrap(resampledPcm)
-        .order(ByteOrder.LITTLE_ENDIAN)
-        .asShortBuffer()
+    val buffer = ByteArray(segmentSizeBytes)
+    var bytesRead: Int
+    var segmentNumber = 0
 
-    for (i in 0 until shortBuffer.limit()) {
-        val shortValue = shortBuffer.get(i).toInt()
-        finalFloatArray[i] = (shortValue / 32767.0f).coerceIn(-1f..1f)
+    while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+        segmentNumber++
+
+        val actualData = if (bytesRead < segmentSizeBytes) {
+            buffer.copyOf(bytesRead)
+        } else {
+            buffer
+        }
+
+        val resampledPcm = resample(reader.channels, reader.sampleRate, 16000, actualData)
+
+        val floatArray = FloatArray(resampledPcm.size / 2)
+        val shortBuffer = ByteBuffer.wrap(resampledPcm)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .asShortBuffer()
+
+        for (i in 0 until shortBuffer.limit()) {
+            floatArray[i] = (shortBuffer.get(i) / 32767.0f).coerceIn(-1f..1f)
+        }
+        val progress = (segmentNumber.toFloat() / totalSegments.toFloat() * 100).toInt()
+
+        onSegmentProcessed(
+            segmentNumber,
+            floatArray,
+            progress
+        )
     }
 
-    return finalFloatArray
+    inputStream.close()
 }
 
 fun InputStream.copyTo(file: File) {

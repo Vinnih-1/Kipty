@@ -28,7 +28,12 @@ fun createNotificationChannel(context: Context) {
     notificationManager.createNotificationChannel(channel)
 }
 
-fun createNotification(context: Context, ongoing: Boolean, text: String): Notification {
+fun createNotification(
+    context: Context,
+    ongoing: Boolean,
+    text: String,
+    progress: Int
+): Notification {
     createNotificationChannel(context)
 
     return NotificationCompat.Builder(context, CHANNEL_ID)
@@ -36,6 +41,6 @@ fun createNotification(context: Context, ongoing: Boolean, text: String): Notifi
         .setContentText(text)
         .setSmallIcon(R.mipmap.ic_launcher_round)
         .setOngoing(ongoing)
-        .setProgress(100, 0, true)
+        .setProgress(100, progress, false)
         .build()
 }

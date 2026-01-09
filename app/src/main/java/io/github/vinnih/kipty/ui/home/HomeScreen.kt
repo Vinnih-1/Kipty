@@ -76,46 +76,50 @@ fun HomeScreen(
             onCreateClick = { onNavigate(Screen.Create) }
         )
 
-        if (notificationWarn) {
-            NotificationPermissionWarn(
-                onEnable = {
-                    homeController.openNotificationSettings()
-                },
-                onDismiss = { notificationWarn = false }
-            )
-        }
+        LazyColumn {
+            item {
+                if (notificationWarn) {
+                    NotificationPermissionWarn(
+                        onEnable = {
+                            homeController.openNotificationSettings()
+                        },
+                        onDismiss = { notificationWarn = false }
+                    )
+                }
 
-        if (audioState.value.isEmpty()) {
-            val composition by rememberLottieComposition(
-                LottieCompositionSpec.Asset("animations/book-loading.json")
-            )
-            val progress by animateLottieCompositionAsState(
-                composition = composition,
-                iterations = LottieConstants.IterateForever,
-                speed = 1.0f
-            )
+                audioState.value.ifEmpty {
+                    val composition by rememberLottieComposition(
+                        LottieCompositionSpec.Asset("animations/book-loading.json")
+                    )
+                    val progress by animateLottieCompositionAsState(
+                        composition = composition,
+                        iterations = LottieConstants.IterateForever,
+                        speed = 1.0f
+                    )
 
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LottieAnimation(
-                    composition = composition,
-                    progress = { progress },
-                    modifier = Modifier.size(256.dp)
-                )
-                Button(
-                    onClick = { onNavigate(Screen.Create) },
-                    modifier = Modifier.height(48.dp),
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Text("Create a Transcription")
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(
+                            32.dp,
+                            Alignment.CenterVertically
+                        ),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        LottieAnimation(
+                            composition = composition,
+                            progress = { progress },
+                            modifier = Modifier.size(256.dp)
+                        )
+                        Button(
+                            onClick = { onNavigate(Screen.Create) },
+                            modifier = Modifier.height(48.dp),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text("Create a Transcription")
+                        }
+                    }
                 }
             }
-        }
-
-        LazyColumn {
             items(audioState.value) { audioData ->
                 AudioCard(
                     audioEntity = audioData,

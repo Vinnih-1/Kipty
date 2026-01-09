@@ -41,6 +41,7 @@ fun createNotification(
         .setContentText(text)
         .setSmallIcon(R.mipmap.ic_launcher_round)
         .setOngoing(ongoing)
+        .setOnlyAlertOnce(true)
         .setProgress(100, progress, false)
         .build()
 }

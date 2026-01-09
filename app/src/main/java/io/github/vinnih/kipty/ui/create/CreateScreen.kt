@@ -39,12 +39,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.airbnb.lottie.LottieComposition
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
-import com.airbnb.lottie.compose.rememberLottieComposition
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
@@ -161,29 +155,15 @@ private fun CreateTopBar(stage: Stage, onBack: () -> Unit, modifier: Modifier = 
 private fun BasicCreateScreen(
     onNext: () -> Unit,
     stage: Stage,
-    composition: LottieComposition?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     content: @Composable () -> Unit
 ) {
-    val progress by animateLottieCompositionAsState(
-        composition = composition,
-        iterations = LottieConstants.IterateForever,
-        speed = 1.0f
-    )
-
     Column(
-        modifier = modifier.fillMaxSize().padding(bottom = 144.dp),
+        modifier = modifier.fillMaxSize().padding(vertical = 144.dp),
         verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(modifier = Modifier.height(200.dp).padding(bottom = 24.dp)) {
-            LottieAnimation(
-                composition = composition,
-                progress = { progress },
-                modifier = Modifier
-            )
-        }
         Column(modifier = Modifier.fillMaxSize().weight(.1f)) {
             content.invoke()
         }
@@ -208,9 +188,6 @@ private fun BasicCreateScreen(
 private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.Asset("animations/speaker-icon.json")
-    )
     var selectedFile by remember { mutableStateOf<File?>(null) }
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
@@ -261,7 +238,7 @@ private fun AudioFileStage(onComplete: (File) -> Unit, modifier: Modifier = Modi
             }
         }
 
-    BasicCreateScreen(composition = composition, enabled = selectedFile != null, content = {
+    BasicCreateScreen(enabled = selectedFile != null, content = {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -303,13 +280,10 @@ private fun AudioNameStage(onComplete: (String) -> Unit, modifier: Modifier = Mo
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     var name by remember { mutableStateOf("") }
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.Asset("animations/creative-idea.json")
-    )
 
     BasicCreateScreen(onNext = {
         onComplete(name)
-    }, Stage.NAME, modifier = modifier, composition = composition) {
+    }, Stage.NAME, modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -339,13 +313,10 @@ private fun AudioDescriptionStage(onComplete: (String) -> Unit, modifier: Modifi
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     var description by remember { mutableStateOf("") }
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.Asset("animations/book-loading.json")
-    )
 
     BasicCreateScreen(onNext = {
         onComplete(description)
-    }, Stage.DESCRIPTION, modifier = modifier, composition = composition) {
+    }, Stage.DESCRIPTION, modifier = modifier) {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -383,9 +354,6 @@ private fun AudioDescriptionStage(onComplete: (String) -> Unit, modifier: Modifi
 private fun AudioImageStage(onComplete: (File?) -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.Asset("animations/image-anime.json")
-    )
     var selectedFile by remember { mutableStateOf<File?>(null) }
     val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
         addCategory(Intent.CATEGORY_OPENABLE)
@@ -427,7 +395,7 @@ private fun AudioImageStage(onComplete: (File?) -> Unit, modifier: Modifier = Mo
             }
         }
 
-    BasicCreateScreen(composition = composition, content = {
+    BasicCreateScreen(content = {
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,

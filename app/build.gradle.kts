@@ -69,7 +69,6 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.uicompose)
     implementation(libs.serialization.json)
-    implementation(libs.lottie.compose)
     implementation(libs.worker.runtime.ktx)
     implementation(libs.google.accompanist.permission)
     implementation(libs.coil.compose)

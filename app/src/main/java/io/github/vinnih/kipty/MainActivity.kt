@@ -5,13 +5,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -99,6 +101,13 @@ class MainActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
 
         splashScreen.setKeepOnScreenCondition { backstack.contains(Screen.Loading) }
+        val shouldShowBottomSheet = !backstack.contains(Screen.Create)
+
+        val animatedPeekHeight by animateDpAsState(
+            targetValue = if (shouldShowBottomSheet) 148.dp else 0.dp,
+            animationSpec = tween(durationMillis = 300),
+            label = "bottomSheetPeekHeight"
+        )
 
         BackHandler(
             enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
@@ -108,14 +117,12 @@ class MainActivity : ComponentActivity() {
 
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
-            sheetPeekHeight = 148.dp,
+            sheetPeekHeight = animatedPeekHeight,
             sheetContent = {
-                AnimatedVisibility(visible = !backstack.contains(Screen.Create)) {
-                    PlayerScreen(
-                        playerController = playerController,
-                        scaffoldState = scaffoldState
-                    )
-                }
+                PlayerScreen(
+                    playerController = playerController,
+                    scaffoldState = scaffoldState
+                )
             },
             sheetShape = RectangleShape,
             sheetDragHandle = null

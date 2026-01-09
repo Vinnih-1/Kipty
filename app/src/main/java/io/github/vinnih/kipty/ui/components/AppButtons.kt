@@ -19,7 +19,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -159,10 +158,7 @@ fun PlayPauseAudioButton(
         Button(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth(.8f).fillMaxHeight(),
-            shape = RoundedCornerShape(
-                topStart = 8.dp,
-                bottomStart = 8.dp
-            ),
+            shape = RoundedCornerShape(8.dp),
             contentPadding = PaddingValues(0.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = container,
@@ -184,28 +180,6 @@ fun PlayPauseAudioButton(
                 )
                 Text(text = "Play")
             }
-        }
-        VerticalDivider(thickness = 1.dp)
-        Button(
-            onClick = {},
-            modifier = Modifier.fillMaxSize(),
-            shape = RoundedCornerShape(
-                topStart = 0.dp,
-                topEnd = 8.dp,
-                bottomStart = 0.dp,
-                bottomEnd = 8.dp
-            ),
-            contentPadding = PaddingValues(0.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = container,
-                contentColor = content
-            )
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.arrow_drop_down),
-                contentDescription = "Arrow drop down button",
-                modifier = Modifier.size(24.dp)
-            )
         }
     }
 }

@@ -1,7 +1,6 @@
 package io.github.vinnih.kipty.data.transcriptor
 
 import android.content.Context
-import android.util.Log
 import com.whispercpp.whisper.WhisperContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.androidtranscoder.utils.toWavReader
@@ -53,29 +52,25 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
         val reader = audio.toWavReader(context.cacheDir)
         val transcriptions = mutableListOf<AudioTranscription>()
 
-        reader.data.processAudioSegments(context, onSegmentProcessed = {
-                segmentNumber,
-                floatArray,
-                progress
-            ->
-            Log.d("TranscriptorImpl", "Transcribing segment $segmentNumber")
-            onProgress(progress)
+        reader.data.processAudioSegments(
+            context,
+            onSegmentProcessed = { floatArray, progress, startTimeSeconds ->
+                onProgress(progress)
 
-            val transcription = whisperContext.transcribeData(floatArray).convertTranscription()
+                val segmentTranscription = whisperContext.transcribeData(
+                    floatArray
+                ).convertTranscription()
 
-            if (transcriptions.isEmpty()) {
-                transcriptions.addAll(transcription)
-            } else {
-                transcription.forEach {
-                    val lastTranscription = transcriptions.last()
-                    val newTranscription = it.copy(
-                        start = lastTranscription.end,
-                        end = lastTranscription.end + it.end - it.start
+                val adjustedTranscription = segmentTranscription.map { transcript ->
+                    transcript.copy(
+                        start = transcript.start + startTimeSeconds,
+                        end = transcript.end + startTimeSeconds
                     )
-                    transcriptions.add(newTranscription)
                 }
+
+                transcriptions.addAll(adjustedTranscription)
             }
-        })
+        )
         reader.dispose()
 
         return audioEntity.copy(transcription = transcriptions)

@@ -42,8 +42,7 @@ To run locally:
 ---
 
 ## 🧩 Roadmap
-- [ ] Manage transcriptions locally
-- [ ] Split audio into chunks during transcription to support longer files without exceeding memory limits
+- [ ] Manage transcriptions text locally
 ---
 
 ## 🤝 Contributing

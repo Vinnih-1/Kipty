@@ -149,7 +149,7 @@ class AudioViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             repository.delete(audioEntity)
             if (!audioEntity.isDefault) {
-                File(audioEntity.audioPath).deleteRecursively()
+                File(audioEntity.audioPath).parentFile!!.deleteRecursively()
             }
         }
     }

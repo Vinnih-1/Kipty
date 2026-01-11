@@ -50,8 +50,6 @@ ktlint {
 
 dependencies {
     implementation(project(":lib"))
-    implementation(libs.android.transcoder)
-    implementation(libs.android.resampler)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -72,7 +70,7 @@ dependencies {
     implementation(libs.worker.runtime.ktx)
     implementation(libs.google.accompanist.permission)
     implementation(libs.coil.compose)
-
+    implementation(libs.ffmpeg.kit)
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.androidx.compiler)
     ksp(libs.hilt.compiler)

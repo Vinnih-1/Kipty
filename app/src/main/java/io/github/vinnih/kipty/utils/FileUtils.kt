@@ -1,11 +1,7 @@
 package io.github.vinnih.kipty.utils
 
 import android.content.Context
-import io.github.nailik.androidresampler.Resampler
-import io.github.nailik.androidresampler.ResamplerConfiguration
-import io.github.nailik.androidresampler.data.ResamplerChannel
-import io.github.nailik.androidresampler.data.ResamplerQuality
-import io.github.vinnih.androidtranscoder.utils.toWavReader
+import io.github.vinnih.kipty.utils.AudioResampler.resample
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -28,19 +24,6 @@ fun File.createFolder(): File {
     return this
 }
 
-fun resample(channels: Int, inSampleRate: Int, outSampleRate: Int, pcmData: ByteArray): ByteArray {
-    val resamplerConfiguration = ResamplerConfiguration(
-        quality = ResamplerQuality.BEST,
-        inputChannel = if (channels == 1) ResamplerChannel.MONO else ResamplerChannel.STEREO,
-        inputSampleRate = inSampleRate,
-        outputChannel = ResamplerChannel.MONO,
-        outputSampleRate = outSampleRate
-    )
-    val resampler = Resampler(resamplerConfiguration)
-
-    return resampler.resample(pcmData)
-}
-
 suspend fun File.processAudioSegments(
     context: Context,
     segmentDurationSeconds: Int = 30,
@@ -51,20 +34,15 @@ suspend fun File.processAudioSegments(
         startTimeSeconds: Long
     ) -> Unit
 ) {
-    val reader = this.toWavReader(context.cacheDir)
-    val bytesPerSecond = reader.sampleRate * reader.channels * 2
-    val segmentSize = bytesPerSecond * segmentDurationSeconds
-    val overlapSize = bytesPerSecond * overlapSeconds
-    val audioDataSize = reader.data.length() - 44
-    val inputStream = reader.data.inputStream()
-    inputStream.skip(44)
+    val wavFile = this.resample(format = AudioResampler.OutputFormat.WAV, context = context)
+    val bytesPerSecond = 16000 * 2
+    val inputStream = wavFile.inputStream()
 
+    inputStream.skip(44)
     processAudioSegments(
-        segmentSize,
-        overlapSize,
-        audioDataSize,
-        reader.sampleRate,
-        reader.channels,
+        bytesPerSecond * segmentDurationSeconds,
+        bytesPerSecond * overlapSeconds,
+        wavFile.length() - 44,
         inputStream,
         onProcess = { totalSegments, segmentNumber, startTime, floatArray ->
             val progress = (segmentNumber.toFloat() / totalSegments * 100).toInt()
@@ -73,7 +51,10 @@ suspend fun File.processAudioSegments(
             onSegmentProcessed(floatArray, progress, startTimeSeconds)
         }
     )
+    this.resample(format = AudioResampler.OutputFormat.MP3, context = context)
+        .moveTo(this.absoluteFile)
 
+    wavFile.delete()
     inputStream.close()
 }
 
@@ -81,8 +62,6 @@ suspend fun processAudioSegments(
     segmentSize: Int,
     overlapSize: Int,
     audioSize: Long,
-    sampleRate: Int,
-    channels: Int,
     inputStream: FileInputStream,
     onProcess: suspend (
         totalSegments: Int,
@@ -114,9 +93,7 @@ suspend fun processAudioSegments(
         } else {
             buffer.copyOf(bytesRead)
         }
-        val floatArray = normalizeAudio(
-            resample(channels, sampleRate, 16000, fullSegment)
-        )
+        val floatArray = normalizeAudio(fullSegment)
         val startTime = if (segmentNumber == 1) 0L else currentPositionBytes - previousOverlap.size
 
         onProcess(totalSegments, segmentNumber, startTime, floatArray)

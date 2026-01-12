@@ -4,7 +4,6 @@ import android.Manifest
 import android.content.res.Configuration
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,8 +16,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,7 +41,9 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
+import io.github.vinnih.kipty.ui.components.AppWarn
 import io.github.vinnih.kipty.ui.components.AudioCard
+import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
@@ -180,58 +179,48 @@ private fun NotificationPermissionWarn(onEnable: () -> Unit, onDismiss: () -> Un
 
     if (permission.status.isGranted) return onDismiss()
 
-    val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 32.dp)
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth().height(86.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = colors.secondaryContainer.copy(alpha = 0.3f),
-                contentColor = colors.onSecondaryContainer
+    AppWarn(
+        warnType = WarnType.Notify,
+        icon = {
+            Icon(
+                painter = painterResource(R.drawable.notifications),
+                contentDescription = "Notification icon",
+                modifier = Modifier.size(36.dp)
             )
-        ) {
-            Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
-                Icon(
-                    painter = painterResource(R.drawable.notifications),
-                    contentDescription = "Notification icon",
-                    modifier = Modifier.size(36.dp).align(Alignment.TopStart)
-                )
-                Column(
-                    modifier = Modifier.align(
-                        Alignment.Center
-                    ).padding(horizontal = 48.dp)
-                ) {
-                    Text(
-                        text = "Receive transcription notifications",
-                        style = typography.bodyMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Be notified when transcription are ready",
-                        style = typography.bodySmall,
-                        fontWeight = FontWeight.Light
-                    )
-                    Text(
-                        text = "Enable",
-                        style = typography.bodySmall,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.primary,
-                        modifier = Modifier.padding(top = 8.dp).clickable(onClick = onEnable)
-                    )
-                }
+        },
+        content = {
+            Text(
+                text = "Receive transcription notifications",
+                style = typography.bodyMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Be notified when transcription are ready",
+                style = typography.bodySmall,
+                fontWeight = FontWeight.Light
+            )
+            Text(
+                text = "Enable",
+                style = typography.bodySmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 8.dp).clickable(onClick = onEnable)
+            )
+        },
+        dismiss = {
+            IconButton(onClick = onDismiss) {
                 Icon(
                     painter = painterResource(R.drawable.close),
                     contentDescription = null,
                     modifier = Modifier.size(
                         24.dp
-                    ).align(Alignment.TopEnd).clickable(onClick = onDismiss)
+                    )
                 )
             }
-        }
-    }
+        },
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 32.dp)
+    )
 }
 
 @Preview(

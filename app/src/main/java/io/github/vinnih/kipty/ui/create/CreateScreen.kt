@@ -35,13 +35,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.audio.AudioController
+import io.github.vinnih.kipty.ui.components.AppWarn
 import io.github.vinnih.kipty.ui.components.CreateAudioButton
+import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.dashedBorder
 import java.io.File
@@ -67,51 +70,45 @@ fun CreateScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    var audio by remember {
-        mutableStateOf(
-            AudioCreator(
-                file = File(""),
-                image = File(context.filesDir, "default-icon.png"),
-                name = "",
-                description = ""
-            )
-        )
-    }
+    val typography = MaterialTheme.typography
+
     var stage by remember { mutableStateOf(Stage.FILE) }
-    val scope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxSize()) {
         CreateTopBar(stage = stage, onBack = onBack)
-
-        when (stage) {
-            Stage.FILE -> AudioFileStage(modifier = Modifier, onComplete = {
-                stage = Stage.NAME
-                audio = audio.copy(file = it)
-            })
-
-            Stage.NAME -> AudioNameStage(modifier = Modifier, onComplete = {
-                stage = Stage.DESCRIPTION
-                audio = audio.copy(name = it)
-            })
-
-            Stage.DESCRIPTION -> AudioDescriptionStage(modifier = Modifier, onComplete = {
-                stage = Stage.IMAGE
-                audio = audio.copy(description = it)
-            })
-
-            Stage.IMAGE -> AudioImageStage(modifier = Modifier, onComplete = {
-                scope.launch {
-                    audioController.createAudio(
-                        audio = audio.file.absolutePath,
-                        image = if (it == null) audio.image.absolutePath else it.absolutePath,
-                        name = audio.name.ifEmpty { audio.file.nameWithoutExtension },
-                        description = audio.description
-                    )
-                    onBack.invoke()
-                }
-            })
-        }
+        AppWarn(
+            warnType = WarnType.Error,
+            icon = {
+                Icon(
+                    painter = painterResource(R.drawable.warning),
+                    contentDescription = "Warning icon",
+                    modifier = Modifier.size(36.dp)
+                )
+            },
+            content = {
+                Text(
+                    text = "This may take some time.",
+                    style = typography.bodyMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "This task may take some time to be processed depending on your device.",
+                    style = typography.bodySmall,
+                    fontWeight = FontWeight.Light
+                )
+            },
+            dismiss = {},
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 64.dp)
+        )
+        StageScreen(stage = stage, onStageChange = { stage = it }, onComplete = { audio ->
+            audioController.createAudio(
+                audio = audio.file.absolutePath,
+                image = audio.image.absolutePath,
+                name = audio.name.ifEmpty { audio.file.nameWithoutExtension },
+                description = audio.description
+            )
+            onBack.invoke()
+        })
     }
 }
 
@@ -152,6 +149,50 @@ private fun CreateTopBar(stage: Stage, onBack: () -> Unit, modifier: Modifier = 
 }
 
 @Composable
+private fun StageScreen(
+    stage: Stage,
+    onStageChange: (Stage) -> Unit,
+    onComplete: suspend (AudioCreator) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var audio by remember {
+        mutableStateOf(
+            AudioCreator(
+                file = File(""),
+                image = File(context.filesDir, "default-icon.png"),
+                name = "",
+                description = ""
+            )
+        )
+    }
+
+    when (stage) {
+        Stage.FILE -> AudioFileStage(modifier = modifier, onComplete = {
+            onStageChange(Stage.NAME)
+            audio = audio.copy(file = it)
+        })
+
+        Stage.NAME -> AudioNameStage(modifier = modifier, onComplete = {
+            onStageChange(Stage.DESCRIPTION)
+            audio = audio.copy(name = it)
+        })
+
+        Stage.DESCRIPTION -> AudioDescriptionStage(modifier = modifier, onComplete = {
+            onStageChange(Stage.IMAGE)
+            audio = audio.copy(description = it)
+        })
+
+        Stage.IMAGE -> AudioImageStage(modifier = modifier, onComplete = {
+            scope.launch {
+                onComplete(audio.copy(image = if (it == null) audio.image else it))
+            }
+        })
+    }
+}
+
+@Composable
 private fun BasicCreateScreen(
     onNext: () -> Unit,
     stage: Stage,
@@ -160,7 +201,7 @@ private fun BasicCreateScreen(
     content: @Composable () -> Unit
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(vertical = 144.dp),
+        modifier = modifier.fillMaxSize().padding(bottom = 200.dp),
         verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

@@ -13,8 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -130,14 +128,6 @@ fun NotificationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
         )
     }, navigationIcon = {
         BackButton(onClick = onBack, container = Color.Transparent, modifier = Modifier.size(36.dp))
-    }, actions = {
-        IconButton(onClick = {}) {
-            Icon(
-                painter = painterResource(id = R.drawable.settings),
-                contentDescription = "Settings icon button",
-                modifier = Modifier.size(36.dp)
-            )
-        }
     }, modifier = modifier)
 }
 

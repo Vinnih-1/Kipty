@@ -4,6 +4,7 @@ import android.text.format.DateUtils
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.Locale
 
 private enum class Timestamp(val multiplier: Long) {
     HOUR(1000 * 60 * 60),
@@ -30,7 +31,7 @@ fun Long.formatTime(): String {
     val minutes = totalSeconds / 60
     val remainingSeconds = totalSeconds % 60
 
-    return String.format("%02d:%02d", minutes, remainingSeconds)
+    return String.format(Locale.ENGLISH, "%02d:%02d", minutes, remainingSeconds)
 }
 
 fun String.timestamp(): Pair<Long, Long> {
@@ -61,7 +62,7 @@ fun String.timestamp(): Pair<Long, Long> {
 
     if (map.size != 2) return pair.copy()
 
-    return pair.copy(map.get(0)!!, map.get(1)!!)
+    return pair.copy(first = map.get(0)!!, second = map.get(1)!!)
 }
 
 fun Long.timestamp(): String {
@@ -74,22 +75,25 @@ fun Long.timestamp(): String {
     milliseconds -= minutes * Timestamp.MINUTE.multiplier
 
     val seconds = milliseconds / Timestamp.SECOND.multiplier
-    milliseconds -= seconds / Timestamp.SECOND.multiplier
 
-    val timestamp = String.format(
-        "%02d:%02d:%02d%s%03d",
-        hours,
-        minutes,
-        seconds,
-        ".",
-        milliseconds
-    )
-
-    return buildString {
-        append("[")
-        append(timestamp)
-        append("]")
+    val timestamp = if (hours > 0) {
+        String.format(
+            Locale.ENGLISH,
+            "%02d:%02d:%02d",
+            hours,
+            minutes,
+            seconds
+        )
+    } else {
+        String.format(
+            Locale.ENGLISH,
+            "%02d:%02d",
+            minutes,
+            seconds
+        )
     }
+
+    return timestamp
 }
 
 fun String.convertTranscription(): List<AudioTranscription> =

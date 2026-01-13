@@ -2,6 +2,8 @@ package io.github.vinnih.kipty.utils
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
@@ -27,7 +29,21 @@ fun Modifier.dashedBorder(
     drawRoundRect(
         color = color,
         size = Size(width = size.width, height = size.height),
-        cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius.toPx()),
+        cornerRadius = CornerRadius(cornerRadius.toPx()),
         style = stroke
+    )
+}
+
+fun Modifier.drawIfSelected(selected: Boolean) = this.drawBehind {
+    if (!selected) return@drawBehind
+
+    val cornerRadius = 16.dp.toPx()
+    val strokeWidth = 4.dp.toPx()
+
+    drawRoundRect(
+        color = Color(0xFFFF6B35),
+        topLeft = Offset(0f, 0f),
+        size = Size(strokeWidth, size.height),
+        cornerRadius = CornerRadius(cornerRadius, cornerRadius)
     )
 }

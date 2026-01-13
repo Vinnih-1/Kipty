@@ -75,7 +75,9 @@ fun AppWarn(
     }
 }
 
-@Preview(showSystemUi = false, showBackground = true,
+@Preview(
+    showSystemUi = false,
+    showBackground = true,
     uiMode = Configuration.UI_MODE_TYPE_NORMAL
 )
 @Composable

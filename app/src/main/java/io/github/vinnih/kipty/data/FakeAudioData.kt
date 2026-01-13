@@ -8,7 +8,9 @@ object FakeAudioData {
             "uid": 11,
             "name": "1865-02-01 From Washington Abolition of Slavery",
             "duration": 131186938,
-            "path": "",
+            "audioPath": "",
+            "imagePath": "",
+            "isDefault": false,
             "createdAt": "2025-12-06T19:16:50.373186",
             "transcription": [
                 {
@@ -206,7 +208,9 @@ object FakeAudioData {
             "uid": 6,
             "name": "1888-11-13_sircharleswarren",
             "duration": 0,
-            "path": "",
+            "audioPath": "",
+            "imagePath": "",
+            "isDefault": false,
             "createdAt": "2025-12-06T19:16:50.373186",
             "transcription": [
                 {

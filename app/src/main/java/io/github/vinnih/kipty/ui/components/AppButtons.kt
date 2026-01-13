@@ -30,6 +30,20 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @Composable
+fun BaseButton(
+    onClick: () -> Unit,
+    content: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier.size(48.dp)
+    ) {
+        content.invoke()
+    }
+}
+
+@Composable
 fun BackButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,

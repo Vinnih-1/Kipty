@@ -2,7 +2,6 @@ package io.github.vinnih.kipty.ui.audio
 
 import androidx.work.WorkInfo
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 

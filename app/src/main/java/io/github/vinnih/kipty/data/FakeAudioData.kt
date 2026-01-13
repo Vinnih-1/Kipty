@@ -6,7 +6,8 @@ object FakeAudioData {
     var audio_1865_02_01 = """
         {
             "uid": 11,
-            "name": "1865-02-01 From Washington Abolition of Slavery",
+            "name": "From Washington Abolition of Slavery",
+            "description": "From Washington, abolition of slavery, from the New York Times, February 1st, 1865",
             "duration": 131186938,
             "audioPath": "",
             "imagePath": "",
@@ -206,7 +207,8 @@ object FakeAudioData {
     var audio_1888_11_13 = """
         {
             "uid": 6,
-            "name": "1888-11-13_sircharleswarren",
+            "name": "The Tragedy at Harper's Ferry",
+            "description": "From Washington, abolition of slavery, from the New York Times, February 1st, 1865",
             "duration": 0,
             "audioPath": "",
             "imagePath": "",

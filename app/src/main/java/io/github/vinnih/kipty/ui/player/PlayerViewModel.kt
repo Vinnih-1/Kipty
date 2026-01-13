@@ -50,14 +50,19 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
-    override fun playAudio(audioEntity: AudioEntity) {
+    override fun playPause(audioEntity: AudioEntity) {
+        if (currentAudio.value?.uid == audioEntity.uid) {
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.play()
+            }
+
+            return
+        }
         _currentAudio.value = audioEntity
         preparePlayer(audioEntity)
         player.play()
-    }
-
-    override fun pauseAudio() {
-        player.pause()
     }
 
     override fun stopAudio() {

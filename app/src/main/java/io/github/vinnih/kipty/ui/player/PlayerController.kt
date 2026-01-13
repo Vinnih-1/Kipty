@@ -15,9 +15,7 @@ interface PlayerController {
 
     val progress: StateFlow<Pair<Float, Long>>
 
-    fun playAudio(audioEntity: AudioEntity)
-
-    fun pauseAudio()
+    fun playPause(audioEntity: AudioEntity)
 
     fun stopAudio()
 

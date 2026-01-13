@@ -106,7 +106,7 @@ fun HomeScreen(
                     onNavigate = {
                         onNavigate(Screen.Audio(audioData.uid))
                     },
-                    onPlay = { playerController.playAudio(audioData) },
+                    onPlay = { playerController.playPause(audioData) },
                     onDelete = {
                         audioController.deleteAudio(audioData)
                         if (audioData.uid == playerController.currentAudio.value?.uid) {

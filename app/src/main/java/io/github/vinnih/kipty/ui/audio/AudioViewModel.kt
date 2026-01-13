@@ -90,8 +90,13 @@ class AudioViewModel @Inject constructor(
 
     override fun transcribeAudio(
         audioEntity: AudioEntity,
-        onSuccess: (List<AudioTranscription>) -> Unit
+        onError: (String) -> Unit
     ) {
+        if (audioEntity.state != TranscriptionState.NONE) {
+            onError("Transcription already in progress")
+            return
+        }
+
         workManager.pruneWork()
         val request = OneTimeWorkRequestBuilder<TranscriptionWorker>()
             .setInputData(Data.Builder().putInt("AUDIO_ID", audioEntity.uid).build())
@@ -115,7 +120,6 @@ class AudioViewModel @Inject constructor(
                         val transcription = json.decodeFromString<List<AudioTranscription>>(
                             file.readText()
                         )
-                        onSuccess(transcription)
                         updateAudioState(
                             audioEntity.copy(transcription = transcription),
                             TranscriptionState.TRANSCRIBED
@@ -124,10 +128,12 @@ class AudioViewModel @Inject constructor(
 
                     WorkInfo.State.CANCELLED -> {
                         updateAudioState(audioEntity, TranscriptionState.NONE)
+                        onError("Transcription cancelled")
                     }
 
                     WorkInfo.State.FAILED -> {
                         updateAudioState(audioEntity, TranscriptionState.NONE)
+                        onError("Transcription failed")
                     }
 
                     else -> {}

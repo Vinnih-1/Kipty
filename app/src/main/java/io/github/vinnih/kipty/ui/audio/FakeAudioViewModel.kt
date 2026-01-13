@@ -1,14 +1,21 @@
 package io.github.vinnih.kipty.ui.audio
 
 import androidx.work.WorkInfo
+import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+import io.github.vinnih.kipty.json
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeAudioViewModel : AudioController {
     override val allAudios: StateFlow<List<AudioEntity>>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(
+            listOf(
+                json.decodeFromString(FakeAudioData.audio_1865_02_01),
+                json.decodeFromString(FakeAudioData.audio_1888_11_13)
+            )
+        )
 
     override suspend fun createAudio(
         audio: String,
@@ -29,10 +36,7 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
-    override fun transcribeAudio(
-        audioEntity: AudioEntity,
-        onSuccess: (List<AudioTranscription>) -> Unit
-    ) {
+    override fun transcribeAudio(audioEntity: AudioEntity, onError: (String) -> Unit) {
         TODO("Not yet implemented")
     }
 

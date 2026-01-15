@@ -1,5 +1,21 @@
 # Mark whisper_cpp as vendored code
-whisper_cpp/* linguist-vendored
+whisper_cpp/** linguist-vendored
+
+# Mark C/C++ files as vendored
+*.cpp linguist-vendored
+*.c linguist-vendored
+*.cc linguist-vendored
+*.h linguist-vendored
+*.hpp linguist-vendored
+
+# Mark other whisper_cpp related files
+*.cu linguist-vendored
+*.cuh linguist-vendored
+*.metal linguist-vendored
+*.cl linguist-vendored
+*.m linguist-vendored
+*.mm linguist-vendored
 
 # Ensure Kotlin is detected
 *.kt linguist-detectable=true
+*.kts linguist-detectable=true

@@ -1,0 +1,5 @@
+# Mark whisper_cpp as vendored code
+whisper_cpp/* linguist-vendored
+
+# Ensure Kotlin is detected
+*.kt linguist-detectable=true

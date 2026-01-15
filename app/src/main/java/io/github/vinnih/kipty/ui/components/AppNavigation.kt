@@ -4,10 +4,11 @@ import androidx.compose.runtime.Composable
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.AudioScreen
+import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.configuration.ConfigurationScreen
 import io.github.vinnih.kipty.ui.create.CreateScreen
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeScreen
-import io.github.vinnih.kipty.ui.loading.LoadingScreen
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.notification.NotificationScreen
 import io.github.vinnih.kipty.ui.player.PlayerController
@@ -19,6 +20,7 @@ fun AppNavigation(
     audioController: AudioController,
     playerController: PlayerController,
     notificationController: NotificationController,
+    configurationController: ConfigurationController,
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit
 ) {
@@ -38,6 +40,7 @@ fun AppNavigation(
                 audioController = audioController,
                 playerController = playerController,
                 notificationController = notificationController,
+                configurationController = configurationController,
                 onBack = onBack,
                 id = currentScreen.id
             )
@@ -50,20 +53,17 @@ fun AppNavigation(
             )
         }
 
-        is Screen.Loading -> {
-            LoadingScreen(
-                homeController = homeController,
-                audioController = audioController,
-                onBack = {
-                    onBack.invoke()
-                    onNavigate(Screen.Home)
-                }
-            )
-        }
-
         is Screen.Notification -> {
             NotificationScreen(
                 notificationController = notificationController,
+                onBack = onBack
+            )
+        }
+
+        is Screen.Configuration -> {
+            ConfigurationScreen(
+                configurationController = configurationController,
+                onNavigate = { onNavigate(it) },
                 onBack = onBack
             )
         }

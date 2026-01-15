@@ -39,6 +39,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.TextViewer
+import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import kotlinx.coroutines.launch
@@ -48,6 +50,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlayerScreen(
     playerController: PlayerController,
+    configurationController: ConfigurationController,
     scaffoldState: BottomSheetScaffoldState,
     modifier: Modifier = Modifier,
     peekHeight: Dp = 100.dp
@@ -129,9 +132,14 @@ fun PlayerScreen(
                         )
                     }
                 }
-                TextViewer(playerController = playerController, onClick = { start, _ ->
-                    playerController.seekTo(uiState.audioEntity!!, start, 0)
-                }, modifier = Modifier.padding(bottom = 48.dp))
+                TextViewer(
+                    playerController = playerController,
+                    onClick = { start, _ ->
+                        playerController.seekTo(uiState.audioEntity!!, start, 0)
+                    },
+                    showTimestamp = configurationController.uiState.value.showTimestamp,
+                    modifier = Modifier.padding(bottom = 48.dp)
+                )
             }
         }
     }
@@ -144,6 +152,10 @@ private fun PlayerScreenPreview() {
     val scaffoldState = rememberBottomSheetScaffoldState()
 
     AppTheme {
-        PlayerScreen(playerController = FakePlayerViewModel(), scaffoldState = scaffoldState)
+        PlayerScreen(
+            playerController = FakePlayerViewModel(),
+            configurationController = FakeConfigurationViewModel(),
+            scaffoldState = scaffoldState
+        )
     }
 }

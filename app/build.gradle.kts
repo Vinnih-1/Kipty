@@ -41,6 +41,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -61,6 +62,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.hilt.worker)
     implementation(libs.androidx.splashscreen)
+    implementation(libs.androidx.datastore.preferences)
     implementation(libs.google.fonts)
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)

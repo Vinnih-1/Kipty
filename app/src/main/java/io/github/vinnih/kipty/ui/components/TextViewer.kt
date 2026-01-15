@@ -42,11 +42,13 @@ import kotlinx.serialization.ExperimentalSerializationApi
 fun TextViewer(
     transcription: List<AudioTranscription>,
     onClick: (Long, Long) -> Unit,
+    showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
     TextViewerBase(
         transcription = transcription,
         onClick = onClick,
+        showTimestamp = showTimestamp,
         modifier = modifier
     )
 }
@@ -55,6 +57,7 @@ fun TextViewer(
 fun TextViewer(
     playerController: PlayerController,
     onClick: (Long, Long) -> Unit,
+    showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
     val uiState = playerController.uiState.collectAsState()
@@ -66,6 +69,7 @@ fun TextViewer(
     TextViewerBase(
         playerController = playerController,
         onClick = onClick,
+        showTimestamp = showTimestamp,
         modifier = modifier
     )
 }
@@ -74,6 +78,7 @@ fun TextViewer(
 private fun TextViewerBase(
     transcription: List<AudioTranscription>,
     onClick: (Long, Long) -> Unit,
+    showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -84,7 +89,8 @@ private fun TextViewerBase(
             TextSection(
                 transcription = it,
                 onClick = onClick,
-                selected = false
+                selected = false,
+                showTimestamp = showTimestamp
             )
         }
     }
@@ -94,6 +100,7 @@ private fun TextViewerBase(
 private fun TextViewerBase(
     playerController: PlayerController,
     onClick: (Long, Long) -> Unit,
+    showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
     val uiState = playerController.uiState.collectAsState()
@@ -124,7 +131,8 @@ private fun TextViewerBase(
             TextSection(
                 transcription = item,
                 onClick = onClick,
-                selected = isActive
+                selected = isActive,
+                showTimestamp = showTimestamp
             )
         }
     }
@@ -135,6 +143,7 @@ private fun TextSection(
     transcription: AudioTranscription,
     onClick: (Long, Long) -> Unit,
     selected: Boolean,
+    showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -162,25 +171,27 @@ private fun TextSection(
                 .padding(horizontal = 20.dp, vertical = 24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .background(
-                        if (selected) colors.primaryContainer else colors.secondaryContainer
-                    ),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = transcription.start.timestamp(),
-                    color = if (selected) {
-                        colors.onPrimaryContainer
-                    } else {
-                        colors.onSecondaryContainer
-                    },
-                    style = typography.bodyMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
+            if (showTimestamp) {
+                Row(
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(
+                            if (selected) colors.primaryContainer else colors.secondaryContainer
+                        ),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = transcription.start.timestamp(),
+                        color = if (selected) {
+                            colors.onPrimaryContainer
+                        } else {
+                            colors.onSecondaryContainer
+                        },
+                        style = typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
             }
             Text(
                 text = transcription.text.removePrefix(":  "),
@@ -217,7 +228,8 @@ private fun TextViewerPreview() {
     AppTheme {
         TextViewer(
             transcription = audioEntity.transcription!!,
-            onClick = { start, end -> }
+            onClick = { start, end -> },
+            showTimestamp = true
         )
     }
 }

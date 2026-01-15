@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -38,6 +37,8 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
+import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
@@ -50,6 +51,7 @@ fun AudioScreen(
     audioController: AudioController,
     playerController: PlayerController,
     notificationController: NotificationController,
+    configurationController: ConfigurationController,
     onBack: () -> Unit,
     id: Int,
     modifier: Modifier = Modifier
@@ -63,9 +65,10 @@ fun AudioScreen(
                 audioEntity = audioEntity,
                 playerController = playerController
             )
-        }
+        },
+        modifier = modifier
     ) { paddingValues ->
-        Column(modifier = modifier.fillMaxWidth().padding(paddingValues)) {
+        Column(modifier = Modifier.fillMaxWidth().padding(paddingValues)) {
             AudioTopBar(
                 id = id,
                 audioController = audioController,
@@ -73,9 +76,13 @@ fun AudioScreen(
             )
 
             if (!audioEntity.transcription.isNullOrEmpty()) {
-                TextViewer(transcription = audioEntity.transcription, onClick = { start, end ->
-                    playerController.seekTo(audioEntity, start, end)
-                })
+                TextViewer(
+                    transcription = audioEntity.transcription,
+                    onClick = { start, end ->
+                        playerController.seekTo(audioEntity, start, end)
+                    },
+                    showTimestamp = configurationController.uiState.value.showTimestamp
+                )
             }
         }
     }
@@ -212,8 +219,8 @@ private fun PlayPauseButton(
 @Composable
 private fun NavigateButton(
     onNavigate: () -> Unit,
-    content: @Composable () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
 ) {
     BaseButton(onClick = onNavigate, content = {
         content.invoke()
@@ -274,6 +281,7 @@ private fun AudioScreenPreview() {
             audioController = FakeAudioViewModel(),
             playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
+            configurationController = FakeConfigurationViewModel(),
             onBack = {},
             id = audioEntity.uid
         )

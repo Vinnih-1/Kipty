@@ -13,10 +13,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
@@ -28,6 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.AppNavigation
+import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -42,8 +47,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 sealed interface Screen {
-    data object Loading : Screen
-
     data object Home : Screen
 
     data class Audio(val id: Int) : Screen
@@ -51,6 +54,8 @@ sealed interface Screen {
     data object Create : Screen
 
     data object Notification : Screen
+
+    data object Configuration : Screen
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -67,6 +72,8 @@ class MainActivity : ComponentActivity() {
     private val audioViewModel: AudioViewModel by viewModels()
     private val notificationViewModel: NotificationViewModel by viewModels()
 
+    private val configurationViewModel: ConfigurationViewModel by viewModels()
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -81,7 +88,8 @@ class MainActivity : ComponentActivity() {
                     homeController = homeViewModel,
                     audioController = audioViewModel,
                     playerController = playerViewModel,
-                    notificationController = notificationViewModel
+                    notificationController = notificationViewModel,
+                    configurationController = configurationViewModel
                 )
             }
         }
@@ -94,13 +102,21 @@ class MainActivity : ComponentActivity() {
         homeController: HomeController,
         audioController: AudioController,
         playerController: PlayerController,
-        notificationController: NotificationController
+        notificationController: NotificationController,
+        configurationController: ConfigurationController
     ) {
-        val backstack = remember { mutableStateListOf<Screen>(Screen.Loading) }
+        val backstack = remember { mutableStateListOf<Screen>(Screen.Home) }
         val scaffoldState = rememberBottomSheetScaffoldState()
         val scope = rememberCoroutineScope()
+        var loading by remember { mutableStateOf(true) }
 
-        splashScreen.setKeepOnScreenCondition { backstack.contains(Screen.Loading) }
+        LaunchedEffect(Unit) {
+            homeController.populateDatabase {
+                loading = false
+            }
+        }
+
+        splashScreen.setKeepOnScreenCondition { loading }
         val shouldShowBottomSheet = !backstack.contains(Screen.Create)
 
         val animatedPeekHeight by animateDpAsState(
@@ -121,6 +137,7 @@ class MainActivity : ComponentActivity() {
             sheetContent = {
                 PlayerScreen(
                     playerController = playerController,
+                    configurationController = configurationController,
                     scaffoldState = scaffoldState
                 )
             },
@@ -140,6 +157,7 @@ class MainActivity : ComponentActivity() {
                                 audioController = audioController,
                                 playerController = playerController,
                                 notificationController = notificationController,
+                                configurationController = configurationController,
                                 onNavigate = { screen -> backstack.add(screen) },
                                 onBack = { backstack.removeLastOrNull() }
                             )

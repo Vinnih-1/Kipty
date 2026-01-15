@@ -60,6 +60,13 @@ fun AudioScreen(
     val audioEntity = audios.value.first { it.uid == id }
 
     Scaffold(
+        topBar = {
+            AudioTopBar(
+                id = id,
+                audioController = audioController,
+                onBack = onBack
+            )
+        },
         floatingActionButton = {
             PlayPauseButton(
                 audioEntity = audioEntity,
@@ -69,12 +76,6 @@ fun AudioScreen(
         modifier = modifier
     ) { paddingValues ->
         Column(modifier = Modifier.fillMaxWidth().padding(paddingValues)) {
-            AudioTopBar(
-                id = id,
-                audioController = audioController,
-                onBack = onBack
-            )
-
             if (!audioEntity.transcription.isNullOrEmpty()) {
                 TextViewer(
                     transcription = audioEntity.transcription,
@@ -169,7 +170,7 @@ fun AudioTopBar(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent
             ),
-            expandedHeight = 80.dp
+            expandedHeight = 120.dp
         )
         HorizontalDivider(color = colors.secondary)
     }

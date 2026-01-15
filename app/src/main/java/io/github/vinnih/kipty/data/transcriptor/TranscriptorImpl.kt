@@ -45,6 +45,7 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
 
     override suspend fun transcribe(
         audioEntity: AudioEntity,
+        numThreads: Int,
         onProgress: (Int) -> Unit
     ): AudioEntity {
         val audio = File(audioEntity.audioPath)
@@ -56,7 +57,8 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
                 onProgress(progress)
 
                 val segmentTranscription = whisperContext.transcribeData(
-                    floatArray
+                    data = floatArray,
+                    numThreads = numThreads
                 ).convertTranscription()
 
                 val adjustedTranscription = segmentTranscription.map { transcript ->

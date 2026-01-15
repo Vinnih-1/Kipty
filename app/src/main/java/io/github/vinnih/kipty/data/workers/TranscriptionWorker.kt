@@ -14,6 +14,7 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.service.NOTIFICATION_ID
 import io.github.vinnih.kipty.data.service.createNotification
+import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.data.transcriptor.Transcriptor
 import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.utils.createFile
@@ -26,6 +27,7 @@ import kotlinx.coroutines.withContext
 class TranscriptionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
+    private val appPreferencesRepository: AppPreferencesRepository,
     private val audioRepository: AudioRepository,
     private val transcriptor: Transcriptor
 ) : CoroutineWorker(appContext, workerParams) {
@@ -38,7 +40,8 @@ class TranscriptionWorker @AssistedInject constructor(
         setForegroundAsync(createForegroundInfo(0))
 
         val audioEntity = transcriptor.transcribe(
-            audioRepository.getById(audioId).first()!!,
+            audioEntity = audioRepository.getById(audioId).first()!!,
+            numThreads = appPreferencesRepository.appSettingsFlow.first().minimumThreads,
             onProgress = {
                 setForegroundAsync(createForegroundInfo(it))
             }

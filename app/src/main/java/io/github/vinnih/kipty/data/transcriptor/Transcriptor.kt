@@ -12,5 +12,9 @@ interface Transcriptor {
 
     fun loadModel(): WhisperContext
 
-    suspend fun transcribe(audioEntity: AudioEntity, onProgress: (Int) -> Unit): AudioEntity
+    suspend fun transcribe(
+        audioEntity: AudioEntity,
+        numThreads: Int,
+        onProgress: (Int) -> Unit
+    ): AudioEntity
 }

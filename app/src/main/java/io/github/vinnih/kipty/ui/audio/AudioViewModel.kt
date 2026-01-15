@@ -88,10 +88,7 @@ class AudioViewModel @Inject constructor(
         return@withContext entity.copy(uid = saveAudio(entity).toInt())
     }
 
-    override fun transcribeAudio(
-        audioEntity: AudioEntity,
-        onError: (String) -> Unit
-    ) {
+    override fun transcribeAudio(audioEntity: AudioEntity, onError: (String) -> Unit) {
         if (audioEntity.state != TranscriptionState.NONE) {
             onError("Transcription already in progress")
             return

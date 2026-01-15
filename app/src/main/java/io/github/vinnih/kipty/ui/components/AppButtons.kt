@@ -32,8 +32,8 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 @Composable
 fun BaseButton(
     onClick: () -> Unit,
-    content: @Composable () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
 ) {
     IconButton(
         onClick = onClick,

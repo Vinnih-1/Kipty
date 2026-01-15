@@ -35,15 +35,17 @@ class FakeNotificationViewModel : NotificationController {
             )
         )
     override val unreadNotifications: StateFlow<List<NotificationEntity>>
-        get() = MutableStateFlow(listOf(
-            NotificationEntity(
-                uid = 1,
-                title = LoremIpsum(5).values.joinToString(),
-                content = LoremIpsum(100).values.joinToString(),
-                read = false,
-                createdAt = "2025-12-14T12:46:48.849"
+        get() = MutableStateFlow(
+            listOf(
+                NotificationEntity(
+                    uid = 1,
+                    title = LoremIpsum(5).values.joinToString(),
+                    content = LoremIpsum(100).values.joinToString(),
+                    read = false,
+                    createdAt = "2025-12-14T12:46:48.849"
+                )
             )
-        ))
+        )
 
     override suspend fun createNotification(title: String, content: String): NotificationEntity {
         TODO("Not yet implemented")

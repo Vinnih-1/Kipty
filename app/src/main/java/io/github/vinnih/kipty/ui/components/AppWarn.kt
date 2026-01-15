@@ -35,9 +35,9 @@ enum class WarnType {
 fun AppWarn(
     warnType: WarnType,
     icon: @Composable () -> Unit,
-    content: @Composable () -> Unit,
     dismiss: @Composable () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
 

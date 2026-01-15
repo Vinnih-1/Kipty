@@ -5,7 +5,7 @@ class FakeHomeViewModel : HomeController {
         TODO("Not yet implemented")
     }
 
-    override suspend fun createDefault(data: suspend (String, String, String, String) -> Unit) {
+    override suspend fun populateDatabase(onSuccess: () -> Unit) {
         TODO("Not yet implemented")
     }
 }

@@ -4,15 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Settings
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.vinnih.kipty.data.application.AppConfig
-import io.github.vinnih.kipty.data.application.ApplicationData
-import io.github.vinnih.kipty.utils.copyTo
+import io.github.vinnih.kipty.data.workers.PopulateWorker
 import jakarta.inject.Inject
-import java.io.File
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(@ApplicationContext val context: Context) :
@@ -27,29 +27,26 @@ class HomeViewModel @Inject constructor(@ApplicationContext val context: Context
         context.startActivity(intent)
     }
 
-    override suspend fun createDefault(data: suspend (String, String, String, String) -> Unit) {
-        if (AppConfig(context).read().defaultSamplesLoaded) return
+    override suspend fun populateDatabase(onSuccess: () -> Unit) {
+        val request = OneTimeWorkRequestBuilder<PopulateWorker>().build()
+        val workManager = WorkManager.getInstance(context)
 
-        withContext(Dispatchers.IO) {
-            context.assets.open("icons/default-icon.png")
-                .copyTo(File(context.filesDir, "default-icon.png"))
+        workManager.enqueueUniqueWork(
+            "initial_setup_work",
+            ExistingWorkPolicy.KEEP,
+            request
+        )
 
-            context.assets.list("samples/")!!.map { folder ->
-                val sample = context.assets.list("samples/$folder")!!
-                    .filter { it.endsWith(".mp3") }
-                    .map { File(it) }
-                    .first()
-                val transcription = context.assets.open("samples/$folder/raw_transcription.txt")
-                val description = context.assets.open("samples/$folder/description.txt")
+        viewModelScope.launch {
+            workManager.getWorkInfoByIdFlow(request.id).collect {
+                when (it?.state) {
+                    androidx.work.WorkInfo.State.SUCCEEDED -> {
+                        onSuccess.invoke()
+                    }
 
-                data.invoke(
-                    "/samples/$folder/${sample.name}",
-                    transcription.bufferedReader().readText(),
-                    "samples/$folder/image.jpg",
-                    description.bufferedReader().readText()
-                )
+                    else -> {}
+                }
             }
-            AppConfig(context).write(ApplicationData("", true))
         }
     }
 }

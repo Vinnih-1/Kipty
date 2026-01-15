@@ -4,5 +4,5 @@ interface HomeController {
 
     fun openNotificationSettings()
 
-    suspend fun createDefault(data: suspend (String, String, String, String) -> Unit)
+    suspend fun populateDatabase(onSuccess: () -> Unit)
 }

@@ -253,7 +253,7 @@ fun HomeTopBar(
             ) {
                 BaseButton(
                     onClick = {
-                        // TODO: Navigate to configuration screen
+                        onNavigate(Screen.Configuration)
                     },
                     content = {
                         Icon(

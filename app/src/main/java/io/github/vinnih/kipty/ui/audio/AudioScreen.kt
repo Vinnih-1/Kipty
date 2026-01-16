@@ -3,6 +3,7 @@ package io.github.vinnih.kipty.ui.audio
 import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -58,6 +59,7 @@ fun AudioScreen(
 ) {
     val audios = audioController.allAudios.collectAsState()
     val audioEntity = audios.value.first { it.uid == id }
+    val uiState = configurationController.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -82,7 +84,7 @@ fun AudioScreen(
                     onClick = { start, end ->
                         playerController.seekTo(audioEntity, start, end)
                     },
-                    showTimestamp = configurationController.uiState.value.showTimestamp
+                    showTimestamp = uiState.value.showTimestamp
                 )
             }
         }
@@ -117,14 +119,16 @@ fun AudioTopBar(
                         color = colors.secondary,
                         maxLines = 1,
                         overflow = TextOverflow.Clip,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.basicMarquee()
                     )
                     Text(
                         text = audioEntity.description ?: "No description",
                         style = MaterialTheme.typography.titleSmall,
                         color = colors.secondary.copy(alpha = 0.8f),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.basicMarquee()
                     )
                 }
             },

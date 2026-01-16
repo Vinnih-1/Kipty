@@ -57,7 +57,8 @@ fun PlayerScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val uiState by playerController.uiState.collectAsState()
+    val playerUiState by playerController.uiState.collectAsState()
+    val configurationUiState by configurationController.uiState.collectAsState()
     var visible by remember { mutableStateOf(true) }
     val playPause = rememberPlayPauseButtonState(playerController.player)
     val scope = rememberCoroutineScope()
@@ -73,7 +74,7 @@ fun PlayerScreen(
     Column(modifier = modifier.fillMaxSize().background(color = colors.surfaceContainer)) {
         AnimatedVisibility(visible) {
             LinearProgressIndicator(progress = {
-                uiState.progress
+                playerUiState.progress
             }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
             Row(
                 modifier = Modifier
@@ -87,7 +88,7 @@ fun PlayerScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = uiState.audioEntity?.name ?: "Nothing playing",
+                    text = playerUiState.audioEntity?.name ?: "Nothing playing",
                     style = typography.titleMedium,
                     color = colors.primary,
                     maxLines = 1,
@@ -96,7 +97,7 @@ fun PlayerScreen(
                 )
                 Text(
                     text = "${
-                        (uiState.progress * playerController.player.duration).toLong().formatTime()
+                        (playerUiState.progress * playerController.player.duration).toLong().formatTime()
                     } / ${playerController.player.duration.formatTime()}",
                     style = typography.bodySmall,
                     color = colors.primary
@@ -135,9 +136,9 @@ fun PlayerScreen(
                 TextViewer(
                     playerController = playerController,
                     onClick = { start, _ ->
-                        playerController.seekTo(uiState.audioEntity!!, start, 0)
+                        playerController.seekTo(playerUiState.audioEntity!!, start, 0)
                     },
-                    showTimestamp = configurationController.uiState.value.showTimestamp,
+                    showTimestamp = configurationUiState.showTimestamp,
                     modifier = Modifier.padding(bottom = 48.dp)
                 )
             }

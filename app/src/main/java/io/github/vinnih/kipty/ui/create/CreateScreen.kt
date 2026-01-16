@@ -305,6 +305,7 @@ private fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier
     }
 }
 
+@Suppress("ktlint:standard:max-line-length")
 @Composable
 private fun ProcessingInformationNote(modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
@@ -913,10 +914,10 @@ private fun rememberAudioPicker(
 @Composable
 private fun BottomButton(
     onNext: () -> Unit,
-    onCreate: () -> Unit = {},
+    onCreate: () -> Unit,
     step: Step,
-    enabled: Boolean = true,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography

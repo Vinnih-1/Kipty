@@ -181,7 +181,7 @@ private fun CreateTopBar(
                     )
                 }
             },
-            expandedHeight = 120.dp,
+            expandedHeight = 100.dp,
             modifier = modifier
         )
         HorizontalDivider()

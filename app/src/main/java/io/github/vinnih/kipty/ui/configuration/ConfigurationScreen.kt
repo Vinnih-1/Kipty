@@ -394,7 +394,7 @@ private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifie
             })
         },
         modifier = modifier,
-        expandedHeight = 86.dp
+        expandedHeight = 100.dp
     )
     HorizontalDivider(color = colors.primary)
 }

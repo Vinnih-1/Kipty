@@ -174,7 +174,7 @@ fun AudioTopBar(
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent
             ),
-            expandedHeight = 120.dp
+            expandedHeight = 100.dp
         )
         HorizontalDivider(color = colors.secondary)
     }

@@ -6,6 +6,7 @@ import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.AudioScreen
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.ConfigurationScreen
+import io.github.vinnih.kipty.ui.create.CreateController
 import io.github.vinnih.kipty.ui.create.CreateScreen
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeScreen
@@ -21,6 +22,7 @@ fun AppNavigation(
     playerController: PlayerController,
     notificationController: NotificationController,
     configurationController: ConfigurationController,
+    createController: CreateController,
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit
 ) {
@@ -48,7 +50,7 @@ fun AppNavigation(
 
         is Screen.Create -> {
             CreateScreen(
-                audioController = audioController,
+                createController = createController,
                 onBack = onBack
             )
         }

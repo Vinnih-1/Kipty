@@ -33,6 +33,8 @@ import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.AppNavigation
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
+import io.github.vinnih.kipty.ui.create.CreateController
+import io.github.vinnih.kipty.ui.create.CreateViewModel
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -74,6 +76,8 @@ class MainActivity : ComponentActivity() {
 
     private val configurationViewModel: ConfigurationViewModel by viewModels()
 
+    private val createViewModel: CreateViewModel by viewModels()
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -89,7 +93,8 @@ class MainActivity : ComponentActivity() {
                     audioController = audioViewModel,
                     playerController = playerViewModel,
                     notificationController = notificationViewModel,
-                    configurationController = configurationViewModel
+                    configurationController = configurationViewModel,
+                    createController = createViewModel
                 )
             }
         }
@@ -103,7 +108,8 @@ class MainActivity : ComponentActivity() {
         audioController: AudioController,
         playerController: PlayerController,
         notificationController: NotificationController,
-        configurationController: ConfigurationController
+        configurationController: ConfigurationController,
+        createController: CreateController
     ) {
         val backstack = remember { mutableStateListOf<Screen>(Screen.Home) }
         val scaffoldState = rememberBottomSheetScaffoldState()
@@ -158,6 +164,7 @@ class MainActivity : ComponentActivity() {
                                 playerController = playerController,
                                 notificationController = notificationController,
                                 configurationController = configurationController,
+                                createController = createController,
                                 onNavigate = { screen -> backstack.add(screen) },
                                 onBack = { backstack.removeLastOrNull() }
                             )

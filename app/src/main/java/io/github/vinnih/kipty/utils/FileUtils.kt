@@ -128,3 +128,13 @@ fun File.moveTo(file: File) {
     this.copyTo(file, overwrite = true)
     this.deleteRecursively()
 }
+
+fun File.getFormattedSize(): String {
+    val bytes = this.length()
+    return when {
+        bytes >= 1024 * 1024 * 1024 -> "%.1f GB".format(bytes / (1024.0 * 1024.0 * 1024.0))
+        bytes >= 1024 * 1024 -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
+        bytes >= 1024 -> "%.1f KB".format(bytes / 1024.0)
+        else -> "$bytes Bytes"
+    }
+}

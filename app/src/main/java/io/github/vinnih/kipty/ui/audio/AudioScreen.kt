@@ -2,8 +2,10 @@ package io.github.vinnih.kipty.ui.audio
 
 import android.content.res.Configuration
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -96,10 +98,12 @@ fun AudioScreen(
             )
         },
         floatingActionButton = {
-            PlayPauseButton(
-                audioEntity = audioEntity,
-                playerController = playerController
-            )
+            AnimatedVisibility(!audioEntity.transcription.isNullOrEmpty()) {
+                PlayPauseButton(
+                    audioEntity = audioEntity,
+                    playerController = playerController
+                )
+            }
         },
         modifier = modifier
     ) { paddingValues ->
@@ -112,6 +116,8 @@ fun AudioScreen(
                     },
                     showTimestamp = uiState.value.showTimestamp
                 )
+            } else {
+                NoTranscriptionFound()
             }
         }
     }
@@ -168,11 +174,13 @@ fun AudioTopBar(
                 })
             },
             actions = {
-                TranscriptionButton(
-                    audioEntity = audioEntity,
-                    onStart = onTranscribe,
-                    onCancel = onCancel
-                )
+                AnimatedVisibility(audioEntity.transcription.isNullOrEmpty()) {
+                    TranscriptionButton(
+                        audioEntity = audioEntity,
+                        onStart = onTranscribe,
+                        onCancel = onCancel
+                    )
+                }
                 BaseButton(onClick = {
                     Toast.makeText(
                         context,
@@ -284,6 +292,34 @@ private fun TranscriptionButton(
                 }
             )
     )
+}
+
+@Composable
+private fun NoTranscriptionFound(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.type),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        )
+        Text(
+            text = "This audio has no transcription",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+        Text(
+            text = "Click the transcription button to generate one",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+        )
+    }
 }
 
 @Preview(

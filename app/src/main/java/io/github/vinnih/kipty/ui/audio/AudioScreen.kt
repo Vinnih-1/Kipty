@@ -34,6 +34,7 @@ import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.NotificationChannel
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.ui.components.BaseButton
@@ -57,6 +58,7 @@ fun AudioScreen(
     id: Int,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val audios = audioController.allAudios.collectAsState()
     val audioEntity = audios.value.first { it.uid == id }
     val uiState = configurationController.uiState.collectAsState()
@@ -64,8 +66,32 @@ fun AudioScreen(
     Scaffold(
         topBar = {
             AudioTopBar(
-                id = id,
-                audioController = audioController,
+                audioEntity = audioEntity,
+                onTranscribe = {
+                    notificationController.notify(
+                        audioEntity = audioEntity,
+                        title = "Transcription Ready",
+                        content = "Your transcription for this episode is now available",
+                        channel = NotificationChannel.TRANSCRIPTION_INIT
+                    )
+                    audioController.transcribeAudio(
+                        audioEntity = audioEntity,
+                        onSuccess = {
+                            notificationController.notify(
+                                audioEntity = audioEntity,
+                                title = "New Episode Available",
+                                content = "A new episode has been added to your feed",
+                                channel = NotificationChannel.TRANSCRIPTION_DONE
+                            )
+                        },
+                        onError = {
+                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                },
+                onCancel = {
+                    audioController.cancelTranscriptionWork(audioEntity)
+                },
                 onBack = onBack
             )
         },
@@ -94,14 +120,13 @@ fun AudioScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioTopBar(
-    id: Int,
-    audioController: AudioController,
+    audioEntity: AudioEntity,
+    onTranscribe: () -> Unit,
+    onCancel: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val audios = audioController.allAudios.collectAsState()
-    val audioEntity = audios.value.first { it.uid == id }
     val colors = MaterialTheme.colorScheme
 
     Column(
@@ -145,14 +170,8 @@ fun AudioTopBar(
             actions = {
                 TranscriptionButton(
                     audioEntity = audioEntity,
-                    onStart = {
-                        audioController.transcribeAudio(audioEntity) {
-                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    onCancel = {
-                        audioController.cancelTranscriptionWork(audioEntity)
-                    }
+                    onStart = onTranscribe,
+                    onCancel = onCancel
                 )
                 BaseButton(onClick = {
                     Toast.makeText(

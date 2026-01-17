@@ -58,6 +58,7 @@ fun AppNavigation(
         is Screen.Notification -> {
             NotificationScreen(
                 notificationController = notificationController,
+                onNavigate = { onNavigate(it) },
                 onBack = onBack
             )
         }

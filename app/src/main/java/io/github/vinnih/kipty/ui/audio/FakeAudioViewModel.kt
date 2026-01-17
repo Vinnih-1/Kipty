@@ -36,7 +36,11 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
-    override fun transcribeAudio(audioEntity: AudioEntity, onError: (String) -> Unit) {
+    override fun transcribeAudio(
+        audioEntity: AudioEntity,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         TODO("Not yet implemented")
     }
 

@@ -1,26 +1,26 @@
 package io.github.vinnih.kipty.ui.notification
 
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.NotificationChannel
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface NotificationController {
 
-    val allNotifications: StateFlow<List<NotificationEntity>>
+    val uiState: StateFlow<NotificationUiState>
+    val today: StateFlow<List<NotificationEntity>>
+    val yesterday: StateFlow<List<NotificationEntity>>
+    val earlier: StateFlow<List<NotificationEntity>>
+    val unread: StateFlow<List<NotificationEntity>>
 
-    val unreadNotifications: StateFlow<List<NotificationEntity>>
+    fun notify(
+        audioEntity: AudioEntity,
+        title: String,
+        content: String,
+        channel: NotificationChannel
+    )
 
-    suspend fun createNotification(title: String, content: String): NotificationEntity
+    fun read(notificationEntity: NotificationEntity)
 
-    suspend fun submitNotification(notificationEntity: NotificationEntity): Long
-
-    suspend fun getAllNotifications(): Flow<List<NotificationEntity>>
-
-    suspend fun getAllUnreadNotifications(): Flow<List<NotificationEntity>>
-
-    suspend fun getNotificationById(id: Int): Flow<NotificationEntity?>
-
-    suspend fun deleteNotification(notificationEntity: NotificationEntity)
-
-    suspend fun readAllNotifications()
+    fun delete(notificationEntity: NotificationEntity)
 }

@@ -10,11 +10,14 @@ import kotlinx.coroutines.withContext
 
 class NotificationRepositoryImpl @Inject constructor(private val dao: NotificationDao) :
     NotificationRepository {
-    override fun getAll(): Flow<List<NotificationEntity>> = dao.getAll()
+
+    override fun getToday(): Flow<List<NotificationEntity>> = dao.getToday()
+
+    override fun getYesterday(): Flow<List<NotificationEntity>> = dao.getYesterday()
+
+    override fun getEarlier(): Flow<List<NotificationEntity>> = dao.getEarlier()
 
     override fun getAllUnread(): Flow<List<NotificationEntity>> = dao.getAllUnread()
-
-    override fun getById(id: Int): Flow<NotificationEntity?> = dao.getById(id)
 
     override suspend fun save(notificationEntity: NotificationEntity): Long =
         withContext(Dispatchers.IO) {
@@ -27,9 +30,9 @@ class NotificationRepositoryImpl @Inject constructor(private val dao: Notificati
         }
     }
 
-    override suspend fun readAll() {
+    override suspend fun read(notificationEntity: NotificationEntity) {
         withContext(Dispatchers.IO) {
-            dao.readAll()
+            dao.read(notificationEntity.uid.toLong())
         }
     }
 }

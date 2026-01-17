@@ -244,7 +244,7 @@ fun HomeTopBar(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val notificationState = notificationController.unreadNotifications.collectAsState()
+    val notificationState by notificationController.uiState.collectAsState()
 
     TopAppBar(
         title = {
@@ -298,7 +298,7 @@ fun HomeTopBar(
                 })
                 BaseButton(onClick = onNotificationClick, content = {
                     BadgedBox(badge = {
-                        if (notificationState.value.isNotEmpty()) {
+                        if (notificationState.unread.isNotEmpty()) {
                             Badge()
                         }
                     }) {

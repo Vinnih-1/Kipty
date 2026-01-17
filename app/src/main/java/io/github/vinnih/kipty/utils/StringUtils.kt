@@ -13,16 +13,24 @@ private enum class Timestamp(val multiplier: Long) {
     MILLISECOND(1)
 }
 
+@Suppress("ktlint:standard:max-line-length")
 fun String.toRelativeTime(): String {
     val millis = LocalDateTime.parse(this).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     val now = System.currentTimeMillis()
+    val diffMillis = now - millis
 
-    return DateUtils.getRelativeTimeSpanString(
-        millis,
-        now,
-        DateUtils.MINUTE_IN_MILLIS,
-        DateUtils.FORMAT_ABBREV_RELATIVE
-    ).toString()
+    return when {
+        diffMillis < DateUtils.MINUTE_IN_MILLIS -> "just now"
+
+        diffMillis < DateUtils.HOUR_IN_MILLIS -> "${(diffMillis / DateUtils.MINUTE_IN_MILLIS).toInt()} min ago"
+
+        diffMillis < DateUtils.DAY_IN_MILLIS -> "${(diffMillis / DateUtils.HOUR_IN_MILLIS).toInt()} hr ago"
+
+        else -> {
+            val days = (diffMillis / DateUtils.DAY_IN_MILLIS).toInt()
+            "$days day${if (days > 1) "s" else ""} ago"
+        }
+    }
 }
 
 fun Long.formatTime(): String {

@@ -24,7 +24,7 @@ interface AudioController {
         isDefault: Boolean
     ): AudioEntity
 
-    fun transcribeAudio(audioEntity: AudioEntity, onError: (String) -> Unit)
+    fun transcribeAudio(audioEntity: AudioEntity, onSuccess: () -> Unit, onError: (String) -> Unit)
 
     suspend fun saveAudio(audioEntity: AudioEntity): Long
 

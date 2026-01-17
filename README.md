@@ -21,7 +21,7 @@ The main goal of Kipty is to:
 ---
 
 ## 📸 Preview
-[Example](https://github.com/user-attachments/assets/e1c18fed-adc3-48dc-9b39-1901c35f009e)
+[Example](https://github.com/user-attachments/assets/78ce7f5b-92ba-44b1-8ac9-4703bee057ee)
 
 ---
 

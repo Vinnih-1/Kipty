@@ -110,7 +110,7 @@ fun CreateScreen(
             when (uiState.step) {
                 Step.FILE -> AudioStepScreen(
                     file = uiState.data.audioFile,
-                    onFileSelected = { createController.selectAudio(it) },
+                    onFileSelect = { createController.selectAudio(it) },
                     modifier = Modifier
                 )
 
@@ -122,7 +122,7 @@ fun CreateScreen(
 
                 Step.IMAGE -> ImageStepScreen(
                     file = uiState.data.imageFile,
-                    onFileSelected = { createController.selectImage(it) }
+                    onFileSelect = { createController.selectImage(it) }
                 )
 
                 Step.REVIEW -> ReviewStepScreen(
@@ -147,7 +147,7 @@ private fun CreateTopBar(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    Column {
+    Column(modifier = modifier) {
         TopAppBar(
             title = {
                 Column {
@@ -181,8 +181,7 @@ private fun CreateTopBar(
                     )
                 }
             },
-            expandedHeight = 100.dp,
-            modifier = modifier
+            expandedHeight = 100.dp
         )
         HorizontalDivider()
     }
@@ -373,7 +372,7 @@ private fun ProcessingInformationNote(modifier: Modifier = Modifier) {
 @Composable
 private fun AudioStepScreen(
     file: File?,
-    onFileSelected: (File?) -> Unit,
+    onFileSelect: (File?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -387,7 +386,7 @@ private fun AudioStepScreen(
             "audio/wave"
         )
     ) {
-        onFileSelected(it)
+        onFileSelect(it)
     }
 
     Column(
@@ -504,7 +503,7 @@ private fun AudioStepScreen(
                             fontWeight = FontWeight.Light
                         )
                     }
-                    BaseButton(onClick = { onFileSelected(null) }) {
+                    BaseButton(onClick = { onFileSelect(null) }) {
                         Icon(
                             painter = painterResource(R.drawable.close),
                             contentDescription = null,
@@ -614,7 +613,7 @@ private fun DetailsStepScreen(
 @Composable
 private fun ImageStepScreen(
     file: File?,
-    onFileSelected: (File?) -> Unit,
+    onFileSelect: (File?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -623,7 +622,7 @@ private fun ImageStepScreen(
         mimeType = "image/*",
         arrayOf("image/png", "image/jpeg")
     ) {
-        onFileSelected(it)
+        onFileSelect(it)
     }
 
     Column(
@@ -740,7 +739,7 @@ private fun ImageStepScreen(
                             fontWeight = FontWeight.Light
                         )
                     }
-                    BaseButton(onClick = { onFileSelected(null) }) {
+                    BaseButton(onClick = { onFileSelect(null) }) {
                         Icon(
                             painter = painterResource(R.drawable.close),
                             contentDescription = null,
@@ -886,7 +885,7 @@ private fun ReviewStepScreen(
 private fun rememberAudioPicker(
     mimeType: String,
     extra: Array<String>,
-    onFileSelected: (File) -> Unit
+    onFileSelect: (File) -> Unit
 ): () -> Unit {
     val context = LocalContext.current
 
@@ -897,7 +896,7 @@ private fun rememberAudioPicker(
         val file = uri.processUriToFile(context)
 
         if (file != null) {
-            onFileSelected(file)
+            onFileSelect(file)
         }
     }
 

@@ -53,19 +53,26 @@ class PopulateWorker @AssistedInject constructor(
                 .copyTo(File(appContext.filesDir, "default-icon.png"))
 
             appContext.assets.list("samples/")!!.map { folder ->
-                val sample = appContext.assets.list("samples/$folder")!!
-                    .filter { it.endsWith(".mp3") }
-                    .map { File(it) }
-                    .first()
-                val transcription = appContext.assets.open("samples/$folder/raw_transcription.txt")
-                val description = appContext.assets.open("samples/$folder/description.txt")
+                appContext.assets.list("samples/$folder")!!
+                    .map { sampleFolder ->
+                        val sample = appContext.assets.list("samples/$folder/$sampleFolder")!!
+                            .filter { it.endsWith(".opus") }
+                            .map { File(it) }
+                            .first()
+                        val transcription = appContext.assets.open(
+                            "samples/$folder/$sampleFolder/raw_transcription.txt"
+                        )
+                        val description = appContext.assets.open(
+                            "samples/$folder/$sampleFolder/description.txt"
+                        )
 
-                data.invoke(
-                    "/samples/$folder/${sample.name}",
-                    transcription.bufferedReader().readText(),
-                    "samples/$folder/image.jpg",
-                    description.bufferedReader().readText()
-                )
+                        data.invoke(
+                            "samples/$folder/$sampleFolder/${sample.name}",
+                            transcription.bufferedReader().readText(),
+                            "samples/$folder/$sampleFolder/image.jpg",
+                            description.bufferedReader().readText()
+                        )
+                    }
             }
         }
     }

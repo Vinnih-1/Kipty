@@ -497,7 +497,7 @@ private fun AudioStepScreen(
                             modifier = Modifier.basicMarquee()
                         )
                         Text(
-                            text = file.getFormattedSize(),
+                            text = file.length().getFormattedSize(),
                             style = typography.titleSmall,
                             color = colors.onBackground,
                             fontWeight = FontWeight.Light
@@ -733,7 +733,7 @@ private fun ImageStepScreen(
                             modifier = Modifier.basicMarquee()
                         )
                         Text(
-                            text = file.getFormattedSize(),
+                            text = file.length().getFormattedSize(),
                             style = typography.titleSmall,
                             color = colors.onBackground,
                             fontWeight = FontWeight.Light
@@ -833,7 +833,7 @@ private fun ReviewStepScreen(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = audioFile.getFormattedSize(),
+                        text = audioFile.length().getFormattedSize(),
                         style = typography.titleSmall,
                         color = colors.onBackground,
                         fontWeight = FontWeight.Light
@@ -870,7 +870,7 @@ private fun ReviewStepScreen(
                         fontStyle = if (imageFile != null) FontStyle.Normal else FontStyle.Italic
                     )
                     Text(
-                        text = imageFile?.getFormattedSize() ?: "",
+                        text = imageFile?.length()?.getFormattedSize() ?: "",
                         style = typography.titleSmall,
                         color = colors.onBackground,
                         fontWeight = FontWeight.Light

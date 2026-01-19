@@ -10,7 +10,11 @@ import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 
 @TypeConverters(TranscriptionConverter::class)
-@Database(entities = [AudioEntity::class, NotificationEntity::class], version = 1)
+@Database(
+    version = 1,
+    exportSchema = true,
+    entities = [AudioEntity::class, NotificationEntity::class]
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun audioDao(): AudioDao
 

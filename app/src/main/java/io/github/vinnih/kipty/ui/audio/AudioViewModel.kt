@@ -16,10 +16,7 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
 import io.github.vinnih.kipty.json
-import io.github.vinnih.kipty.utils.createFolder
-import io.github.vinnih.kipty.utils.moveTo
 import java.io.File
-import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -43,50 +40,6 @@ class AudioViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-
-    override suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?
-    ): AudioEntity = withContext(Dispatchers.IO) {
-        val path = File(
-            context.filesDir,
-            "transcriptions" + File.separatorChar + name
-        ).createFolder()
-        val audioFile = File(path, audio.substringAfterLast("/"))
-        val imageFile = File(path, image.substringAfterLast("/"))
-
-        File(audio).moveTo(audioFile)
-        File(image).copyTo(imageFile)
-
-        return@withContext createAudio(
-            audio = audioFile.absolutePath,
-            image = imageFile.absolutePath,
-            name = name,
-            description = description,
-            isDefault = false
-        )
-    }
-
-    override suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?,
-        isDefault: Boolean
-    ): AudioEntity = withContext(Dispatchers.IO) {
-        val entity = AudioEntity(
-            name = name,
-            description = description?.ifEmpty { null },
-            audioPath = audio,
-            imagePath = image,
-            isDefault = isDefault,
-            createdAt = LocalDateTime.now().toString()
-        )
-
-        return@withContext entity.copy(uid = saveAudio(entity).toInt())
-    }
 
     override fun transcribeAudio(
         audioEntity: AudioEntity,

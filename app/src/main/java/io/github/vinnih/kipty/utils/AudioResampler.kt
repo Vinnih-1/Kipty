@@ -2,8 +2,6 @@ package io.github.vinnih.kipty.utils
 
 import android.content.Context
 import com.arthenica.ffmpegkit.FFmpegKit
-import com.arthenica.ffmpegkit.FFprobeKit
-import com.arthenica.ffmpegkit.MediaInformation
 import com.arthenica.ffmpegkit.ReturnCode
 import java.io.File
 
@@ -51,7 +49,4 @@ object AudioResampler {
 
         return outputFile
     }
-
-    fun File.getInformation(): MediaInformation =
-        FFprobeKit.getMediaInformation(absolutePath).mediaInformation
 }

@@ -1,5 +1,7 @@
 package io.github.vinnih.kipty.utils
 
+import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.text.format.DateUtils
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import java.time.LocalDateTime
@@ -111,3 +113,22 @@ fun String.convertTranscription(): List<AudioTranscription> =
 
         AudioTranscription(timestamp.first, timestamp.second, text)
     }.toList()
+
+fun String.getAssetAudioInfo(context: Context): Pair<String, String> {
+    val retriever = MediaMetadataRetriever()
+
+    try {
+        val afd = context.assets.openFd(this)
+        retriever.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
+        afd.close()
+
+        val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+            ?.toLongOrNull() ?: 0L
+
+        val size = context.assets.openFd(this).use { it.length }
+
+        return Pair(duration.formatTime(), size.getFormattedSize())
+    } finally {
+        retriever.release()
+    }
+}

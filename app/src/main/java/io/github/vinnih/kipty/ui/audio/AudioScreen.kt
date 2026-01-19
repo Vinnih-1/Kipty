@@ -21,6 +21,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,11 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationChannel
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
@@ -56,14 +62,56 @@ fun AudioScreen(
     playerController: PlayerController,
     notificationController: NotificationController,
     configurationController: ConfigurationController,
+    onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
     id: Int,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val audios = audioController.allAudios.collectAsState()
-    val audioEntity = audios.value.first { it.uid == id }
+    val audioEntity = audios.value.firstOrNull { it.uid == id }
+
+    if (audioEntity == null) return
+
+    val context = LocalContext.current
     val uiState = configurationController.uiState.collectAsState()
+    var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
+
+    AudioConfigSheet(
+        audioEntity = selectedAudio,
+        onDismiss = { selectedAudio = null },
+        onPlay = { playerController.playPause(selectedAudio!!) },
+        onDelete = {
+            onBack.invoke()
+            audioController.deleteAudio(selectedAudio!!)
+            if (audioEntity.uid == playerController.currentAudio.value?.uid) {
+                playerController.stopAudio()
+            }
+        },
+        onTranscript = {
+            notificationController.notify(
+                audioEntity = audioEntity,
+                title = "Transcription Ready",
+                content = "Your transcription for this episode is now available",
+                channel = NotificationChannel.TRANSCRIPTION_INIT
+            )
+            audioController.transcribeAudio(
+                audioEntity = audioEntity,
+                onSuccess = {
+                    notificationController.notify(
+                        audioEntity = audioEntity,
+                        title = "New Episode Available",
+                        content = "A new episode has been added to your feed",
+                        channel = NotificationChannel.TRANSCRIPTION_DONE
+                    )
+                },
+                onError = {
+                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                }
+            )
+        },
+        onNavigate = onNavigate,
+        modifier = modifier
+    )
 
     Scaffold(
         topBar = {
@@ -91,6 +139,7 @@ fun AudioScreen(
                         }
                     )
                 },
+                onSettings = { selectedAudio = audioEntity },
                 onCancel = {
                     audioController.cancelTranscriptionWork(audioEntity)
                 },
@@ -128,6 +177,7 @@ fun AudioScreen(
 fun AudioTopBar(
     audioEntity: AudioEntity,
     onTranscribe: () -> Unit,
+    onSettings: () -> Unit,
     onCancel: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -181,15 +231,7 @@ fun AudioTopBar(
                         onCancel = onCancel
                     )
                 }
-                BaseButton(onClick = {
-                    Toast.makeText(
-                        context,
-                        "Settings not implemented yet!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // TODO: open modal with audio settings (name, description, image)
-                }, content = {
+                BaseButton(onClick = onSettings, content = {
                     Icon(
                         painter = painterResource(R.drawable.settings),
                         contentDescription = null,
@@ -342,6 +384,7 @@ private fun AudioScreenPreview() {
             playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
             configurationController = FakeConfigurationViewModel(),
+            onNavigate = {},
             onBack = {},
             id = audioEntity.uid
         )

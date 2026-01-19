@@ -49,7 +49,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -115,7 +114,9 @@ fun CreateScreen(
                 )
 
                 Step.DETAILS -> DetailsStepScreen(
-                    file = uiState.data.audioFile!!,
+                    name = uiState.data.audioFile!!.nameWithoutExtension,
+                    defaultTitle = uiState.data.title,
+                    defaultDescription = uiState.data.description,
                     onTitleChange = { createController.insertTitle(it) },
                     onDescriptionChange = { createController.insertDescription(it) }
                 )
@@ -138,7 +139,7 @@ fun CreateScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CreateTopBar(
+fun CreateTopBar(
     step: Step,
     onBack: () -> Unit,
     onPrevious: () -> Unit,
@@ -188,7 +189,7 @@ private fun CreateTopBar(
 }
 
 @Composable
-private fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
+fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val isSelectedItem: (Step) -> Boolean = { currentStep == it }
 
@@ -518,16 +519,18 @@ private fun AudioStepScreen(
 }
 
 @Composable
-private fun DetailsStepScreen(
-    file: File,
+fun DetailsStepScreen(
+    name: String,
+    modifier: Modifier = Modifier,
+    defaultTitle: String,
+    defaultDescription: String,
     onTitleChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit,
-    modifier: Modifier = Modifier
+    onDescriptionChange: (String) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    var titleState by remember { mutableStateOf(TextFieldValue()) }
-    var descriptionState by remember { mutableStateOf(TextFieldValue()) }
+    var titleState by remember(defaultTitle) { mutableStateOf(defaultTitle) }
+    var descriptionState by remember(defaultDescription) { mutableStateOf(defaultDescription) }
 
     Column(
         modifier = modifier.fillMaxSize(),
@@ -559,7 +562,7 @@ private fun DetailsStepScreen(
             TextField(
                 value = titleState,
                 onValueChange = {
-                    onTitleChange(it.text)
+                    onTitleChange(it)
                     titleState = it
                 },
                 label = {
@@ -572,7 +575,7 @@ private fun DetailsStepScreen(
                 },
                 placeholder = {
                     Text(
-                        text = "e.g., ${file.nameWithoutExtension}",
+                        text = "e.g., $name",
                         style = typography.titleSmall,
                         color = colors.onBackground,
                         fontWeight = FontWeight.Light
@@ -584,7 +587,7 @@ private fun DetailsStepScreen(
             TextField(
                 value = descriptionState,
                 onValueChange = {
-                    onDescriptionChange(it.text)
+                    onDescriptionChange(it)
                     descriptionState = it
                 },
                 label = {
@@ -611,11 +614,7 @@ private fun DetailsStepScreen(
 }
 
 @Composable
-private fun ImageStepScreen(
-    file: File?,
-    onFileSelect: (File?) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun ImageStepScreen(file: File?, onFileSelect: (File?) -> Unit, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val rememberAudioPicker = rememberAudioPicker(
@@ -911,7 +910,7 @@ private fun rememberAudioPicker(
 }
 
 @Composable
-private fun BottomButton(
+fun BottomButton(
     onNext: () -> Unit,
     onCreate: () -> Unit,
     step: Step,

@@ -1,5 +1,6 @@
 package io.github.vinnih.kipty.ui.components
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import coil3.compose.AsyncImage
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.ui.create.Step
 import io.github.vinnih.kipty.utils.formatTime
 import io.github.vinnih.kipty.utils.getAssetAudioInfo
 import io.github.vinnih.kipty.utils.getFormattedSize
@@ -52,6 +54,7 @@ fun AudioConfigSheet(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val context = LocalContext.current
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     if (audioEntity == null) return
@@ -94,7 +97,7 @@ fun AudioConfigSheet(
                     )
                     AudioConfigItem(
                         onClick = {
-                            // TODO: Criar tela de edição
+                            onNavigate(Screen.Edit(audioEntity.uid, Step.DETAILS))
                         },
                         icon = {
                             Icon(
@@ -121,7 +124,7 @@ fun AudioConfigSheet(
                     )
                     AudioConfigItem(
                         onClick = {
-                            // TODO: Criar tela de edição
+                            onNavigate(Screen.Edit(audioEntity.uid, Step.DETAILS))
                         },
                         icon = {
                             Icon(
@@ -148,26 +151,41 @@ fun AudioConfigSheet(
                     )
                     AudioConfigItem(
                         onClick = {
-                            // TODO: Criar tela de edição
+                            if (audioEntity.isDefault) {
+                                Toast.makeText(
+                                    context,
+                                    "Default audio icon cannot be changed",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                onNavigate(Screen.Edit(audioEntity.uid, Step.IMAGE))
+                            }
                         },
                         icon = {
                             Icon(
                                 painter = painterResource(R.drawable.image),
                                 contentDescription = null,
+                                tint = colors.onBackground.copy(
+                                    alpha = if (audioEntity.isDefault) .5f else 1f
+                                ),
                                 modifier = Modifier.size(24.dp)
                             )
                         },
                         text = {
                             Text(
                                 text = "Change Cover",
-                                color = colors.onBackground,
+                                color = colors.onBackground.copy(
+                                    alpha = if (audioEntity.isDefault) .5f else 1f
+                                ),
                                 style = typography.titleMedium
                             )
                         },
                         description = {
                             Text(
                                 text = "Select a new thumbnail",
-                                color = colors.onBackground.copy(alpha = .6f),
+                                color = colors.onBackground.copy(
+                                    alpha = if (audioEntity.isDefault) .3f else .6f
+                                ),
                                 style = typography.bodySmall
                             )
                         },

@@ -394,122 +394,122 @@ private fun AudioStepScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Column(
+            verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp, horizontal = 6.dp)
+                .padding(24.dp)
         ) {
-            Text(
-                text = "Select audio file",
-                style = typography.headlineLarge,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Choose the podcast episode you want to transcribe",
-                style = typography.titleSmall,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Light
-            )
-        }
-
-        if (file == null) {
-            OutlinedIconButton(
-                border = BorderStroke(0.dp, Color.Transparent),
-                shape = RoundedCornerShape(16.dp),
-                onClick = { rememberAudioPicker.invoke() },
-                modifier = Modifier.fillMaxWidth().padding(
-                    horizontal = 24.dp
-                ).height(256.dp).dashedBorder(
-                    color = colors.secondary.copy(alpha = .4f)
+            Column {
+                Text(
+                    text = "Select audio file",
+                    style = typography.headlineLarge,
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Bold
                 )
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
+                Text(
+                    text = "Choose the podcast episode you want to transcribe",
+                    style = typography.titleSmall,
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Light
+                )
+            }
+            if (file == null) {
+                OutlinedIconButton(
+                    border = BorderStroke(0.dp, Color.Transparent),
+                    shape = RoundedCornerShape(16.dp),
+                    onClick = { rememberAudioPicker.invoke() },
+                    modifier = Modifier.fillMaxWidth().height(256.dp).dashedBorder(
+                        color = colors.secondary.copy(alpha = .4f)
+                    )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .size(100.dp)
-                            .background(colors.secondaryContainer.copy(alpha = .4f))
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.music),
-                            contentDescription = "Audio file icon",
-                            tint = colors.onSecondaryContainer.copy(.8f),
-                            modifier = Modifier.size(56.dp).align(Alignment.Center)
-                        )
-                    }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(
-                            text = "Tap to select audio",
-                            style = typography.titleMedium,
-                            color = colors.onBackground
-                        )
-                        Text(
-                            text = "MP3, WAV M4A supported",
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(100.dp)
+                                .background(colors.secondaryContainer.copy(alpha = .4f))
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.music),
+                                contentDescription = "Audio file icon",
+                                tint = colors.onSecondaryContainer.copy(.8f),
+                                modifier = Modifier.size(56.dp).align(Alignment.Center)
+                            )
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(top = 16.dp)
+                        ) {
+                            Text(
+                                text = "Tap to select audio",
+                                style = typography.titleMedium,
+                                color = colors.onBackground
+                            )
+                            Text(
+                                text = "MP3, WAV M4A supported",
+                                style = typography.titleSmall,
+                                color = colors.onBackground,
+                                fontWeight = FontWeight.Light
+                            )
+                        }
                     }
                 }
-            }
-        } else {
-            Card(
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
+            } else {
+                Card(
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Box(
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .size(64.dp)
-                            .background(colors.secondaryContainer.copy(.4f))
+                            .fillMaxWidth()
+                            .padding(20.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.music),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer.copy(.8f),
-                            modifier = Modifier.size(36.dp).align(Alignment.Center)
-                        )
-                    }
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.weight(.8f)
-                    ) {
-                        Text(
-                            text = file.nameWithoutExtension,
-                            style = typography.titleMedium,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee()
-                        )
-                        Text(
-                            text = file.getFormattedSize(),
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
-                    BaseButton(onClick = { onFileSelect(null) }) {
-                        Icon(
-                            painter = painterResource(R.drawable.close),
-                            contentDescription = null,
-                            tint = colors.onBackground,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .size(64.dp)
+                                .background(colors.secondaryContainer.copy(.4f))
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.music),
+                                contentDescription = null,
+                                tint = colors.onSecondaryContainer.copy(.8f),
+                                modifier = Modifier.size(36.dp).align(Alignment.Center)
+                            )
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.weight(.8f)
+                        ) {
+                            Text(
+                                text = file.nameWithoutExtension,
+                                style = typography.titleMedium,
+                                color = colors.onBackground,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                            Text(
+                                text = file.getFormattedSize(),
+                                style = typography.titleSmall,
+                                color = colors.onBackground,
+                                fontWeight = FontWeight.Light
+                            )
+                        }
+                        BaseButton(onClick = { onFileSelect(null) }) {
+                            Icon(
+                                painter = painterResource(R.drawable.close),
+                                contentDescription = null,
+                                tint = colors.onBackground,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -530,32 +530,26 @@ private fun DetailsStepScreen(
     var descriptionState by remember { mutableStateOf(TextFieldValue()) }
 
     Column(
-        modifier = modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.Start
+        modifier = modifier.fillMaxSize()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 24.dp, horizontal = 6.dp)
-        ) {
-            Text(
-                text = "Add details",
-                style = typography.headlineLarge,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Give your transcription a name and description",
-                style = typography.titleSmall,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Light
-            )
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(32.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            modifier = Modifier.fillMaxWidth().padding(24.dp)
         ) {
+            Column {
+                Text(
+                    text = "Add details",
+                    style = typography.headlineLarge,
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Give your transcription a name and description",
+                    style = typography.titleSmall,
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Light
+                )
+            }
             TextField(
                 value = titleState,
                 onValueChange = {
@@ -630,122 +624,124 @@ private fun ImageStepScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Column(
+            verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp, horizontal = 6.dp)
+                .padding(24.dp)
         ) {
-            Text(
-                text = "Add cover image",
-                style = typography.headlineLarge,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Optional: Add a thumbnail for this episode",
-                style = typography.titleSmall,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Light
-            )
-        }
-
-        if (file == null) {
-            OutlinedIconButton(
-                border = BorderStroke(0.dp, Color.Transparent),
-                shape = RoundedCornerShape(16.dp),
-                onClick = { rememberAudioPicker.invoke() },
-                modifier = Modifier.fillMaxWidth().padding(
-                    horizontal = 24.dp
-                ).height(256.dp).dashedBorder(
-                    color = colors.secondary.copy(alpha = .4f)
+            Column {
+                Text(
+                    text = "Add cover image",
+                    style = typography.headlineLarge,
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Bold
                 )
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxSize()
+                Text(
+                    text = "Optional: Add a thumbnail for this episode",
+                    style = typography.titleSmall,
+                    color = colors.onBackground,
+                    fontWeight = FontWeight.Light
+                )
+            }
+            if (file == null) {
+                OutlinedIconButton(
+                    border = BorderStroke(0.dp, Color.Transparent),
+                    shape = RoundedCornerShape(16.dp),
+                    onClick = { rememberAudioPicker.invoke() },
+                    modifier = Modifier.fillMaxWidth().padding(
+                        horizontal = 24.dp
+                    ).height(256.dp).dashedBorder(
+                        color = colors.secondary.copy(alpha = .4f)
+                    )
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .size(100.dp)
-                            .background(colors.secondaryContainer.copy(alpha = .4f))
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.image),
-                            contentDescription = "Audio file icon",
-                            tint = colors.onSecondaryContainer.copy(.8f),
-                            modifier = Modifier.size(56.dp).align(Alignment.Center)
-                        )
-                    }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(top = 16.dp)
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(
-                            text = "Tap to select image",
-                            style = typography.titleMedium,
-                            color = colors.onBackground
-                        )
-                        Text(
-                            text = "JPG, PNG supported",
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(100.dp)
+                                .background(colors.secondaryContainer.copy(alpha = .4f))
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.image),
+                                contentDescription = "Audio file icon",
+                                tint = colors.onSecondaryContainer.copy(.8f),
+                                modifier = Modifier.size(56.dp).align(Alignment.Center)
+                            )
+                        }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(top = 16.dp)
+                        ) {
+                            Text(
+                                text = "Tap to select image",
+                                style = typography.titleMedium,
+                                color = colors.onBackground
+                            )
+                            Text(
+                                text = "JPG, PNG supported",
+                                style = typography.titleSmall,
+                                color = colors.onBackground,
+                                fontWeight = FontWeight.Light
+                            )
+                        }
                     }
                 }
-            }
-        } else {
-            Card(
-                shape = MaterialTheme.shapes.medium,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
+            } else {
+                Card(
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                 ) {
-                    Box(
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
-                            .size(64.dp)
-                            .background(colors.secondaryContainer.copy(.4f))
+                            .fillMaxWidth()
+                            .padding(20.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.image),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer.copy(.8f),
-                            modifier = Modifier.size(36.dp).align(Alignment.Center)
-                        )
-                    }
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.weight(.8f)
-                    ) {
-                        Text(
-                            text = file.nameWithoutExtension,
-                            style = typography.titleMedium,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            modifier = Modifier.basicMarquee()
-                        )
-                        Text(
-                            text = file.getFormattedSize(),
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
-                    BaseButton(onClick = { onFileSelect(null) }) {
-                        Icon(
-                            painter = painterResource(R.drawable.close),
-                            contentDescription = null,
-                            tint = colors.onBackground,
-                            modifier = Modifier.size(24.dp)
-                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(16.dp))
+                                .size(64.dp)
+                                .background(colors.secondaryContainer.copy(.4f))
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.image),
+                                contentDescription = null,
+                                tint = colors.onSecondaryContainer.copy(.8f),
+                                modifier = Modifier.size(36.dp).align(Alignment.Center)
+                            )
+                        }
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.weight(.8f)
+                        ) {
+                            Text(
+                                text = file.nameWithoutExtension,
+                                style = typography.titleMedium,
+                                color = colors.onBackground,
+                                fontWeight = FontWeight.Bold,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                            Text(
+                                text = file.getFormattedSize(),
+                                style = typography.titleSmall,
+                                color = colors.onBackground,
+                                fontWeight = FontWeight.Light
+                            )
+                        }
+                        BaseButton(onClick = { onFileSelect(null) }) {
+                            Icon(
+                                painter = painterResource(R.drawable.close),
+                                contentDescription = null,
+                                tint = colors.onBackground,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -767,7 +763,7 @@ private fun ReviewStepScreen(
     @Composable
     fun CardDetails(@DrawableRes icon: Int, title: String, content: @Composable () -> Unit) {
         Card(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -800,9 +796,10 @@ private fun ReviewStepScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Column(
+            verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 24.dp, horizontal = 6.dp)
+                .padding(24.dp)
         ) {
             Text(
                 text = "Review & create",
@@ -816,65 +813,80 @@ private fun ReviewStepScreen(
                 color = colors.onBackground,
                 fontWeight = FontWeight.Light
             )
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(32.dp),
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
-        ) {
-            CardDetails(R.drawable.music, "Audio File") {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = audioFile.nameWithoutExtension,
-                        style = typography.titleMedium,
-                        color = colors.onBackground,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = audioFile.getFormattedSize(),
-                        style = typography.titleSmall,
-                        color = colors.onBackground,
-                        fontWeight = FontWeight.Light
-                    )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(32.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CardDetails(R.drawable.music, "Audio File") {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = audioFile.nameWithoutExtension,
+                            style = typography.titleMedium,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = audioFile.getFormattedSize(),
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light
+                        )
+                    }
                 }
-            }
-            CardDetails(R.drawable.file_text, "Details") {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = title,
-                        style = typography.titleMedium,
-                        color = colors.onBackground,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = description,
-                        style = typography.titleSmall,
-                        color = colors.onBackground,
-                        fontWeight = FontWeight.Light
-                    )
+                CardDetails(R.drawable.file_text, "Details") {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = title.ifEmpty {
+                                audioFile.nameWithoutExtension
+                            },
+                            style = typography.titleMedium,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = description.ifEmpty {
+                                "Description not provided"
+                            },
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light,
+                            fontStyle = if (description.isEmpty()) {
+                                FontStyle.Italic
+                            } else {
+                                FontStyle.Normal
+                            }
+                        )
+                    }
                 }
-            }
-            CardDetails(R.drawable.image, "Cover Image") {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = imageFile?.nameWithoutExtension ?: "No cover image selected",
-                        style = typography.titleMedium,
-                        color = colors.onBackground,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        fontStyle = if (imageFile != null) FontStyle.Normal else FontStyle.Italic
-                    )
-                    Text(
-                        text = imageFile?.getFormattedSize() ?: "",
-                        style = typography.titleSmall,
-                        color = colors.onBackground,
-                        fontWeight = FontWeight.Light
-                    )
+                CardDetails(R.drawable.image, "Cover Image") {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(
+                            text = imageFile?.nameWithoutExtension ?: "No cover image selected",
+                            style = typography.titleMedium,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            fontStyle = if (imageFile !=
+                                null
+                            ) {
+                                FontStyle.Normal
+                            } else {
+                                FontStyle.Italic
+                            }
+                        )
+                        Text(
+                            text = imageFile?.getFormattedSize() ?: "",
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light
+                        )
+                    }
                 }
             }
         }

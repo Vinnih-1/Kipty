@@ -50,6 +50,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.NotificationChannel
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
@@ -94,7 +95,26 @@ fun HomeScreen(
         onDismiss = { selectedAudio = null },
         onPlay = { playerController.playPause(selectedAudio!!) },
         onDelete = { audioController.deleteAudio(selectedAudio!!) },
-        onTranscript = { /*TODO*/ },
+        onTranscript = {
+            notificationController.notify(
+                audioEntity = selectedAudio!!,
+                title = "Transcription Ready",
+                content = "Your transcription for this episode is now available",
+                channel = NotificationChannel.TRANSCRIPTION_INIT
+            )
+            audioController.transcribeAudio(
+                audioEntity = selectedAudio!!,
+                onSuccess = {
+                    notificationController.notify(
+                        audioEntity = selectedAudio!!,
+                        title = "New Episode Available",
+                        content = "A new episode has been added to your feed",
+                        channel = NotificationChannel.TRANSCRIPTION_DONE
+                    )
+                },
+                onError = {}
+            )
+        },
         onNavigate = onNavigate,
         modifier = modifier
     )

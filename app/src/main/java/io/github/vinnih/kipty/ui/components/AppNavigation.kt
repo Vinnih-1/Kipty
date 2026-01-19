@@ -33,7 +33,7 @@ fun AppNavigation(
                 audioController = audioController,
                 playerController = playerController,
                 notificationController = notificationController,
-                onNavigate = { onNavigate(it) }
+                onNavigate = onNavigate
             )
         }
 
@@ -43,6 +43,7 @@ fun AppNavigation(
                 playerController = playerController,
                 notificationController = notificationController,
                 configurationController = configurationController,
+                onNavigate = onNavigate,
                 onBack = onBack,
                 id = currentScreen.id
             )
@@ -58,7 +59,7 @@ fun AppNavigation(
         is Screen.Notification -> {
             NotificationScreen(
                 notificationController = notificationController,
-                onNavigate = { onNavigate(it) },
+                onNavigate = onNavigate,
                 onBack = onBack
             )
         }
@@ -66,7 +67,7 @@ fun AppNavigation(
         is Screen.Configuration -> {
             ConfigurationScreen(
                 configurationController = configurationController,
-                onNavigate = { onNavigate(it) },
+                onNavigate = onNavigate,
                 onBack = onBack
             )
         }

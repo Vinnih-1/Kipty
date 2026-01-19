@@ -9,21 +9,6 @@ interface AudioController {
 
     val allAudios: StateFlow<List<AudioEntity>>
 
-    suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?
-    ): AudioEntity
-
-    suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?,
-        isDefault: Boolean
-    ): AudioEntity
-
     fun transcribeAudio(audioEntity: AudioEntity, onSuccess: () -> Unit, onError: (String) -> Unit)
 
     suspend fun saveAudio(audioEntity: AudioEntity): Long

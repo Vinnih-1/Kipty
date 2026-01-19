@@ -17,25 +17,6 @@ class FakeAudioViewModel : AudioController {
             )
         )
 
-    override suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?
-    ): AudioEntity {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?,
-        isDefault: Boolean
-    ): AudioEntity {
-        TODO("Not yet implemented")
-    }
-
     override fun transcribeAudio(
         audioEntity: AudioEntity,
         onSuccess: () -> Unit,

@@ -28,6 +28,7 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -53,6 +54,7 @@ import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
 import io.github.vinnih.kipty.ui.components.AudioCard
+import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
@@ -74,6 +76,7 @@ fun HomeScreen(
     var notificationWarn by remember { mutableStateOf(true) }
     var searchQuery by remember { mutableStateOf("") }
     var isSearchExpanded by remember { mutableStateOf(false) }
+    var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
     val filteredAudios = remember(searchQuery, audioState) {
         if (searchQuery.isEmpty()) {
             audioState.value
@@ -81,6 +84,20 @@ fun HomeScreen(
             audioState.value.filter { it.name.contains(searchQuery, ignoreCase = true) }
         }
     }
+
+    DisposableEffect(Unit) {
+        onDispose { selectedAudio = null }
+    }
+
+    AudioConfigSheet(
+        audioEntity = selectedAudio,
+        onDismiss = { selectedAudio = null },
+        onPlay = { playerController.playPause(selectedAudio!!) },
+        onDelete = { audioController.deleteAudio(selectedAudio!!) },
+        onTranscript = { /*TODO*/ },
+        onNavigate = onNavigate,
+        modifier = modifier
+    )
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -113,13 +130,7 @@ fun HomeScreen(
                         onNavigate = {
                             onNavigate(Screen.Audio(audioData.uid))
                         },
-                        onPlay = { playerController.playPause(audioData) },
-                        onDelete = {
-                            audioController.deleteAudio(audioData)
-                            if (audioData.uid == playerController.currentAudio.value?.uid) {
-                                playerController.stopAudio()
-                            }
-                        },
+                        onPress = { selectedAudio = audioData },
                         modifier = Modifier.fillMaxWidth().height(200.dp)
                     )
                 }
@@ -132,8 +143,6 @@ fun HomeScreen(
             onQueryChange = { searchQuery = it },
             filteredAudios = filteredAudios,
             onNavigate = { onNavigate(it) },
-            playerController = playerController,
-            audioController = audioController,
             modifier = Modifier.align(Alignment.TopCenter)
         )
     }
@@ -148,8 +157,6 @@ private fun SearchBarView(
     onQueryChange: (String) -> Unit,
     filteredAudios: List<AudioEntity>,
     onNavigate: (Screen) -> Unit,
-    playerController: PlayerController,
-    audioController: AudioController,
     modifier: Modifier = Modifier
 ) {
     if (!isSearchExpanded) return
@@ -219,13 +226,7 @@ private fun SearchBarView(
                     onNavigate = {
                         onNavigate(Screen.Audio(audioData.uid))
                     },
-                    onPlay = { playerController.playPause(audioData) },
-                    onDelete = {
-                        audioController.deleteAudio(audioData)
-                        if (audioData.uid == playerController.currentAudio.value?.uid) {
-                            playerController.stopAudio()
-                        }
-                    },
+                    onPress = {},
                     modifier = Modifier.fillMaxWidth().height(200.dp)
                 )
             }

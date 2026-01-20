@@ -28,7 +28,9 @@ class AppModule {
     @Provides
     @Singleton
     fun getDatabase(@ApplicationContext context: Context) =
-        Room.databaseBuilder(context, AppDatabase::class.java, "kipty").build()
+        Room.databaseBuilder(context, AppDatabase::class.java, "kipty")
+            .addMigrations(AppDatabase.MIGRATION_1_2)
+            .build()
 
     @Provides
     @Singleton

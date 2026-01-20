@@ -56,6 +56,7 @@ import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import java.io.File
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -76,10 +77,11 @@ fun PlayerScreen(
 
     LaunchedEffect(scaffoldState.bottomSheetState) {
         snapshotFlow {
-            scaffoldState.bottomSheetState.requireOffset()
-        }.collect {
-            visible = it > 1000f
-        }
+            runCatching { scaffoldState.bottomSheetState.requireOffset() }.getOrNull()
+        }.filterNotNull()
+            .collect { offset ->
+                visible = offset > 1000f
+            }
     }
 
     Column(modifier = modifier.fillMaxSize().background(color = colors.surfaceContainer)) {

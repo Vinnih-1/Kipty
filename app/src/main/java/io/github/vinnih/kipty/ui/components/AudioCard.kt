@@ -21,11 +21,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,17 +35,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.request.crossfade
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.json
-import io.github.vinnih.kipty.ui.audio.AudioController
-import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
-import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
-import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatDate
 import io.github.vinnih.kipty.utils.formatTime
@@ -58,46 +50,36 @@ import java.io.File
 
 @Composable
 fun AudioCard(
-    id: Int,
-    homeController: HomeController,
-    audioController: AudioController,
-    onNavigate: (Screen) -> Unit,
+    audioEntity: AudioEntity,
+    playTime: Long,
+    onNavigate: (Int) -> Unit,
     onPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
-    val playTime by homeController.getPlayTimeById(id).collectAsStateWithLifecycle(0L)
-
-    LaunchedEffect(Unit) {
-        audioEntity = audioController.getById(id)
-    }
-
-    if (audioEntity == null) return
-
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
-    val audioInfo = if (audioEntity!!.isDefault) {
-        audioEntity!!.audioPath.getAssetAudioInfo(context)
-    } else {
-        val audio = File(audioEntity!!.audioPath)
-        Pair(audio.length(), audio.length())
+
+    val audioInfo = remember(audioEntity.uid) {
+        if (audioEntity.isDefault) {
+            audioEntity.audioPath.getAssetAudioInfo(context)
+        } else {
+            File(audioEntity.audioPath).length() to File(audioEntity.audioPath).length()
+        }
     }
 
     ElevatedCard(
         modifier = modifier.padding(8.dp).combinedClickable(
-            onClick = { onNavigate(Screen.Audio(audioEntity!!.uid)) },
+            onClick = { onNavigate(audioEntity.uid) },
             onLongClick = {
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onPress.invoke()
             }
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 12.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
         AudioContainer(
             onClick = onPress,
-            audioEntity = audioEntity!!,
+            audioEntity = audioEntity,
             audioInfo = audioInfo,
             playTime = playTime
         )
@@ -151,11 +133,20 @@ private fun AudioIconSection(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val context = LocalContext.current
 
-    val image = if (audioEntity.isDefault) {
-        "file:///android_asset/${audioEntity.imagePath}"
-    } else {
-        File(audioEntity.imagePath)
+    val imageModel = remember(audioEntity.uid, audioEntity.imagePath) {
+        if (audioEntity.isDefault) {
+            "file:///android_asset/${audioEntity.imagePath}"
+        } else {
+            ImageRequest.Builder(context)
+                .data(File(audioEntity.imagePath))
+                .memoryCacheKey(audioEntity.imagePath)
+                .diskCacheKey(audioEntity.imagePath)
+                .crossfade(true)
+                .size(90, 90)
+                .build()
+        }
     }
 
     Column(
@@ -173,10 +164,10 @@ private fun AudioIconSection(
                 .background(Color.Gray)
         ) {
             AsyncImage(
-                model = image,
+                model = imageModel,
                 contentDescription = null,
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.width(90.dp).height(90.dp)
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.size(90.dp)
             )
         }
         Box(
@@ -308,9 +299,8 @@ private fun AudioCardPreview() {
 
     AppTheme {
         AudioCard(
-            id = audioEntity.uid,
-            homeController = FakeHomeViewModel(),
-            audioController = FakeAudioViewModel(),
+            audioEntity = audioEntity,
+            playTime = 0L,
             onNavigate = {},
             onPress = {},
             modifier = Modifier.fillMaxWidth().height(200.dp)

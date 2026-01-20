@@ -17,8 +17,9 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class HomeUiState(val audioList: List<AudioEntity>)
@@ -32,11 +33,17 @@ class HomeViewModel @Inject constructor(
 
     private val _homeUiState = MutableStateFlow(HomeUiState(listOf()))
 
-    override val homeUiState: StateFlow<HomeUiState> = _homeUiState.asStateFlow()
+    override val homeUiState: StateFlow<HomeUiState> = _homeUiState.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeUiState(emptyList())
+    )
 
     override fun getPlayTimeById(id: Int): Flow<Long> = audioRepository.getFlowPlayTimeById(id)
 
-    override fun loadAudios() {
+    override fun loadAudios(override: Boolean) {
+        if (_homeUiState.value.audioList.isNotEmpty() && !override) return
+
         viewModelScope.launch(Dispatchers.IO) {
             _homeUiState.value =
                 HomeUiState(audioRepository.getAll())

@@ -35,7 +35,7 @@ class AudioViewModel @Inject constructor(
 ) : ViewModel(),
     AudioController {
     private val workManager = WorkManager.getInstance(context)
-    override val allAudios: StateFlow<List<AudioEntity>> = repository.getAll().stateIn(
+    override val allAudios: StateFlow<List<AudioEntity>> = repository.getAllFlow().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
@@ -106,6 +106,14 @@ class AudioViewModel @Inject constructor(
         return@withContext repository.save(audioEntity)
     }
 
+    override suspend fun getAll(): List<AudioEntity> = withContext(Dispatchers.IO) {
+        return@withContext repository.getAll()
+    }
+
+    override suspend fun getById(id: Int): AudioEntity? = withContext(Dispatchers.IO) {
+        return@withContext repository.getById(id)
+    }
+
     override fun deleteAudio(audioEntity: AudioEntity) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.delete(audioEntity)
@@ -124,5 +132,5 @@ class AudioViewModel @Inject constructor(
         updateAudioState(audioEntity, TranscriptionState.NONE)
     }
 
-    override fun getById(id: Int): Flow<AudioEntity?> = repository.getById(id)
+    override fun getFlowById(id: Int): Flow<AudioEntity?> = repository.getFlowById(id)
 }

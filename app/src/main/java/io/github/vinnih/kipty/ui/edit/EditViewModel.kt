@@ -36,7 +36,7 @@ class EditViewModel @Inject constructor(
 
     override fun retrieveData(id: Int) {
         viewModelScope.launch {
-            val audioEntity = audioRepository.getById(id).firstOrNull() ?: return@launch
+            val audioEntity = audioRepository.getFlowById(id).firstOrNull() ?: return@launch
 
             _uiState.update { currentState ->
                 currentState.copy(

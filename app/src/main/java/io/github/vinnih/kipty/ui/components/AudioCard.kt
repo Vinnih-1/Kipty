@@ -23,7 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,12 +39,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.ui.audio.AudioController
+import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
+import io.github.vinnih.kipty.ui.home.FakeHomeViewModel
+import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatDate
 import io.github.vinnih.kipty.utils.formatTime
@@ -53,23 +58,34 @@ import java.io.File
 
 @Composable
 fun AudioCard(
-    audioEntity: AudioEntity,
+    id: Int,
+    homeController: HomeController,
+    audioController: AudioController,
     onNavigate: (Screen) -> Unit,
     onPress: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var audioEntity by remember { mutableStateOf<AudioEntity?>(null) }
+    val playTime by homeController.getPlayTimeById(id).collectAsStateWithLifecycle(0L)
+
+    LaunchedEffect(Unit) {
+        audioEntity = audioController.getById(id)
+    }
+
+    if (audioEntity == null) return
+
     val haptics = LocalHapticFeedback.current
     val context = LocalContext.current
-    val audioInfo = if (audioEntity.isDefault) {
-        audioEntity.audioPath.getAssetAudioInfo(context)
+    val audioInfo = if (audioEntity!!.isDefault) {
+        audioEntity!!.audioPath.getAssetAudioInfo(context)
     } else {
-        val audio = File(audioEntity.audioPath)
+        val audio = File(audioEntity!!.audioPath)
         Pair(audio.length(), audio.length())
     }
 
     ElevatedCard(
         modifier = modifier.padding(8.dp).combinedClickable(
-            onClick = { onNavigate(Screen.Audio(audioEntity.uid)) },
+            onClick = { onNavigate(Screen.Audio(audioEntity!!.uid)) },
             onLongClick = {
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onPress.invoke()
@@ -81,8 +97,9 @@ fun AudioCard(
     ) {
         AudioContainer(
             onClick = onPress,
-            audioEntity = audioEntity,
-            audioInfo = audioInfo
+            audioEntity = audioEntity!!,
+            audioInfo = audioInfo,
+            playTime = playTime
         )
     }
 }
@@ -92,6 +109,7 @@ private fun AudioContainer(
     onClick: () -> Unit,
     audioEntity: AudioEntity,
     audioInfo: Pair<Long, Long>,
+    playTime: Long,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -117,7 +135,8 @@ private fun AudioContainer(
                 )
                 AudioStatusSection(
                     audioEntity = audioEntity,
-                    audioInfo = audioInfo
+                    audioInfo = audioInfo,
+                    playTime = playTime
                 )
             }
         }
@@ -224,22 +243,12 @@ private fun AudioInformationSection(
 private fun AudioStatusSection(
     audioEntity: AudioEntity,
     audioInfo: Pair<Long, Long>,
+    playTime: Long,
     modifier: Modifier = Modifier
 ) {
     val typography = MaterialTheme.typography
-    var progress by remember { mutableFloatStateOf(0f) }
     val seconds = audioInfo.first / 1000
-
-    LaunchedEffect(audioEntity.playTime) {
-        val playTime = audioEntity.playTime
-
-        if (playTime >= seconds) {
-            progress = 1f
-            return@LaunchedEffect
-        }
-
-        progress = (playTime.toFloat() / seconds.toFloat())
-    }
+    val progress = (playTime.toFloat() / seconds.toFloat()).coerceIn(0f, 1f)
 
     Column(
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -270,7 +279,7 @@ private fun AudioStatusSection(
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = "${(progress * 100).toInt().coerceIn(0, 100)}%",
+                    text = "${(progress * 100).toInt()}%",
                     style = typography.bodySmall
                 )
             }
@@ -299,7 +308,9 @@ private fun AudioCardPreview() {
 
     AppTheme {
         AudioCard(
-            audioEntity = audioEntity,
+            id = audioEntity.uid,
+            homeController = FakeHomeViewModel(),
+            audioController = FakeAudioViewModel(),
             onNavigate = {},
             onPress = {},
             modifier = Modifier.fillMaxWidth().height(200.dp)

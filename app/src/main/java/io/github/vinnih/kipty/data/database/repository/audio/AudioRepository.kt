@@ -5,9 +5,15 @@ import kotlinx.coroutines.flow.Flow
 
 interface AudioRepository {
 
-    fun getAll(): Flow<List<AudioEntity>>
+    fun getAllFlow(): Flow<List<AudioEntity>>
 
-    fun getById(id: Int): Flow<AudioEntity?>
+    fun getAll(): List<AudioEntity>
+
+    fun getById(id: Int): AudioEntity?
+
+    fun getFlowById(id: Int): Flow<AudioEntity?>
+
+    fun getFlowPlayTimeById(id: Int): Flow<Long>
 
     suspend fun incrementPlayTime(id: Int)
 

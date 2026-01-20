@@ -12,13 +12,22 @@ import kotlinx.coroutines.flow.Flow
 interface AudioDao {
 
     @Query("SELECT * FROM audios")
-    fun getAll(): Flow<List<AudioEntity>>
+    fun getAllFlow(): Flow<List<AudioEntity>>
+
+    @Query("SELECT * FROM audios")
+    fun getAll(): List<AudioEntity>
 
     @Query("SELECT * FROM audios WHERE uid = :id")
-    fun getById(id: Int): Flow<AudioEntity?>
+    fun getById(id: Int): AudioEntity?
+
+    @Query("SELECT * FROM audios WHERE uid = :id")
+    fun getFlowById(id: Int): Flow<AudioEntity?>
 
     @Query("UPDATE audios SET playTime = playTime + 1 WHERE uid = :id")
     suspend fun incrementPlayTime(id: Int)
+
+    @Query("SELECT playTime FROM audios WHERE uid = :id")
+    fun getFlowPlayTimeById(id: Int): Flow<Long>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(audio: AudioEntity): Long

@@ -40,7 +40,7 @@ class TranscriptionWorker @AssistedInject constructor(
         setForegroundAsync(createForegroundInfo(0))
 
         val audioEntity = transcriptor.transcribe(
-            audioEntity = audioRepository.getById(audioId).first()!!,
+            audioEntity = audioRepository.getFlowById(audioId).first()!!,
             numThreads = appPreferencesRepository.appSettingsFlow.first().minimumThreads,
             onProgress = {
                 setForegroundAsync(createForegroundInfo(it))

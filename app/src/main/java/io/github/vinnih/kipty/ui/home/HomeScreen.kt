@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
@@ -31,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,17 +75,12 @@ fun HomeScreen(
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val audioState = audioController.allAudios.collectAsState()
-    var notificationWarn by remember { mutableStateOf(true) }
-    var searchQuery by remember { mutableStateOf("") }
+    val uiState by homeController.homeUiState.collectAsState()
     var isSearchExpanded by remember { mutableStateOf(false) }
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
-    val filteredAudios = remember(searchQuery, audioState) {
-        if (searchQuery.isEmpty()) {
-            audioState.value
-        } else {
-            audioState.value.filter { it.name.contains(searchQuery, ignoreCase = true) }
-        }
+
+    LaunchedEffect(Unit) {
+        homeController.loadAudios()
     }
 
     DisposableEffect(Unit) {
@@ -119,69 +116,109 @@ fun HomeScreen(
         modifier = modifier
     )
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            if (!isSearchExpanded) {
-                HomeTopBar(
-                    notificationController = notificationController,
-                    onNotificationClick = { onNavigate(Screen.Notification) },
-                    onNavigate = { onNavigate(it) },
-                    onSearchClick = { isSearchExpanded = true }
-                )
-            }
-
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                item {
-                    if (notificationWarn && !isSearchExpanded) {
-                        NotificationPermissionWarn(
-                            onEnable = { homeController.openNotificationSettings() },
-                            onDismiss = { notificationWarn = false }
-                        )
-                    }
-                }
-
-                if (audioState.value.isEmpty()) {
-                    item { AudioListEmpty(onNavigate = { onNavigate(it) }) }
-                }
-
-                items(audioState.value) { audioData ->
-                    AudioCard(
-                        audioEntity = audioData,
-                        onNavigate = {
-                            onNavigate(Screen.Audio(audioData.uid))
-                        },
-                        onPress = { selectedAudio = audioData },
-                        modifier = Modifier.fillMaxWidth().height(200.dp)
-                    )
-                }
-            }
+    Column(modifier = modifier.fillMaxSize()) {
+        if (!isSearchExpanded) {
+            HomeTopBar(
+                notificationController = notificationController,
+                onNotificationClick = { onNavigate(Screen.Notification) },
+                onNavigate = { onNavigate(it) },
+                onSearchClick = { isSearchExpanded = true }
+            )
+            AudioList(
+                homeController = homeController,
+                audioController = audioController,
+                audioList = uiState.audioList,
+                onNavigate = { onNavigate(it) },
+                onNotificationClick = { onNavigate(Screen.Notification) },
+                onSelectAudio = { selectedAudio = it },
+                isSearchExpanded = isSearchExpanded,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            )
+        } else {
+            SearchBarView(
+                homeController = homeController,
+                audioController = audioController,
+                isSearchExpanded = isSearchExpanded,
+                onSearchExpandedChange = { isSearchExpanded = it },
+                audioState = uiState.audioList,
+                onNavigate = { onNavigate(it) },
+                modifier = Modifier.fillMaxSize()
+            )
         }
-        SearchBarView(
-            isSearchExpanded = isSearchExpanded,
-            onSearchExpandedChange = { isSearchExpanded = it },
-            searchQuery = searchQuery,
-            onQueryChange = { searchQuery = it },
-            filteredAudios = filteredAudios,
-            onNavigate = { onNavigate(it) },
-            modifier = Modifier.align(Alignment.TopCenter)
+    }
+}
+
+@Composable
+private fun AudioList(
+    homeController: HomeController,
+    audioController: AudioController,
+    audioList: List<AudioEntity>,
+    onNavigate: (Screen) -> Unit,
+    onNotificationClick: () -> Unit,
+    onSelectAudio: (AudioEntity) -> Unit,
+    isSearchExpanded: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val onCardClick = remember(onNavigate) {
+        { id: Int -> onNavigate(Screen.Audio(id)) }
+    }
+    var notificationWarn by remember { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
+
+    if (notificationWarn && !isSearchExpanded) {
+        NotificationPermissionWarn(
+            onEnable = onNotificationClick,
+            onDismiss = { notificationWarn = false }
         )
+    }
+
+    if (audioList.isEmpty()) {
+        AudioListEmpty(onNavigate = { onNavigate(it) })
+    }
+
+    Column(modifier = modifier.fillMaxSize().verticalScroll(scrollState)) {
+        audioList.forEach { audioData ->
+            AudioCard(
+                id = audioData.uid,
+                homeController = homeController,
+                audioController = audioController,
+                onNavigate = { onCardClick(audioData.uid) },
+                onPress = { onSelectAudio(audioData) },
+                modifier = Modifier.fillMaxWidth().height(200.dp)
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchBarView(
+    homeController: HomeController,
+    audioController: AudioController,
     isSearchExpanded: Boolean,
     onSearchExpandedChange: (Boolean) -> Unit,
-    searchQuery: String,
-    onQueryChange: (String) -> Unit,
-    filteredAudios: List<AudioEntity>,
+    audioState: List<AudioEntity>,
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (!isSearchExpanded) return
     val colors = MaterialTheme.colorScheme
     val focusRequester = remember { FocusRequester() }
+    val onCardClick = remember(onNavigate) {
+        { id: Int -> onNavigate(Screen.Audio(id)) }
+    }
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredAudios by remember(searchQuery, audioState) {
+        derivedStateOf {
+            if (searchQuery.isEmpty()) {
+                audioState
+            } else {
+                audioState.filter { it.name.contains(searchQuery, ignoreCase = true) }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -192,9 +229,9 @@ private fun SearchBarView(
         inputField = {
             SearchBarDefaults.InputField(
                 query = searchQuery,
-                onQueryChange = { onQueryChange(it) },
+                onQueryChange = { searchQuery = it },
                 onSearch = {
-                    onQueryChange("")
+                    searchQuery = ""
                     onSearchExpandedChange(false)
                 },
                 expanded = isSearchExpanded,
@@ -203,7 +240,7 @@ private fun SearchBarView(
                 leadingIcon = {
                     BaseButton(
                         onClick = {
-                            onQueryChange("")
+                            searchQuery = ""
                             onSearchExpandedChange(false)
                         },
                         content = {
@@ -217,7 +254,7 @@ private fun SearchBarView(
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        BaseButton(onClick = { onQueryChange("") }, content = {
+                        BaseButton(onClick = { searchQuery = "" }, content = {
                             Icon(
                                 painter = painterResource(R.drawable.close),
                                 contentDescription = null,
@@ -229,7 +266,7 @@ private fun SearchBarView(
                 modifier = Modifier.focusRequester(focusRequester)
             )
         },
-        expanded = isSearchExpanded,
+        expanded = true,
         onExpandedChange = { onSearchExpandedChange(it) },
         colors = SearchBarDefaults.colors(
             containerColor = colors.background
@@ -240,11 +277,16 @@ private fun SearchBarView(
                 item { NoAudioSearchFound() }
             }
 
-            items(filteredAudios) { audioData ->
+            items(
+                items = filteredAudios,
+                key = { it.uid }
+            ) { audioData ->
                 AudioCard(
-                    audioEntity = audioData,
+                    id = audioData.uid,
+                    homeController = homeController,
+                    audioController = audioController,
                     onNavigate = {
-                        onNavigate(Screen.Audio(audioData.uid))
+                        onCardClick(audioData.uid)
                     },
                     onPress = {},
                     modifier = Modifier.fillMaxWidth().height(200.dp)

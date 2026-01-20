@@ -13,11 +13,15 @@ interface AudioController {
 
     suspend fun saveAudio(audioEntity: AudioEntity): Long
 
+    suspend fun getAll(): List<AudioEntity>
+
+    suspend fun getById(id: Int): AudioEntity?
+
     fun deleteAudio(audioEntity: AudioEntity)
 
     fun observeTranscriptionWork(): Flow<List<WorkInfo>>
 
     fun cancelTranscriptionWork(audioEntity: AudioEntity)
 
-    fun getById(id: Int): Flow<AudioEntity?>
+    fun getFlowById(id: Int): Flow<AudioEntity?>
 }

@@ -10,9 +10,15 @@ import kotlinx.coroutines.withContext
 
 class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : AudioRepository {
 
-    override fun getAll(): Flow<List<AudioEntity>> = dao.getAll()
+    override fun getAllFlow(): Flow<List<AudioEntity>> = dao.getAllFlow()
 
-    override fun getById(id: Int): Flow<AudioEntity?> = dao.getById(id)
+    override fun getAll(): List<AudioEntity> = dao.getAll()
+
+    override fun getById(id: Int): AudioEntity? = dao.getById(id)
+
+    override fun getFlowById(id: Int): Flow<AudioEntity?> = dao.getFlowById(id)
+
+    override fun getFlowPlayTimeById(id: Int): Flow<Long> = dao.getFlowPlayTimeById(id)
 
     override suspend fun incrementPlayTime(id: Int) {
         withContext(Dispatchers.IO) {

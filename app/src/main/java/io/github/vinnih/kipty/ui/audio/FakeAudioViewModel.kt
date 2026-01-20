@@ -29,6 +29,14 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
+    override suspend fun getAll(): List<AudioEntity> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getById(id: Int): AudioEntity? {
+        TODO("Not yet implemented")
+    }
+
     override fun deleteAudio(audioEntity: AudioEntity) {
         TODO("Not yet implemented")
     }
@@ -41,7 +49,7 @@ class FakeAudioViewModel : AudioController {
         TODO("Not yet implemented")
     }
 
-    override fun getById(id: Int): Flow<AudioEntity?> {
+    override fun getFlowById(id: Int): Flow<AudioEntity?> {
         TODO("Not yet implemented")
     }
 }

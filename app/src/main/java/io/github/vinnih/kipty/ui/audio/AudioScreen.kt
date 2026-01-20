@@ -156,7 +156,9 @@ fun AudioScreen(
         },
         modifier = modifier
     ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxWidth().padding(paddingValues)) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(top = paddingValues.calculateTopPadding())
+        ) {
             if (!audioEntity.transcription.isNullOrEmpty()) {
                 TextViewer(
                     transcription = audioEntity.transcription,

@@ -245,7 +245,7 @@ private fun AudioConfigTop(
         val audio = File(audioEntity.audioPath)
         Pair(
             File(audioEntity.imagePath),
-            Pair(audio.length().formatTime(), audio.length().getFormattedSize())
+            Pair(audio.length(), audio.length())
         )
     }
 
@@ -292,7 +292,7 @@ private fun AudioConfigTop(
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
                         Text(
-                            text = audioInfo.first,
+                            text = audioInfo.first.formatTime(),
                             style = typography.bodyMedium,
                             color = colors.onSurface.copy(alpha = 0.5f)
                         )
@@ -308,7 +308,7 @@ private fun AudioConfigTop(
                             tint = colors.onSurface.copy(alpha = 0.5f)
                         )
                         Text(
-                            text = audioInfo.second,
+                            text = audioInfo.second.formatTime(),
                             style = typography.bodyMedium,
                             color = colors.onSurface.copy(alpha = 0.5f)
                         )

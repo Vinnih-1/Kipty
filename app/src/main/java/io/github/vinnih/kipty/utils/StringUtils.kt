@@ -6,6 +6,7 @@ import android.text.format.DateUtils
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private enum class Timestamp(val multiplier: Long) {
@@ -114,7 +115,7 @@ fun String.convertTranscription(): List<AudioTranscription> =
         AudioTranscription(timestamp.first, timestamp.second, text)
     }.toList()
 
-fun String.getAssetAudioInfo(context: Context): Pair<String, String> {
+fun String.getAssetAudioInfo(context: Context): Pair<Long, Long> {
     val retriever = MediaMetadataRetriever()
 
     try {
@@ -127,8 +128,16 @@ fun String.getAssetAudioInfo(context: Context): Pair<String, String> {
 
         val size = context.assets.openFd(this).use { it.length }
 
-        return Pair(duration.formatTime(), size.getFormattedSize())
+        return Pair(duration, size)
     } finally {
         retriever.release()
     }
+}
+
+fun String.formatDate(): String {
+    val inputFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+    val outputFormatter = DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH)
+
+    val dateTime = LocalDateTime.parse(this, inputFormatter)
+    return outputFormatter.format(dateTime)
 }

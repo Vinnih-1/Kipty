@@ -14,6 +14,12 @@ class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : Audio
 
     override fun getById(id: Int): Flow<AudioEntity?> = dao.getById(id)
 
+    override suspend fun incrementPlayTime(id: Int) {
+        withContext(Dispatchers.IO) {
+            dao.incrementPlayTime(id)
+        }
+    }
+
     override suspend fun save(audio: AudioEntity): Long = withContext(Dispatchers.IO) {
         return@withContext dao.save(audio)
     }

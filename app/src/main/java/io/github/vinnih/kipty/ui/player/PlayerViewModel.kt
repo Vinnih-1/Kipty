@@ -10,6 +10,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import javax.inject.Inject
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -26,12 +27,15 @@ import kotlinx.serialization.json.Json
 data class PlayerUiState(
     val audioEntity: AudioEntity? = null,
     val progress: Float = 0f,
-    val currentPosition: Long = 0L
+    val currentPosition: Long = 0L,
+    val duration: Long = 0L
 )
 
 @HiltViewModel
-class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
-    ViewModel(),
+class PlayerViewModel @Inject constructor(
+    override val player: ExoPlayer,
+    private val audioRepository: AudioRepository
+) : ViewModel(),
     PlayerController {
 
     private val _currentAudio = MutableStateFlow<AudioEntity?>(null)
@@ -46,7 +50,8 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
         PlayerUiState(
             audioEntity = audio,
             progress = progress.first,
-            currentPosition = progress.second
+            currentPosition = progress.second,
+            duration = player.duration
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
@@ -124,8 +129,9 @@ class PlayerViewModel @Inject constructor(override val player: ExoPlayer) :
                         player.currentPosition
                     )
                 )
+                audioRepository.incrementPlayTime(_currentAudio.value!!.uid)
             }
-            delay(100)
+            delay(1000)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Pair(0f, 0L))
 

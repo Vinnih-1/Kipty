@@ -17,6 +17,9 @@ interface AudioDao {
     @Query("SELECT * FROM audios WHERE uid = :id")
     fun getById(id: Int): Flow<AudioEntity?>
 
+    @Query("UPDATE audios SET playTime = playTime + 1 WHERE uid = :id")
+    suspend fun incrementPlayTime(id: Int)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(audio: AudioEntity): Long
 

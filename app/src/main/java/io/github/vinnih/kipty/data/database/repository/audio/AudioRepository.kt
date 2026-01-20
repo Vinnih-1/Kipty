@@ -9,6 +9,8 @@ interface AudioRepository {
 
     fun getById(id: Int): Flow<AudioEntity?>
 
+    suspend fun incrementPlayTime(id: Int)
+
     suspend fun save(audio: AudioEntity): Long
 
     suspend fun delete(audio: AudioEntity)

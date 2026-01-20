@@ -1,4 +1,3 @@
-
 package io.github.vinnih.kipty.ui.player
 
 import androidx.compose.animation.AnimatedVisibility
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
@@ -43,6 +43,7 @@ import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
+import java.io.File
 import kotlinx.coroutines.launch
 
 @androidx.annotation.OptIn(UnstableApi::class)
@@ -56,12 +57,9 @@ fun PlayerScreen(
     peekHeight: Dp = 100.dp
 ) {
     val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
     val playerUiState by playerController.uiState.collectAsState()
     val configurationUiState by configurationController.uiState.collectAsState()
     var visible by remember { mutableStateOf(true) }
-    val playPause = rememberPlayPauseButtonState(playerController.player)
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(scaffoldState.bottomSheetState) {
         snapshotFlow {
@@ -73,66 +71,18 @@ fun PlayerScreen(
 
     Column(modifier = modifier.fillMaxSize().background(color = colors.surfaceContainer)) {
         AnimatedVisibility(visible) {
-            LinearProgressIndicator(progress = {
-                playerUiState.progress
-            }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(peekHeight)
-                    .clickable {
-                        scope.launch { scaffoldState.bottomSheetState.expand() }
-                    }
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = playerUiState.audioEntity?.name ?: "Nothing playing",
-                    style = typography.titleMedium,
-                    color = colors.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(.7f)
-                )
-                Text(
-                    text = "${
-                        (playerUiState.progress * playerController.player.duration).toLong().formatTime()
-                    } / ${playerController.player.duration.formatTime()}",
-                    style = typography.bodySmall,
-                    color = colors.primary
-                )
-            }
+            MiniPlayer(
+                scaffoldState = scaffoldState,
+                playerUiState = playerUiState,
+                peekHeight = peekHeight
+            )
         }
         AnimatedVisibility(!visible) {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(
-                        peekHeight
-                    ).padding(top = 24.dp, start = 16.dp, end = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(onClick = {
-                        scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-                    }) {
-                        Icon(
-                            painter = painterResource(R.drawable.keyboard_arrow_down),
-                            contentDescription = "Dismiss player screen modal"
-                        )
-                    }
-                    Text(text = "Player")
-                    IconButton(
-                        onClick = playPause::onClick
-                    ) {
-                        Icon(
-                            painter = painterResource(
-                                if (playPause.showPlay) R.drawable.play else R.drawable.pause
-                            ),
-                            contentDescription = "Play and pause button"
-                        )
-                    }
-                }
+            Player(
+                scaffoldState = scaffoldState,
+                player = playerController.player,
+                peekHeight = peekHeight
+            ) {
                 TextViewer(
                     playerController = playerController,
                     onClick = { start, _ ->
@@ -142,6 +92,98 @@ fun PlayerScreen(
                     modifier = Modifier.padding(bottom = 48.dp)
                 )
             }
+        }
+    }
+}
+
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Player(
+    scaffoldState: BottomSheetScaffoldState,
+    player: Player,
+    peekHeight: Dp,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val playPause = rememberPlayPauseButtonState(player)
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = modifier) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(peekHeight)
+                .padding(top = 24.dp, start = 16.dp, end = 16.dp)
+        ) {
+            IconButton(onClick = {
+                scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+            }) {
+                Icon(
+                    painter = painterResource(R.drawable.keyboard_arrow_down),
+                    contentDescription = "Dismiss player screen modal"
+                )
+            }
+            Text(text = "Player")
+            IconButton(
+                onClick = playPause::onClick
+            ) {
+                Icon(
+                    painter = painterResource(
+                        if (playPause.showPlay) R.drawable.play else R.drawable.pause
+                    ),
+                    contentDescription = "Play and pause button"
+                )
+            }
+        }
+        content.invoke()
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun MiniPlayer(
+    scaffoldState: BottomSheetScaffoldState,
+    playerUiState: PlayerUiState,
+    peekHeight: Dp,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    val scope = rememberCoroutineScope()
+
+    Column(modifier = modifier) {
+        LinearProgressIndicator(progress = {
+            playerUiState.progress
+        }, drawStopIndicator = {}, modifier = Modifier.fillMaxWidth())
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(peekHeight)
+                .clickable {
+                    scope.launch { scaffoldState.bottomSheetState.expand() }
+                }
+                .padding(horizontal = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = playerUiState.audioEntity?.name ?: "Nothing playing",
+                style = typography.titleMedium,
+                color = colors.primary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth(.7f)
+            )
+            Text(
+                text = "${
+                    (playerUiState.progress * playerUiState.duration).toLong().formatTime()
+                } / ${playerUiState.duration.formatTime()}",
+                style = typography.bodySmall,
+                color = colors.primary
+            )
         }
     }
 }

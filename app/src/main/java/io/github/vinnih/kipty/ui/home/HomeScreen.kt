@@ -137,7 +137,6 @@ fun HomeScreen(
             ) {
                 AudioList(
                     homeController = homeController,
-                    audioController = audioController,
                     onNavigate = { onNavigate(it) },
                     onNotificationClick = { onNavigate(Screen.Notification) },
                     onSelectAudio = { selectedAudio = it },
@@ -148,11 +147,10 @@ fun HomeScreen(
         } else {
             SearchBarView(
                 homeController = homeController,
-                audioController = audioController,
                 isSearchExpanded = isSearchExpanded,
                 onSearchExpandedChange = { isSearchExpanded = it },
                 onNavigate = { onNavigate(it) },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxWidth()
             )
         }
     }
@@ -161,7 +159,6 @@ fun HomeScreen(
 @Composable
 private fun AudioList(
     homeController: HomeController,
-    audioController: AudioController,
     onNavigate: (Screen) -> Unit,
     onNotificationClick: () -> Unit,
     onSelectAudio: (AudioEntity) -> Unit,
@@ -213,7 +210,6 @@ private fun AudioList(
 @Composable
 private fun SearchBarView(
     homeController: HomeController,
-    audioController: AudioController,
     isSearchExpanded: Boolean,
     onSearchExpandedChange: (Boolean) -> Unit,
     onNavigate: (Screen) -> Unit,

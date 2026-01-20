@@ -1,9 +1,11 @@
 package io.github.vinnih.kipty.data.database.entity
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
+@Immutable
 @Serializable
 @Entity(tableName = "audios")
 data class AudioEntity(

@@ -36,7 +36,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.FakeAudioData
@@ -148,7 +147,10 @@ fun AudioScreen(
             )
         },
         floatingActionButton = {
-            AnimatedVisibility(!audioEntity.transcription.isNullOrEmpty()) {
+            AnimatedVisibility(
+                !audioEntity.transcription.isNullOrEmpty() &&
+                    audioEntity.uid != playerUiState.currentAudio?.uid
+            ) {
                 PlayPauseButton(
                     audioEntity = audioEntity,
                     playerController = playerController
@@ -262,26 +264,14 @@ private fun PlayPauseButton(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
-    val uiState = playerController.uiState.collectAsState()
-    val playPause = rememberPlayPauseButtonState(playerController.player)
 
     BaseButton(
         onClick = {
-            if (uiState.value.currentAudio?.uid == audioEntity.uid) {
-                playPause.onClick()
-            } else {
-                playerController.seekTo(audioEntity)
-            }
+            playerController.seekTo(audioEntity)
         },
         content = {
             Icon(
-                painter = painterResource(
-                    if (playPause.showPlay) {
-                        R.drawable.play
-                    } else {
-                        R.drawable.pause
-                    }
-                ),
+                painter = painterResource(R.drawable.play),
                 contentDescription = null,
                 tint = colors.onPrimaryContainer,
                 modifier = Modifier.size(36.dp)

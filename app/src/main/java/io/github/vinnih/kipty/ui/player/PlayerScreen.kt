@@ -106,7 +106,7 @@ fun PlayerScreen(
                 TextViewer(
                     playerController = playerController,
                     onClick = { start, _ ->
-                        playerController.seekTo(playerUiState.audioEntity!!, start, 0)
+                        playerController.seekTo(playerUiState.currentAudio!!, start, 0)
                     },
                     showTimestamp = configurationUiState.showTimestamp,
                     modifier = Modifier.padding(bottom = 48.dp)
@@ -175,10 +175,10 @@ private fun MiniPlayer(
     val next = rememberNextButtonState(player)
     val previous = rememberPreviousButtonState(player)
     val time = (playerUiState.progress * playerUiState.duration).toLong()
-    val image = if (playerUiState.audioEntity?.isDefault == true) {
-        "file:///android_asset/${playerUiState.audioEntity.imagePath}"
-    } else if (playerUiState.audioEntity != null) {
-        File(playerUiState.audioEntity.imagePath)
+    val image = if (playerUiState.currentAudio?.isDefault == true) {
+        "file:///android_asset/${playerUiState.currentAudio.imagePath}"
+    } else if (playerUiState.currentAudio != null) {
+        File(playerUiState.currentAudio.imagePath)
     } else {
         ""
     }
@@ -227,7 +227,7 @@ private fun MiniPlayer(
                     }
                     Column {
                         Text(
-                            text = playerUiState.audioEntity?.name ?: "Nothing playing",
+                            text = playerUiState.currentAudio?.name ?: "Nothing playing",
                             style = typography.titleMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,

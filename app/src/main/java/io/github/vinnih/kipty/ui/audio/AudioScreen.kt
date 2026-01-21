@@ -73,17 +73,18 @@ fun AudioScreen(
     if (audioEntity == null) return
 
     val context = LocalContext.current
-    val uiState = configurationController.uiState.collectAsState()
+    val configurationUiState by configurationController.uiState.collectAsState()
+    val playerUiState by playerController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
 
     AudioConfigSheet(
         audioEntity = selectedAudio,
         onDismiss = { selectedAudio = null },
-        onPlay = { playerController.playPause(selectedAudio!!) },
+        onPlay = { playerController.seekTo(selectedAudio!!) },
         onDelete = {
             onBack.invoke()
             audioController.deleteAudio(selectedAudio!!)
-            if (audioEntity.uid == playerController.currentAudio.value?.uid) {
+            if (audioEntity.uid == playerUiState.currentAudio?.uid) {
                 playerController.stopAudio()
             }
         },
@@ -157,15 +158,18 @@ fun AudioScreen(
         modifier = modifier
     ) { paddingValues ->
         Column(
-            modifier = Modifier.fillMaxWidth().padding(top = paddingValues.calculateTopPadding())
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = paddingValues.calculateTopPadding())
         ) {
             if (!audioEntity.transcription.isNullOrEmpty()) {
                 TextViewer(
                     transcription = audioEntity.transcription,
                     onClick = { start, end ->
                         playerController.seekTo(audioEntity, start, end)
+                        println("$start $end")
                     },
-                    showTimestamp = uiState.value.showTimestamp
+                    showTimestamp = configurationUiState.showTimestamp
                 )
             } else {
                 NoTranscriptionFound()
@@ -184,7 +188,6 @@ fun AudioTopBar(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
 
     Column(
@@ -264,10 +267,10 @@ private fun PlayPauseButton(
 
     BaseButton(
         onClick = {
-            if (uiState.value.audioEntity?.uid == audioEntity.uid) {
+            if (uiState.value.currentAudio?.uid == audioEntity.uid) {
                 playPause.onClick()
             } else {
-                playerController.playPause(audioEntity)
+                playerController.seekTo(audioEntity)
             }
         },
         content = {

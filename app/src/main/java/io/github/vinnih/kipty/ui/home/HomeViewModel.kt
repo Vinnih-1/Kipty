@@ -60,7 +60,9 @@ class HomeViewModel @Inject constructor(
     }
 
     override suspend fun populateDatabase(onSuccess: () -> Unit) {
-        val request = OneTimeWorkRequestBuilder<PopulateWorker>().build()
+        val request = OneTimeWorkRequestBuilder<PopulateWorker>()
+            .addTag(PopulateWorker.TAG)
+            .build()
         val workManager = WorkManager.getInstance(context)
 
         workManager.enqueueUniqueWork(

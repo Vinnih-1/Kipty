@@ -25,6 +25,10 @@ class PopulateWorker @AssistedInject constructor(
     private val appPreferencesRepository: AppPreferencesRepository
 ) : CoroutineWorker(appContext, workerParams) {
 
+    companion object {
+        const val TAG = "populate_worker"
+    }
+
     override suspend fun doWork(): Result {
         appPreferencesRepository.runOnlyOnFirstSync {
             createDefault { audio, transcription, image, description ->

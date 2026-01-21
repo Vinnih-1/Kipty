@@ -26,7 +26,6 @@ import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -35,6 +34,7 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -78,6 +78,7 @@ fun HomeScreen(
     var isSearchExpanded by remember { mutableStateOf(false) }
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
     var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         homeController.loadAudios()
@@ -124,26 +125,16 @@ fun HomeScreen(
                 onNavigate = { onNavigate(it) },
                 onSearchClick = { isSearchExpanded = true }
             )
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = {
-                    isRefreshing = true
-                    homeController.loadAudios(true)
-                    isRefreshing = false
-                },
+            AudioList(
+                homeController = homeController,
+                onNavigate = { onNavigate(it) },
+                onNotificationClick = { onNavigate(Screen.Notification) },
+                onSelectAudio = { selectedAudio = it },
+                isSearchExpanded = isSearchExpanded,
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .weight(1f)
-            ) {
-                AudioList(
-                    homeController = homeController,
-                    onNavigate = { onNavigate(it) },
-                    onNotificationClick = { onNavigate(Screen.Notification) },
-                    onSelectAudio = { selectedAudio = it },
-                    isSearchExpanded = isSearchExpanded,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
+            )
         } else {
             SearchBarView(
                 homeController = homeController,
@@ -167,6 +158,11 @@ private fun AudioList(
 ) {
     val uiState by homeController.homeUiState.collectAsState()
     var notificationWarn by remember { mutableStateOf(true) }
+
+    if (uiState.isLoading) {
+        LoadingAudios()
+        return
+    }
 
     if (uiState.audioList.isEmpty()) {
         AudioListEmpty(onNavigate = onNavigate)
@@ -473,13 +469,23 @@ private fun NoAudioSearchFound(modifier: Modifier = Modifier) {
 @Composable
 private fun AudioListEmpty(onNavigate: (Screen) -> Unit, modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(
-            32.dp,
-            Alignment.CenterVertically
-        ),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Icon(
+            painter = painterResource(R.drawable.type),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        )
+        Text(
+            text = "No audios found",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
         Button(
             onClick = { onNavigate(Screen.Create) },
             modifier = Modifier.height(48.dp),
@@ -487,6 +493,29 @@ private fun AudioListEmpty(onNavigate: (Screen) -> Unit, modifier: Modifier = Mo
         ) {
             Text("Create a Transcription")
         }
+    }
+}
+
+@Composable
+private fun LoadingAudios(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.music),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        )
+        Text(
+            text = "Loading audios, please wait...",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
     }
 }
 

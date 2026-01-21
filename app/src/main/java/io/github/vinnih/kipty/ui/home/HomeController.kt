@@ -7,7 +7,7 @@ interface HomeController {
 
     val homeUiState: StateFlow<HomeUiState>
 
-    fun loadAudios(override: Boolean = false)
+    fun loadAudios()
 
     fun openNotificationSettings()
 

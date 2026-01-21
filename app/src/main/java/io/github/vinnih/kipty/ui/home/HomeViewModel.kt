@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class HomeUiState(val audioList: List<AudioEntity>)
+data class HomeUiState(val audioList: List<AudioEntity>, val isLoading: Boolean = true)
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
@@ -41,12 +41,13 @@ class HomeViewModel @Inject constructor(
 
     override fun getPlayTimeById(id: Int): Flow<Long> = audioRepository.getFlowPlayTimeById(id)
 
-    override fun loadAudios(override: Boolean) {
-        if (_homeUiState.value.audioList.isNotEmpty() && !override) return
+    override fun loadAudios() {
+        if (_homeUiState.value.audioList.isNotEmpty()) return
 
         viewModelScope.launch(Dispatchers.IO) {
-            _homeUiState.value =
-                HomeUiState(audioRepository.getAll())
+            audioRepository.getAllFlow().collect {
+                _homeUiState.value = HomeUiState(it, false)
+            }
         }
     }
 

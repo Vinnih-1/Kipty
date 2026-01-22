@@ -20,4 +20,8 @@ interface AudioRepository {
     suspend fun save(audio: AudioEntity): Long
 
     suspend fun delete(audio: AudioEntity)
+
+    suspend fun updateMetadata(id: Int, duration: Long, size: Long)
+
+    suspend fun getAudiosWithMissingMetadata(): List<AudioEntity>
 }

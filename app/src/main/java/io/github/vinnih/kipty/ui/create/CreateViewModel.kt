@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
+import io.github.vinnih.kipty.utils.AudioResampler.getAudioDuration
 import io.github.vinnih.kipty.utils.createFolder
 import io.github.vinnih.kipty.utils.moveTo
 import java.io.File
@@ -104,16 +105,19 @@ class CreateViewModel @Inject constructor(
         File(audio).moveTo(audioFile)
         File(image).copyTo(imageFile, overwrite = true)
 
-        val entity = AudioEntity(
-            name = name.ifEmpty { audioFile.nameWithoutExtension },
-            description = description.ifEmpty { null },
-            audioPath = audioFile.absolutePath,
-            imagePath = imageFile.absolutePath,
-            isDefault = false,
-            createdAt = LocalDateTime.now().toString()
-        )
-
         viewModelScope.launch {
+            val duration = getAudioDuration(audioFile.absolutePath) ?: return@launch
+            val entity = AudioEntity(
+                name = name.ifEmpty { audioFile.nameWithoutExtension },
+                description = description.ifEmpty { null },
+                audioPath = audioFile.absolutePath,
+                imagePath = imageFile.absolutePath,
+                isDefault = false,
+                createdAt = LocalDateTime.now().toString(),
+                duration = duration,
+                audioSize = audioFile.length()
+            )
+
             audioRepository.save(entity)
             onSuccess.invoke()
         }

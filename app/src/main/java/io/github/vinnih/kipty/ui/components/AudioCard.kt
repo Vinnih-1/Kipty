@@ -45,7 +45,6 @@ import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatDate
 import io.github.vinnih.kipty.utils.formatTime
-import io.github.vinnih.kipty.utils.getAssetAudioInfo
 import java.io.File
 
 @Composable
@@ -57,15 +56,6 @@ fun AudioCard(
     modifier: Modifier = Modifier
 ) {
     val haptics = LocalHapticFeedback.current
-    val context = LocalContext.current
-
-    val audioInfo = remember(audioEntity.uid) {
-        if (audioEntity.isDefault) {
-            audioEntity.audioPath.getAssetAudioInfo(context)
-        } else {
-            File(audioEntity.audioPath).length() to File(audioEntity.audioPath).length()
-        }
-    }
 
     ElevatedCard(
         modifier = modifier.padding(8.dp).combinedClickable(
@@ -80,7 +70,6 @@ fun AudioCard(
         AudioContainer(
             onClick = onPress,
             audioEntity = audioEntity,
-            audioInfo = audioInfo,
             playTime = playTime
         )
     }
@@ -90,7 +79,6 @@ fun AudioCard(
 private fun AudioContainer(
     onClick: () -> Unit,
     audioEntity: AudioEntity,
-    audioInfo: Pair<Long, Long>,
     playTime: Long,
     modifier: Modifier = Modifier
 ) {
@@ -104,8 +92,7 @@ private fun AudioContainer(
             modifier = Modifier.fillMaxSize()
         ) {
             AudioIconSection(
-                audioEntity = audioEntity,
-                audioInfo = audioInfo
+                audioEntity = audioEntity
             )
             Column(
                 verticalArrangement = Arrangement.SpaceBetween,
@@ -117,7 +104,6 @@ private fun AudioContainer(
                 )
                 AudioStatusSection(
                     audioEntity = audioEntity,
-                    audioInfo = audioInfo,
                     playTime = playTime
                 )
             }
@@ -126,11 +112,7 @@ private fun AudioContainer(
 }
 
 @Composable
-private fun AudioIconSection(
-    audioEntity: AudioEntity,
-    audioInfo: Pair<Long, Long>,
-    modifier: Modifier = Modifier
-) {
+private fun AudioIconSection(audioEntity: AudioEntity, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val context = LocalContext.current
@@ -176,7 +158,7 @@ private fun AudioIconSection(
                 .background(color = colors.secondaryContainer.copy(alpha = .7f))
         ) {
             Text(
-                text = audioInfo.first.formatTime(),
+                text = audioEntity.duration.formatTime(),
                 color = colors.onSecondaryContainer,
                 style = typography.bodyMedium,
                 modifier = Modifier.padding(5.dp)
@@ -233,12 +215,11 @@ private fun AudioInformationSection(
 @Composable
 private fun AudioStatusSection(
     audioEntity: AudioEntity,
-    audioInfo: Pair<Long, Long>,
     playTime: Long,
     modifier: Modifier = Modifier
 ) {
     val typography = MaterialTheme.typography
-    val seconds = audioInfo.first / 1000
+    val seconds = audioEntity.duration / 1000
     val progress = (playTime.toFloat() / seconds.toFloat()).coerceIn(0f, 1f)
 
     Column(

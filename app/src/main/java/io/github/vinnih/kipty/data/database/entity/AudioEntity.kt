@@ -18,6 +18,8 @@ data class AudioEntity(
     val imagePath: String,
     val isDefault: Boolean,
     val playTime: Long = 0,
+    val duration: Long,
+    val audioSize: Long,
     val state: TranscriptionState = TranscriptionState.NONE
 )
 

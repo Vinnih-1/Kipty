@@ -34,4 +34,10 @@ interface AudioDao {
 
     @Delete
     suspend fun delete(audio: AudioEntity)
+
+    @Query("UPDATE audios SET duration = :duration, audioSize = :size WHERE uid = :id")
+    suspend fun updateMetadata(id: Int, duration: Long, size: Long)
+
+    @Query("SELECT * FROM audios WHERE duration = 0 OR audioSize = 0")
+    suspend fun getAudiosWithMissingMetadata(): List<AudioEntity>
 }

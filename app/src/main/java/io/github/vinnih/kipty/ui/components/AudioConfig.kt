@@ -233,20 +233,12 @@ private fun AudioConfigTop(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val (image, audioInfo) = if (audioEntity.isDefault) {
-        Pair(
-            "file:///android_asset/${audioEntity.imagePath}",
-            audioEntity.audioPath.getAssetAudioInfo(context)
-        )
+    val image = if (audioEntity.isDefault) {
+        "file:///android_asset/${audioEntity.imagePath}"
     } else {
-        val audio = File(audioEntity.audioPath)
-        Pair(
-            File(audioEntity.imagePath),
-            Pair(audio.length(), audio.length())
-        )
+        File(audioEntity.imagePath)
     }
 
     Row(
@@ -292,7 +284,7 @@ private fun AudioConfigTop(
                             tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                         )
                         Text(
-                            text = audioInfo.first.formatTime(),
+                            text = audioEntity.duration.formatTime(),
                             style = typography.bodyMedium,
                             color = colors.onSurface.copy(alpha = 0.5f)
                         )
@@ -308,7 +300,7 @@ private fun AudioConfigTop(
                             tint = colors.onSurface.copy(alpha = 0.5f)
                         )
                         Text(
-                            text = audioInfo.second.formatTime(),
+                            text = audioEntity.audioSize.getFormattedSize(),
                             style = typography.bodyMedium,
                             color = colors.onSurface.copy(alpha = 0.5f)
                         )

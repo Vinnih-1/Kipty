@@ -3,6 +3,7 @@ package io.github.vinnih.kipty.utils
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import io.github.vinnih.kipty.utils.AudioResampler.resample
 import java.io.File
 
 fun Uri.processUriToFile(context: Context): File? {
@@ -22,6 +23,6 @@ fun Uri.processUriToFile(context: Context): File? {
     return context.contentResolver.openInputStream(this)?.use { input ->
         val file = File(context.cacheDir, name)
         file.outputStream().use { output -> input.copyTo(output) }
-        file
+        file.resample(format = AudioResampler.OutputFormat.OPUS, context = context)
     }
 }

@@ -35,4 +35,15 @@ class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : Audio
             dao.delete(audio)
         }
     }
+
+    override suspend fun updateMetadata(id: Int, duration: Long, size: Long) {
+        withContext(Dispatchers.IO) {
+            dao.updateMetadata(id, duration, size)
+        }
+    }
+
+    override suspend fun getAudiosWithMissingMetadata(): List<AudioEntity> =
+        withContext(Dispatchers.IO) {
+            return@withContext dao.getAudiosWithMissingMetadata()
+        }
 }

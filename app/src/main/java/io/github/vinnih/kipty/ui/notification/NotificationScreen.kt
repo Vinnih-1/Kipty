@@ -41,7 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
-import io.github.vinnih.kipty.data.database.entity.NotificationChannel
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
@@ -65,7 +65,6 @@ fun NotificationScreen(
                     title = "Today",
                     items = uiState.today,
                     onNavigate = {
-                        println(it)
                         onNavigate(it)
                     },
                     onRead = { notificationController.read(it) },
@@ -209,7 +208,7 @@ private fun NotificationComponent(
     val typography = MaterialTheme.typography
     val action: @Composable () -> Unit = {
         when (notificationEntity.channel) {
-            NotificationChannel.TRANSCRIPTION_INIT -> {
+            NotificationCategory.TRANSCRIPTION_INIT -> {
                 Button(onClick = { onRead() }) {
                     Text(
                         text = "View",
@@ -219,7 +218,7 @@ private fun NotificationComponent(
                 }
             }
 
-            NotificationChannel.TRANSCRIPTION_DONE -> {
+            NotificationCategory.TRANSCRIPTION_DONE -> {
                 Button(onClick = { onNavigate(Screen.Audio(notificationEntity.audioId)) }) {
                     Text(
                         text = "Listen",

@@ -41,11 +41,7 @@ class AudioViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
-    override fun transcribeAudio(
-        audioEntity: AudioEntity,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
+    override fun transcribeAudio(audioEntity: AudioEntity, onError: (String) -> Unit) {
         if (audioEntity.state != TranscriptionState.NONE) {
             onError("Transcription already in progress")
             return
@@ -78,7 +74,6 @@ class AudioViewModel @Inject constructor(
                             audioEntity.copy(transcription = transcription),
                             TranscriptionState.TRANSCRIBED
                         )
-                        onSuccess.invoke()
                     }
 
                     WorkInfo.State.CANCELLED -> {

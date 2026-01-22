@@ -1,6 +1,7 @@
 package io.github.vinnih.kipty.ui.create
 
 import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +60,8 @@ import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.dashedBorder
+import io.github.vinnih.kipty.utils.getFileName
+import io.github.vinnih.kipty.utils.getFileSize
 import io.github.vinnih.kipty.utils.getFormattedSize
 import io.github.vinnih.kipty.utils.processUriToFile
 import java.io.File
@@ -68,8 +72,15 @@ fun CreateScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val uiState by createController.uiState.collectAsState()
     val scrollState = rememberScrollState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            createController.clearUiState()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -84,13 +95,11 @@ fun CreateScreen(
             BottomButton(
                 onNext = { createController.nextStep() },
                 onCreate = {
-                    createController.createAudio(onSuccess = {
-                        onBack.invoke()
-                        createController.clearUiState()
-                    })
+                    createController.createAudio()
+                    onBack.invoke()
                 },
                 step = uiState.step,
-                enabled = uiState.data.audioFile != null
+                enabled = uiState.data.audioUri != null
             )
         },
         modifier = modifier
@@ -108,13 +117,13 @@ fun CreateScreen(
             ProcessingInformationNote()
             when (uiState.step) {
                 Step.FILE -> AudioStepScreen(
-                    file = uiState.data.audioFile,
-                    onFileSelect = { createController.selectAudio(it) },
+                    uri = uiState.data.audioUri,
+                    onUriSelect = { createController.selectAudio(it) },
                     modifier = Modifier
                 )
 
                 Step.DETAILS -> DetailsStepScreen(
-                    name = uiState.data.audioFile!!.nameWithoutExtension,
+                    name = uiState.data.audioUri!!.getFileName(context),
                     defaultTitle = uiState.data.title,
                     defaultDescription = uiState.data.description,
                     onTitleChange = { createController.insertTitle(it) },
@@ -127,7 +136,7 @@ fun CreateScreen(
                 )
 
                 Step.REVIEW -> ReviewStepScreen(
-                    audioFile = uiState.data.audioFile!!,
+                    audioUri = uiState.data.audioUri!!,
                     imageFile = uiState.data.imageFile,
                     title = uiState.data.title,
                     description = uiState.data.description
@@ -371,11 +380,8 @@ private fun ProcessingInformationNote(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AudioStepScreen(
-    file: File?,
-    onFileSelect: (File?) -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun AudioStepScreen(uri: Uri?, onUriSelect: (Uri?) -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val rememberAudioPicker = rememberAudioPicker(
@@ -387,7 +393,7 @@ private fun AudioStepScreen(
             "audio/wave"
         )
     ) {
-        onFileSelect(it)
+        onUriSelect(it)
     }
 
     Column(
@@ -413,7 +419,7 @@ private fun AudioStepScreen(
             )
         }
 
-        if (file == null) {
+        if (uri == null) {
             OutlinedIconButton(
                 border = BorderStroke(0.dp, Color.Transparent),
                 shape = RoundedCornerShape(16.dp),
@@ -490,7 +496,7 @@ private fun AudioStepScreen(
                         modifier = Modifier.weight(.8f)
                     ) {
                         Text(
-                            text = file.nameWithoutExtension,
+                            text = uri.getFileName(context),
                             style = typography.titleMedium,
                             color = colors.onBackground,
                             fontWeight = FontWeight.Bold,
@@ -498,13 +504,13 @@ private fun AudioStepScreen(
                             modifier = Modifier.basicMarquee()
                         )
                         Text(
-                            text = file.length().getFormattedSize(),
+                            text = uri.getFileSize(context).getFormattedSize(),
                             style = typography.titleSmall,
                             color = colors.onBackground,
                             fontWeight = FontWeight.Light
                         )
                     }
-                    BaseButton(onClick = { onFileSelect(null) }) {
+                    BaseButton(onClick = { onUriSelect(null) }) {
                         Icon(
                             painter = painterResource(R.drawable.close),
                             contentDescription = null,
@@ -615,13 +621,14 @@ fun DetailsStepScreen(
 
 @Composable
 fun ImageStepScreen(file: File?, onFileSelect: (File?) -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val rememberAudioPicker = rememberAudioPicker(
         mimeType = "image/*",
         arrayOf("image/png", "image/jpeg")
     ) {
-        onFileSelect(it)
+        onFileSelect(it.processUriToFile(context))
     }
 
     Column(
@@ -754,12 +761,13 @@ fun ImageStepScreen(file: File?, onFileSelect: (File?) -> Unit, modifier: Modifi
 
 @Composable
 private fun ReviewStepScreen(
-    audioFile: File,
+    audioUri: Uri,
     imageFile: File?,
     title: String,
     description: String,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -824,7 +832,7 @@ private fun ReviewStepScreen(
             CardDetails(R.drawable.music, "Audio File") {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        text = audioFile.nameWithoutExtension,
+                        text = audioUri.getFileName(context),
                         style = typography.titleMedium,
                         color = colors.onBackground,
                         fontWeight = FontWeight.Bold,
@@ -832,7 +840,7 @@ private fun ReviewStepScreen(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        text = audioFile.length().getFormattedSize(),
+                        text = audioUri.getFileSize(context).getFormattedSize(),
                         style = typography.titleSmall,
                         color = colors.onBackground,
                         fontWeight = FontWeight.Light
@@ -884,19 +892,13 @@ private fun ReviewStepScreen(
 private fun rememberAudioPicker(
     mimeType: String,
     extra: Array<String>,
-    onFileSelect: (File) -> Unit
+    onUriSelect: (Uri) -> Unit
 ): () -> Unit {
-    val context = LocalContext.current
-
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val uri = result.data?.data ?: return@rememberLauncherForActivityResult
-        val file = uri.processUriToFile(context)
-
-        if (file != null) {
-            onFileSelect(file)
-        }
+        onUriSelect(uri)
     }
 
     return {

@@ -1,5 +1,6 @@
 package io.github.vinnih.kipty.ui.create
 
+import android.net.Uri
 import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,7 @@ class FakeCreateViewModel : CreateController {
         TODO("Not yet implemented")
     }
 
-    override fun selectAudio(file: File?) {
+    override fun selectAudio(file: Uri?) {
         TODO("Not yet implemented")
     }
 
@@ -31,7 +32,7 @@ class FakeCreateViewModel : CreateController {
         TODO("Not yet implemented")
     }
 
-    override fun createAudio(onSuccess: () -> Unit) {
+    override fun createAudio() {
         TODO("Not yet implemented")
     }
 

@@ -2,7 +2,7 @@ package io.github.vinnih.kipty.ui.notification
 
 import io.github.vinnih.kipty.data.FakeNotificationData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationChannel
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +23,7 @@ class FakeNotificationViewModel : NotificationController {
         audioEntity: AudioEntity,
         title: String,
         content: String,
-        channel: NotificationChannel
+        channel: NotificationCategory
     ) {
         TODO("Not yet implemented")
     }

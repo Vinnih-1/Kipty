@@ -51,7 +51,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationChannel
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
@@ -98,20 +98,12 @@ fun HomeScreen(
         onTranscript = {
             notificationController.notify(
                 audioEntity = selectedAudio!!,
-                title = "Transcription Ready",
-                content = "Your transcription for this episode is now available",
-                channel = NotificationChannel.TRANSCRIPTION_INIT
+                title = "Transcribing audio",
+                content = "Your transcript for this episode is being prepared.",
+                channel = NotificationCategory.TRANSCRIPTION_INIT
             )
             audioController.transcribeAudio(
                 audioEntity = selectedAudio!!,
-                onSuccess = {
-                    notificationController.notify(
-                        audioEntity = selectedAudio!!,
-                        title = "New Episode Available",
-                        content = "A new episode has been added to your feed",
-                        channel = NotificationChannel.TRANSCRIPTION_DONE
-                    )
-                },
                 onError = {}
             )
         },

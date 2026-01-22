@@ -40,7 +40,7 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationChannel
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.json
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
@@ -90,20 +90,12 @@ fun AudioScreen(
         onTranscript = {
             notificationController.notify(
                 audioEntity = audioEntity,
-                title = "Transcription Ready",
-                content = "Your transcription for this episode is now available",
-                channel = NotificationChannel.TRANSCRIPTION_INIT
+                title = "Transcribing audio",
+                content = "Your transcript for this episode is being prepared.",
+                channel = NotificationCategory.TRANSCRIPTION_INIT
             )
             audioController.transcribeAudio(
                 audioEntity = audioEntity,
-                onSuccess = {
-                    notificationController.notify(
-                        audioEntity = audioEntity,
-                        title = "New Episode Available",
-                        content = "A new episode has been added to your feed",
-                        channel = NotificationChannel.TRANSCRIPTION_DONE
-                    )
-                },
                 onError = {
                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                 }
@@ -120,20 +112,12 @@ fun AudioScreen(
                 onTranscribe = {
                     notificationController.notify(
                         audioEntity = audioEntity,
-                        title = "Transcription Ready",
-                        content = "Your transcription for this episode is now available",
-                        channel = NotificationChannel.TRANSCRIPTION_INIT
+                        title = "Transcribing audio",
+                        content = "Your transcript for this episode is being prepared.",
+                        channel = NotificationCategory.TRANSCRIPTION_INIT
                     )
                     audioController.transcribeAudio(
                         audioEntity = audioEntity,
-                        onSuccess = {
-                            notificationController.notify(
-                                audioEntity = audioEntity,
-                                title = "New Episode Available",
-                                content = "A new episode has been added to your feed",
-                                channel = NotificationChannel.TRANSCRIPTION_DONE
-                            )
-                        },
                         onError = {
                             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                         }
@@ -169,7 +153,6 @@ fun AudioScreen(
                     transcription = audioEntity.transcription,
                     onClick = { start, end ->
                         playerController.seekTo(audioEntity, start, end)
-                        println("$start $end")
                     },
                     showTimestamp = configurationUiState.showTimestamp
                 )

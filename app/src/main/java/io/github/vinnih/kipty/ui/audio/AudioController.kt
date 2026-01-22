@@ -9,7 +9,7 @@ interface AudioController {
 
     val allAudios: StateFlow<List<AudioEntity>>
 
-    fun transcribeAudio(audioEntity: AudioEntity, onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun transcribeAudio(audioEntity: AudioEntity, onError: (String) -> Unit)
 
     suspend fun saveAudio(audioEntity: AudioEntity): Long
 

@@ -91,7 +91,7 @@ fun HomeScreen(
         audioEntity = selectedAudio,
         onDismiss = { selectedAudio = null },
         onNavigate = onNavigate,
-        modifier = modifier
+        modifier = Modifier
     )
 
     Column(modifier = modifier.fillMaxSize()) {

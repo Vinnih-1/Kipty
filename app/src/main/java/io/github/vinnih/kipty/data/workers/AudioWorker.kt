@@ -2,7 +2,6 @@ package io.github.vinnih.kipty.data.workers
 
 import android.content.Context
 import android.content.pm.ServiceInfo
-import android.net.Uri
 import android.os.Build
 import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker

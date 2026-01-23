@@ -527,11 +527,11 @@ private fun AudioStepScreen(uri: Uri?, onUriSelect: (Uri?) -> Unit, modifier: Mo
 @Composable
 fun DetailsStepScreen(
     name: String,
-    modifier: Modifier = Modifier,
     defaultTitle: String,
     defaultDescription: String,
     onTitleChange: (String) -> Unit,
-    onDescriptionChange: (String) -> Unit
+    onDescriptionChange: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography

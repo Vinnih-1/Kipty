@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -74,67 +75,68 @@ fun AudioScreen(
     val audioUiState by audioController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
 
-    AudioConfigSheet(
-        audioController = audioController,
-        playerController = playerController,
-        notificationController = notificationController,
-        audioEntity = selectedAudio,
-        onDismiss = { selectedAudio = null },
-        onNavigate = onNavigate,
-        modifier = modifier
-    )
-
-    Scaffold(
-        topBar = {
-            AudioTopBar(
-                audioEntity = audioEntity,
-                audioUiState = audioUiState,
-                onTranscribe = {
-                    notificationController.notify(
-                        audioEntity = audioEntity,
-                        title = "Transcribing audio",
-                        content = "Your transcript for this episode is being prepared.",
-                        channel = NotificationCategory.TRANSCRIPTION_INIT
-                    )
-                    audioController.transcribeAudio(audioEntity = audioEntity)
-                },
-                onSettings = { selectedAudio = audioEntity },
-                onCancel = {
-                    audioController.cancelTranscriptionWork(audioEntity)
-                },
-                onBack = onBack
-            )
-        },
-        floatingActionButton = {
-            AnimatedVisibility(
-                !audioEntity.transcription.isNullOrEmpty() &&
-                    audioEntity.uid != playerUiState.currentAudio?.uid
-            ) {
-                PlayPauseButton(
+    Box(modifier = modifier) {
+        Scaffold(
+            topBar = {
+                AudioTopBar(
                     audioEntity = audioEntity,
-                    playerController = playerController
-                )
-            }
-        },
-        modifier = modifier
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = paddingValues.calculateTopPadding())
-        ) {
-            if (!audioEntity.transcription.isNullOrEmpty()) {
-                TextViewer(
-                    transcription = audioEntity.transcription,
-                    onClick = { start, end ->
-                        playerController.seekTo(audioEntity, start, end)
+                    audioUiState = audioUiState,
+                    onTranscribe = {
+                        notificationController.notify(
+                            audioEntity = audioEntity,
+                            title = "Transcribing audio",
+                            content = "Your transcript for this episode is being prepared.",
+                            channel = NotificationCategory.TRANSCRIPTION_INIT
+                        )
+                        audioController.transcribeAudio(audioEntity = audioEntity)
                     },
-                    showTimestamp = configurationUiState.appSettings.showTimestamp
+                    onSettings = { selectedAudio = audioEntity },
+                    onCancel = {
+                        audioController.cancelTranscriptionWork(audioEntity)
+                    },
+                    onBack = onBack
                 )
-            } else {
-                NoTranscriptionFound()
+            },
+            floatingActionButton = {
+                AnimatedVisibility(
+                    !audioEntity.transcription.isNullOrEmpty() &&
+                        audioEntity.uid != playerUiState.currentAudio?.uid
+                ) {
+                    PlayPauseButton(
+                        audioEntity = audioEntity,
+                        playerController = playerController
+                    )
+                }
+            },
+            modifier = Modifier
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = paddingValues.calculateTopPadding())
+            ) {
+                if (!audioEntity.transcription.isNullOrEmpty()) {
+                    TextViewer(
+                        transcription = audioEntity.transcription,
+                        onClick = { start, end ->
+                            playerController.seekTo(audioEntity, start, end)
+                        },
+                        showTimestamp = configurationUiState.appSettings.showTimestamp
+                    )
+                } else {
+                    NoTranscriptionFound()
+                }
             }
         }
+        AudioConfigSheet(
+            audioController = audioController,
+            playerController = playerController,
+            notificationController = notificationController,
+            audioEntity = selectedAudio,
+            onDismiss = { selectedAudio = null },
+            onNavigate = onNavigate,
+            modifier = Modifier
+        )
     }
 }
 

@@ -1,6 +1,7 @@
 package io.github.vinnih.kipty.ui.components
 
 import android.content.res.Configuration
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,11 +57,24 @@ fun AudioCard(
     modifier: Modifier = Modifier
 ) {
     val haptics = LocalHapticFeedback.current
+    val ready = audioEntity.audioSize > 0
+    val context = LocalContext.current
+    val toast = Toast.makeText(context, "This audio is not ready for use yet.", Toast.LENGTH_SHORT)
 
     ElevatedCard(
         modifier = modifier.padding(8.dp).combinedClickable(
-            onClick = { onNavigate(audioEntity.uid) },
+            onClick = {
+                if (!ready) {
+                    toast.show()
+                    return@combinedClickable
+                }
+                onNavigate.invoke(audioEntity.uid)
+            },
             onLongClick = {
+                if (!ready) {
+                    toast.show()
+                    return@combinedClickable
+                }
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                 onPress.invoke()
             }
@@ -68,7 +82,13 @@ fun AudioCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
     ) {
         AudioContainer(
-            onClick = onPress,
+            onClick = {
+                if (!ready) {
+                    toast.show()
+                    return@AudioContainer
+                }
+                onPress.invoke()
+            },
             audioEntity = audioEntity,
             playTime = playTime
         )

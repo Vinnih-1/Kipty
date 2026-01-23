@@ -16,9 +16,6 @@ import io.github.vinnih.kipty.data.service.notification.NotificationChannels
 import io.github.vinnih.kipty.data.service.notification.NotificationService
 import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.data.transcriptor.Transcriptor
-import io.github.vinnih.kipty.json
-import io.github.vinnih.kipty.utils.createFile
-import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -33,16 +30,23 @@ class TranscriptionWorker @AssistedInject constructor(
     private val notificationService: NotificationService
 ) : CoroutineWorker(appContext, workerParams) {
 
+    companion object {
+        const val TAG = "TranscriptionWorker"
+    }
+
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val audioId = inputData.getInt("AUDIO_ID", -1)
 
         if (audioId == -1) return@withContext Result.failure()
 
+        this@TranscriptionWorker.setProgress(workDataOf("AUDIO_ID" to audioId))
+        audioRepository.updateAudioState(audioId, TranscriptionState.TRANSCRIBING)
+
         val channel = NotificationChannels.TRANSCRIPTION_RUNNING
         val notificationProgress = NotificationService.NotificationObject(
             channel = channel,
             title = "Creating Transcription",
-            content = "Your transcription is $0%, please wait.",
+            content = "Your transcription is 0%, please wait.",
             progress = 0
         )
 
@@ -57,14 +61,6 @@ class TranscriptionWorker @AssistedInject constructor(
                 setForegroundAsync(createForegroundInfo(notificationProgress))
             }
         )
-        val transcription = File(applicationContext.cacheDir, "${this@TranscriptionWorker.id}.json")
-            .createFile()
-            .also {
-                it.writeText(json.encodeToString(audioEntity.transcription))
-            }
-        val data = workDataOf(
-            "transcription" to transcription.absolutePath
-        )
         audioRepository.save(audioEntity.copy(state = TranscriptionState.TRANSCRIBED))
         notificationService.notify(
             notificationObject = NotificationService.NotificationObject(
@@ -74,7 +70,8 @@ class TranscriptionWorker @AssistedInject constructor(
             ),
             audioEntity = audioEntity
         )
-        return@withContext Result.success(data)
+
+        return@withContext Result.success()
     }
 
     private fun createForegroundInfo(

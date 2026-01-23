@@ -1,7 +1,6 @@
 package io.github.vinnih.kipty.ui.audio
 
 import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -29,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -66,41 +64,22 @@ fun AudioScreen(
     id: Int,
     modifier: Modifier = Modifier
 ) {
-    val audios = audioController.allAudios.collectAsState()
-    val audioEntity = audios.value.firstOrNull { it.uid == id }
+    val loadedAudio by audioController.getFlowById(id).collectAsState(null)
 
-    if (audioEntity == null) return
+    if (loadedAudio == null) return
 
-    val context = LocalContext.current
+    val audioEntity = loadedAudio!!
     val configurationUiState by configurationController.uiState.collectAsState()
     val playerUiState by playerController.uiState.collectAsState()
+    val audioUiState by audioController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
 
     AudioConfigSheet(
+        audioController = audioController,
+        playerController = playerController,
+        notificationController = notificationController,
         audioEntity = selectedAudio,
         onDismiss = { selectedAudio = null },
-        onPlay = { playerController.seekTo(selectedAudio!!) },
-        onDelete = {
-            onBack.invoke()
-            audioController.deleteAudio(selectedAudio!!)
-            if (audioEntity.uid == playerUiState.currentAudio?.uid) {
-                playerController.stopAudio()
-            }
-        },
-        onTranscript = {
-            notificationController.notify(
-                audioEntity = audioEntity,
-                title = "Transcribing audio",
-                content = "Your transcript for this episode is being prepared.",
-                channel = NotificationCategory.TRANSCRIPTION_INIT
-            )
-            audioController.transcribeAudio(
-                audioEntity = audioEntity,
-                onError = {
-                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                }
-            )
-        },
         onNavigate = onNavigate,
         modifier = modifier
     )
@@ -109,6 +88,7 @@ fun AudioScreen(
         topBar = {
             AudioTopBar(
                 audioEntity = audioEntity,
+                audioUiState = audioUiState,
                 onTranscribe = {
                     notificationController.notify(
                         audioEntity = audioEntity,
@@ -116,12 +96,7 @@ fun AudioScreen(
                         content = "Your transcript for this episode is being prepared.",
                         channel = NotificationCategory.TRANSCRIPTION_INIT
                     )
-                    audioController.transcribeAudio(
-                        audioEntity = audioEntity,
-                        onError = {
-                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                        }
-                    )
+                    audioController.transcribeAudio(audioEntity = audioEntity)
                 },
                 onSettings = { selectedAudio = audioEntity },
                 onCancel = {
@@ -154,7 +129,7 @@ fun AudioScreen(
                     onClick = { start, end ->
                         playerController.seekTo(audioEntity, start, end)
                     },
-                    showTimestamp = configurationUiState.showTimestamp
+                    showTimestamp = configurationUiState.appSettings.showTimestamp
                 )
             } else {
                 NoTranscriptionFound()
@@ -167,6 +142,7 @@ fun AudioScreen(
 @Composable
 fun AudioTopBar(
     audioEntity: AudioEntity,
+    audioUiState: AudioUiState,
     onTranscribe: () -> Unit,
     onSettings: () -> Unit,
     onCancel: () -> Unit,
@@ -174,6 +150,8 @@ fun AudioTopBar(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
+    val canTranscribe = audioEntity.state == TranscriptionState.NONE && audioUiState.canTranscribe
+    val isCurrentAudio = audioEntity.uid == audioUiState.currentUid
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -214,7 +192,7 @@ fun AudioTopBar(
                 })
             },
             actions = {
-                AnimatedVisibility(audioEntity.transcription.isNullOrEmpty()) {
+                AnimatedVisibility(canTranscribe || isCurrentAudio) {
                     TranscriptionButton(
                         audioEntity = audioEntity,
                         onStart = onTranscribe,

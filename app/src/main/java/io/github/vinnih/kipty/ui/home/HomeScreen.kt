@@ -51,7 +51,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
@@ -86,27 +85,11 @@ fun HomeScreen(
     }
 
     AudioConfigSheet(
+        audioController = audioController,
+        playerController = playerController,
+        notificationController = notificationController,
         audioEntity = selectedAudio,
         onDismiss = { selectedAudio = null },
-        onPlay = { playerController.seekTo(selectedAudio!!) },
-        onDelete = {
-            audioController.deleteAudio(selectedAudio!!)
-            if (selectedAudio!!.uid == playerController.uiState.value.currentAudio?.uid) {
-                playerController.stopAudio()
-            }
-        },
-        onTranscript = {
-            notificationController.notify(
-                audioEntity = selectedAudio!!,
-                title = "Transcribing audio",
-                content = "Your transcript for this episode is being prepared.",
-                channel = NotificationCategory.TRANSCRIPTION_INIT
-            )
-            audioController.transcribeAudio(
-                audioEntity = selectedAudio!!,
-                onError = {}
-            )
-        },
         onNavigate = onNavigate,
         modifier = modifier
     )

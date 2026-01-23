@@ -2,6 +2,7 @@ package io.github.vinnih.kipty.data.database.repository.audio.impl
 
 import io.github.vinnih.kipty.data.database.dao.AudioDao
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
@@ -39,6 +40,12 @@ class AudioRepositoryImpl @Inject constructor(private val dao: AudioDao) : Audio
     override suspend fun updateMetadata(id: Int, duration: Long, size: Long) {
         withContext(Dispatchers.IO) {
             dao.updateMetadata(id, duration, size)
+        }
+    }
+
+    override suspend fun updateAudioState(id: Int, state: TranscriptionState) {
+        withContext(Dispatchers.IO) {
+            dao.updateAudioState(id, state)
         }
     }
 

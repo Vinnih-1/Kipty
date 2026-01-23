@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -167,7 +168,7 @@ abstract class ConfigurationProvider(val title: String, val description: String)
         }
     }
 
-    class ReloadDefaultConfig(val onClick: () -> Unit) :
+    class CreateNewAudio(val uiState: ConfigurationsUiState, val onClick: () -> Unit) :
         ConfigurationProvider(
             title = "Transcript your audio",
             description = "Create a transcription of your favourite podcast"
@@ -196,14 +197,18 @@ abstract class ConfigurationProvider(val title: String, val description: String)
             androidx.compose.material3.Button(
                 onClick = onClick,
                 shape = MaterialTheme.shapes.medium,
+                enabled = uiState.canCreate,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.secondaryContainer.copy(alpha = .6f)
+                    containerColor = colors.secondaryContainer.copy(alpha = .6f),
+                    disabledContainerColor = colors.secondaryContainer.copy(alpha = .3f)
                 )
             ) {
                 Text(
                     text = "Transcript",
                     style = typography.titleMedium,
-                    color = colors.onSecondaryContainer
+                    color = colors.onSecondaryContainer.copy(
+                        alpha = if (uiState.canCreate) 1f else .5f
+                    )
                 )
             }
         }
@@ -258,7 +263,7 @@ fun ConfigurationScreen(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val scrollState = rememberScrollState()
-    val uiState = configurationController.uiState.collectAsState()
+    val uiState by configurationController.uiState.collectAsState()
 
     Column(
         modifier = modifier.fillMaxSize().verticalScroll(scrollState)
@@ -278,25 +283,29 @@ fun ConfigurationScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     ConfigurationItem(
-                        ConfigurationProvider.ShowTimestampConfig(uiState.value.showTimestamp) {
+                        ConfigurationProvider.ShowTimestampConfig(
+                            uiState.appSettings.showTimestamp
+                        ) {
                             configurationController.updateShowTimestamp(it)
                         },
                         true
                     )
                     ConfigurationItem(
-                        ConfigurationProvider.MinimumThreadsConfig(uiState.value.minimumThreads) {
+                        ConfigurationProvider.MinimumThreadsConfig(
+                            uiState.appSettings.minimumThreads
+                        ) {
                             configurationController.updateMinimumThreads(it.coerceIn(1, 8))
                         },
                         true
                     )
                     ConfigurationItem(
-                        ConfigurationProvider.ReloadDefaultConfig {
+                        ConfigurationProvider.CreateNewAudio(uiState = uiState) {
                             onNavigate(Screen.Create)
                         },
                         true
                     )
                     ConfigurationItem(
-                        ConfigurationProvider.ReceiveAlertConfig(uiState.value.receiveAlert) {
+                        ConfigurationProvider.ReceiveAlertConfig(uiState.appSettings.receiveAlert) {
                             configurationController.updateReceiveAlert(it)
                         },
                         false

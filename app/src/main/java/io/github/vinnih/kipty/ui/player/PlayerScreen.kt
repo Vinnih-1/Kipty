@@ -108,7 +108,7 @@ fun PlayerScreen(
                     onClick = { start, _ ->
                         playerController.seekTo(playerUiState.currentAudio!!, start, 0)
                     },
-                    showTimestamp = configurationUiState.showTimestamp,
+                    showTimestamp = configurationUiState.appSettings.showTimestamp,
                     modifier = Modifier.padding(bottom = 48.dp)
                 )
             }

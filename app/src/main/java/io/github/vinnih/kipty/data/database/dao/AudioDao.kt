@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -37,6 +38,9 @@ interface AudioDao {
 
     @Query("UPDATE audios SET duration = :duration, audioSize = :size WHERE uid = :id")
     suspend fun updateMetadata(id: Int, duration: Long, size: Long)
+
+    @Query("UPDATE audios SET state = :state WHERE uid = :id")
+    suspend fun updateAudioState(id: Int, state: TranscriptionState)
 
     @Query("SELECT * FROM audios WHERE duration = 0 OR audioSize = 0")
     suspend fun getAudiosWithMissingMetadata(): List<AudioEntity>

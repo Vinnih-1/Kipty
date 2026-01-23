@@ -1,6 +1,7 @@
 package io.github.vinnih.kipty.data.database.repository.audio
 
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import kotlinx.coroutines.flow.Flow
 
 interface AudioRepository {
@@ -22,6 +23,8 @@ interface AudioRepository {
     suspend fun delete(audio: AudioEntity)
 
     suspend fun updateMetadata(id: Int, duration: Long, size: Long)
+
+    suspend fun updateAudioState(id: Int, state: TranscriptionState)
 
     suspend fun getAudiosWithMissingMetadata(): List<AudioEntity>
 }

@@ -22,6 +22,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,30 +32,35 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
+import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.create.Step
+import io.github.vinnih.kipty.ui.notification.NotificationController
+import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.utils.formatTime
-import io.github.vinnih.kipty.utils.getAssetAudioInfo
 import io.github.vinnih.kipty.utils.getFormattedSize
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioConfigSheet(
+    audioController: AudioController,
+    playerController: PlayerController,
+    notificationController: NotificationController,
     audioEntity: AudioEntity?,
     onDismiss: () -> Unit,
-    onPlay: () -> Unit,
-    onTranscript: () -> Unit,
     onNavigate: (Screen) -> Unit,
-    onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val context = LocalContext.current
+    val uiState by audioController.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     if (audioEntity == null) return
@@ -76,13 +82,22 @@ fun AudioConfigSheet(
             AudioConfigButtons(
                 audioEntity = audioEntity,
                 onPlay = {
-                    onPlay()
+                    playerController.seekTo(audioEntity)
                     onDismiss()
                 },
                 onTranscript = {
-                    onTranscript()
+                    notificationController.notify(
+                        audioEntity = audioEntity,
+                        title = "Transcribing audio",
+                        content = "Your transcript for this episode is being prepared.",
+                        channel = NotificationCategory.TRANSCRIPTION_INIT
+                    )
+                    audioController.transcribeAudio(
+                        audioEntity = audioEntity
+                    )
                     onDismiss()
                 },
+                canTranscribe = uiState.canTranscribe,
                 modifier = Modifier.fillMaxWidth()
             )
             HorizontalDivider()
@@ -195,7 +210,10 @@ fun AudioConfigSheet(
                 HorizontalDivider()
                 AudioConfigItem(
                     onClick = {
-                        onDelete()
+                        audioController.deleteAudio(audioEntity)
+                        if (audioEntity.uid == playerController.uiState.value.currentAudio?.uid) {
+                            playerController.stopAudio()
+                        }
                         onDismiss()
                     },
                     icon = {
@@ -330,6 +348,7 @@ private fun AudioConfigButtons(
     audioEntity: AudioEntity,
     onPlay: () -> Unit,
     onTranscript: () -> Unit,
+    canTranscribe: Boolean,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -362,7 +381,7 @@ private fun AudioConfigButtons(
         }
         Button(
             onClick = onTranscript,
-            enabled = audioEntity.transcription.isNullOrEmpty(),
+            enabled = audioEntity.transcription.isNullOrEmpty() && canTranscribe,
             colors = ButtonDefaults.buttonColors(
                 containerColor = colors.secondaryContainer.copy(alpha = .4f),
                 contentColor = colors.onSecondaryContainer,

@@ -11,15 +11,18 @@ import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.data.database.repository.notification.NotificationRepository
+import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.random.Random
+import kotlinx.coroutines.flow.first
 
 @Singleton
 class NotificationService @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val notificationRepository: NotificationRepository
+    private val notificationRepository: NotificationRepository,
+    private val appPreferencesRepository: AppPreferencesRepository
 ) {
 
     data class NotificationObject(
@@ -87,7 +90,10 @@ class NotificationService @Inject constructor(
 
             else -> progressNotification(notificationObject, false)
         }
+        val receiveAlert = appPreferencesRepository.appSettingsFlow.first().receiveAlert
 
-        notificationManager.notify(notificationObject.id, notification)
+        if (receiveAlert) {
+            notificationManager.notify(notificationObject.id, notification)
+        }
     }
 }

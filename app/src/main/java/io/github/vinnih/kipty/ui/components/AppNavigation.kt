@@ -8,6 +8,8 @@ import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.ConfigurationScreen
 import io.github.vinnih.kipty.ui.create.CreateController
 import io.github.vinnih.kipty.ui.create.CreateScreen
+import io.github.vinnih.kipty.ui.edit.EditController
+import io.github.vinnih.kipty.ui.edit.EditScreen
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeScreen
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -23,6 +25,7 @@ fun AppNavigation(
     notificationController: NotificationController,
     configurationController: ConfigurationController,
     createController: CreateController,
+    editController: EditController,
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit
 ) {
@@ -33,7 +36,7 @@ fun AppNavigation(
                 audioController = audioController,
                 playerController = playerController,
                 notificationController = notificationController,
-                onNavigate = { onNavigate(it) }
+                onNavigate = onNavigate
             )
         }
 
@@ -43,6 +46,7 @@ fun AppNavigation(
                 playerController = playerController,
                 notificationController = notificationController,
                 configurationController = configurationController,
+                onNavigate = onNavigate,
                 onBack = onBack,
                 id = currentScreen.id
             )
@@ -58,7 +62,7 @@ fun AppNavigation(
         is Screen.Notification -> {
             NotificationScreen(
                 notificationController = notificationController,
-                onNavigate = { onNavigate(it) },
+                onNavigate = onNavigate,
                 onBack = onBack
             )
         }
@@ -66,7 +70,16 @@ fun AppNavigation(
         is Screen.Configuration -> {
             ConfigurationScreen(
                 configurationController = configurationController,
-                onNavigate = { onNavigate(it) },
+                onNavigate = onNavigate,
+                onBack = onBack
+            )
+        }
+
+        is Screen.Edit -> {
+            EditScreen(
+                editController = editController,
+                id = currentScreen.id,
+                step = currentScreen.step,
                 onBack = onBack
             )
         }

@@ -1,38 +1,22 @@
 package io.github.vinnih.kipty.ui.audio
 
-import androidx.work.WorkInfo
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface AudioController {
 
-    val allAudios: StateFlow<List<AudioEntity>>
+    val uiState: StateFlow<AudioUiState>
 
-    suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?
-    ): AudioEntity
+    fun transcribeAudio(audioEntity: AudioEntity)
 
-    suspend fun createAudio(
-        audio: String,
-        image: String,
-        name: String,
-        description: String?,
-        isDefault: Boolean
-    ): AudioEntity
-
-    fun transcribeAudio(audioEntity: AudioEntity, onSuccess: () -> Unit, onError: (String) -> Unit)
+    fun getFlowById(id: Int): Flow<AudioEntity?>
 
     suspend fun saveAudio(audioEntity: AudioEntity): Long
 
+    suspend fun getById(id: Int): AudioEntity?
+
     fun deleteAudio(audioEntity: AudioEntity)
 
-    fun observeTranscriptionWork(): Flow<List<WorkInfo>>
-
     fun cancelTranscriptionWork(audioEntity: AudioEntity)
-
-    fun getById(id: Int): Flow<AudioEntity?>
 }

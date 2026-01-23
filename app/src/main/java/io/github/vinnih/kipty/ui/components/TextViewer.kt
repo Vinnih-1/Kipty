@@ -61,7 +61,7 @@ fun TextViewer(
     modifier: Modifier = Modifier
 ) {
     val uiState = playerController.uiState.collectAsState()
-    val audioEntity = uiState.value.audioEntity
+    val audioEntity = uiState.value.currentAudio
 
     if (audioEntity == null || audioEntity.transcription.isNullOrEmpty()) {
         return
@@ -104,7 +104,7 @@ private fun TextViewerBase(
     modifier: Modifier = Modifier
 ) {
     val uiState = playerController.uiState.collectAsState()
-    val audioEntity = uiState.value.audioEntity
+    val audioEntity = uiState.value.currentAudio
     val listState = rememberLazyListState()
 
     val activeIndex by remember(uiState.value.currentPosition) {

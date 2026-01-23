@@ -1,5 +1,6 @@
 package io.github.vinnih.kipty.ui.create
 
+import android.net.Uri
 import java.io.File
 import kotlinx.coroutines.flow.StateFlow
 
@@ -11,7 +12,7 @@ interface CreateController {
 
     fun previousStep()
 
-    fun selectAudio(file: File?)
+    fun selectAudio(file: Uri?)
 
     fun selectImage(file: File?)
 
@@ -19,7 +20,7 @@ interface CreateController {
 
     fun insertDescription(description: String)
 
-    fun createAudio(onSuccess: () -> Unit)
+    fun createAudio()
 
     fun clearUiState()
 }

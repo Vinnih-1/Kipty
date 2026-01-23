@@ -1,11 +1,11 @@
 package io.github.vinnih.kipty.ui.audio
 
 import android.content.res.Configuration
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,24 +21,28 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationChannel
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
@@ -56,70 +60,83 @@ fun AudioScreen(
     playerController: PlayerController,
     notificationController: NotificationController,
     configurationController: ConfigurationController,
+    onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
     id: Int,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val audios = audioController.allAudios.collectAsState()
-    val audioEntity = audios.value.first { it.uid == id }
-    val uiState = configurationController.uiState.collectAsState()
+    val loadedAudio by audioController.getFlowById(id).collectAsState(null)
 
-    Scaffold(
-        topBar = {
-            AudioTopBar(
-                audioEntity = audioEntity,
-                onTranscribe = {
-                    notificationController.notify(
-                        audioEntity = audioEntity,
-                        title = "Transcription Ready",
-                        content = "Your transcription for this episode is now available",
-                        channel = NotificationChannel.TRANSCRIPTION_INIT
-                    )
-                    audioController.transcribeAudio(
-                        audioEntity = audioEntity,
-                        onSuccess = {
-                            notificationController.notify(
-                                audioEntity = audioEntity,
-                                title = "New Episode Available",
-                                content = "A new episode has been added to your feed",
-                                channel = NotificationChannel.TRANSCRIPTION_DONE
-                            )
-                        },
-                        onError = {
-                            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                        }
-                    )
-                },
-                onCancel = {
-                    audioController.cancelTranscriptionWork(audioEntity)
-                },
-                onBack = onBack
-            )
-        },
-        floatingActionButton = {
-            AnimatedVisibility(!audioEntity.transcription.isNullOrEmpty()) {
-                PlayPauseButton(
+    if (loadedAudio == null) return
+
+    val audioEntity = loadedAudio!!
+    val configurationUiState by configurationController.uiState.collectAsState()
+    val playerUiState by playerController.uiState.collectAsState()
+    val audioUiState by audioController.uiState.collectAsState()
+    var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
+
+    Box(modifier = modifier) {
+        Scaffold(
+            topBar = {
+                AudioTopBar(
                     audioEntity = audioEntity,
-                    playerController = playerController
-                )
-            }
-        },
-        modifier = modifier
-    ) { paddingValues ->
-        Column(modifier = Modifier.fillMaxWidth().padding(paddingValues)) {
-            if (!audioEntity.transcription.isNullOrEmpty()) {
-                TextViewer(
-                    transcription = audioEntity.transcription,
-                    onClick = { start, end ->
-                        playerController.seekTo(audioEntity, start, end)
+                    audioUiState = audioUiState,
+                    onTranscribe = {
+                        notificationController.notify(
+                            audioEntity = audioEntity,
+                            title = "Transcribing audio",
+                            content = "Your transcript for this episode is being prepared.",
+                            channel = NotificationCategory.TRANSCRIPTION_INIT
+                        )
+                        audioController.transcribeAudio(audioEntity = audioEntity)
                     },
-                    showTimestamp = uiState.value.showTimestamp
+                    onSettings = { selectedAudio = audioEntity },
+                    onCancel = {
+                        audioController.cancelTranscriptionWork(audioEntity)
+                    },
+                    onBack = onBack
                 )
-            } else {
-                NoTranscriptionFound()
+            },
+            floatingActionButton = {
+                AnimatedVisibility(
+                    !audioEntity.transcription.isNullOrEmpty() &&
+                        audioEntity.uid != playerUiState.currentAudio?.uid
+                ) {
+                    PlayPauseButton(
+                        audioEntity = audioEntity,
+                        playerController = playerController
+                    )
+                }
+            },
+            modifier = Modifier
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = paddingValues.calculateTopPadding())
+            ) {
+                if (!audioEntity.transcription.isNullOrEmpty()) {
+                    TextViewer(
+                        transcription = audioEntity.transcription,
+                        onClick = { start, end ->
+                            playerController.seekTo(audioEntity, start, end)
+                        },
+                        showTimestamp = configurationUiState.appSettings.showTimestamp
+                    )
+                } else {
+                    NoTranscriptionFound()
+                }
             }
         }
+        AudioConfigSheet(
+            audioController = audioController,
+            playerController = playerController,
+            notificationController = notificationController,
+            audioEntity = selectedAudio,
+            onDismiss = { selectedAudio = null },
+            onNavigate = onNavigate,
+            modifier = Modifier
+        )
     }
 }
 
@@ -127,13 +144,16 @@ fun AudioScreen(
 @Composable
 fun AudioTopBar(
     audioEntity: AudioEntity,
+    audioUiState: AudioUiState,
     onTranscribe: () -> Unit,
+    onSettings: () -> Unit,
     onCancel: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
+    val canTranscribe = audioEntity.state == TranscriptionState.NONE && audioUiState.canTranscribe
+    val isCurrentAudio = audioEntity.uid == audioUiState.currentUid
 
     Column(
         modifier = modifier.fillMaxWidth()
@@ -174,22 +194,14 @@ fun AudioTopBar(
                 })
             },
             actions = {
-                AnimatedVisibility(audioEntity.transcription.isNullOrEmpty()) {
+                AnimatedVisibility(canTranscribe || isCurrentAudio) {
                     TranscriptionButton(
                         audioEntity = audioEntity,
                         onStart = onTranscribe,
                         onCancel = onCancel
                     )
                 }
-                BaseButton(onClick = {
-                    Toast.makeText(
-                        context,
-                        "Settings not implemented yet!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-
-                    // TODO: open modal with audio settings (name, description, image)
-                }, content = {
+                BaseButton(onClick = onSettings, content = {
                     Icon(
                         painter = painterResource(R.drawable.settings),
                         contentDescription = null,
@@ -215,26 +227,14 @@ private fun PlayPauseButton(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
-    val uiState = playerController.uiState.collectAsState()
-    val playPause = rememberPlayPauseButtonState(playerController.player)
 
     BaseButton(
         onClick = {
-            if (uiState.value.audioEntity?.uid == audioEntity.uid) {
-                playPause.onClick()
-            } else {
-                playerController.playPause(audioEntity)
-            }
+            playerController.seekTo(audioEntity)
         },
         content = {
             Icon(
-                painter = painterResource(
-                    if (playPause.showPlay) {
-                        R.drawable.play
-                    } else {
-                        R.drawable.pause
-                    }
-                ),
+                painter = painterResource(R.drawable.play),
                 contentDescription = null,
                 tint = colors.onPrimaryContainer,
                 modifier = Modifier.size(36.dp)
@@ -342,6 +342,7 @@ private fun AudioScreenPreview() {
             playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
             configurationController = FakeConfigurationViewModel(),
+            onNavigate = {},
             onBack = {},
             id = audioEntity.uid
         )

@@ -1,9 +1,11 @@
 package io.github.vinnih.kipty.data.database.entity
 
+import androidx.compose.runtime.Immutable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
+@Immutable
 @Serializable
 @Entity(tableName = "audios")
 data class AudioEntity(
@@ -15,6 +17,9 @@ data class AudioEntity(
     val audioPath: String,
     val imagePath: String,
     val isDefault: Boolean,
+    val playTime: Long = 0,
+    val duration: Long,
+    val audioSize: Long,
     val state: TranscriptionState = TranscriptionState.NONE
 )
 

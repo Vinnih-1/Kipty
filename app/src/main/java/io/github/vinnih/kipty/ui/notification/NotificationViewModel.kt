@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.NotificationChannel
+import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.data.database.repository.notification.NotificationRepository
 import java.time.LocalDateTime
@@ -68,7 +68,7 @@ class NotificationViewModel @Inject constructor(private val repository: Notifica
         audioEntity: AudioEntity,
         title: String,
         content: String,
-        channel: NotificationChannel
+        channel: NotificationCategory
     ) {
         val notificationEntity = NotificationEntity(
             title = title,

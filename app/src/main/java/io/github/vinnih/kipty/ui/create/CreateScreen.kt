@@ -1,6 +1,7 @@
 package io.github.vinnih.kipty.ui.create
 
 import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
@@ -36,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -49,7 +51,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,8 @@ import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.dashedBorder
+import io.github.vinnih.kipty.utils.getFileName
+import io.github.vinnih.kipty.utils.getFileSize
 import io.github.vinnih.kipty.utils.getFormattedSize
 import io.github.vinnih.kipty.utils.processUriToFile
 import java.io.File
@@ -69,8 +72,15 @@ fun CreateScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val uiState by createController.uiState.collectAsState()
     val scrollState = rememberScrollState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            createController.clearUiState()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -85,13 +95,11 @@ fun CreateScreen(
             BottomButton(
                 onNext = { createController.nextStep() },
                 onCreate = {
-                    createController.createAudio(onSuccess = {
-                        onBack.invoke()
-                        createController.clearUiState()
-                    })
+                    createController.createAudio()
+                    onBack.invoke()
                 },
                 step = uiState.step,
-                enabled = uiState.data.audioFile != null
+                enabled = uiState.data.audioUri != null
             )
         },
         modifier = modifier
@@ -109,13 +117,15 @@ fun CreateScreen(
             ProcessingInformationNote()
             when (uiState.step) {
                 Step.FILE -> AudioStepScreen(
-                    file = uiState.data.audioFile,
-                    onFileSelect = { createController.selectAudio(it) },
+                    uri = uiState.data.audioUri,
+                    onUriSelect = { createController.selectAudio(it) },
                     modifier = Modifier
                 )
 
                 Step.DETAILS -> DetailsStepScreen(
-                    file = uiState.data.audioFile!!,
+                    name = uiState.data.audioUri!!.getFileName(context),
+                    defaultTitle = uiState.data.title,
+                    defaultDescription = uiState.data.description,
                     onTitleChange = { createController.insertTitle(it) },
                     onDescriptionChange = { createController.insertDescription(it) }
                 )
@@ -126,7 +136,7 @@ fun CreateScreen(
                 )
 
                 Step.REVIEW -> ReviewStepScreen(
-                    audioFile = uiState.data.audioFile!!,
+                    audioUri = uiState.data.audioUri!!,
                     imageFile = uiState.data.imageFile,
                     title = uiState.data.title,
                     description = uiState.data.description
@@ -138,7 +148,7 @@ fun CreateScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CreateTopBar(
+fun CreateTopBar(
     step: Step,
     onBack: () -> Unit,
     onPrevious: () -> Unit,
@@ -188,7 +198,7 @@ private fun CreateTopBar(
 }
 
 @Composable
-private fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
+fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val isSelectedItem: (Step) -> Boolean = { currentStep == it }
 
@@ -370,11 +380,8 @@ private fun ProcessingInformationNote(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun AudioStepScreen(
-    file: File?,
-    onFileSelect: (File?) -> Unit,
-    modifier: Modifier = Modifier
-) {
+private fun AudioStepScreen(uri: Uri?, onUriSelect: (Uri?) -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val rememberAudioPicker = rememberAudioPicker(
@@ -386,7 +393,7 @@ private fun AudioStepScreen(
             "audio/wave"
         )
     ) {
-        onFileSelect(it)
+        onUriSelect(it)
     }
 
     Column(
@@ -394,122 +401,122 @@ private fun AudioStepScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
+                .padding(vertical = 24.dp, horizontal = 6.dp)
         ) {
-            Column {
-                Text(
-                    text = "Select audio file",
-                    style = typography.headlineLarge,
-                    color = colors.onBackground,
-                    fontWeight = FontWeight.Bold
+            Text(
+                text = "Select audio file",
+                style = typography.headlineLarge,
+                color = colors.onBackground,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Choose the podcast episode you want to transcribe",
+                style = typography.titleSmall,
+                color = colors.onBackground,
+                fontWeight = FontWeight.Light
+            )
+        }
+
+        if (uri == null) {
+            OutlinedIconButton(
+                border = BorderStroke(0.dp, Color.Transparent),
+                shape = RoundedCornerShape(16.dp),
+                onClick = { rememberAudioPicker.invoke() },
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = 24.dp
+                ).height(256.dp).dashedBorder(
+                    color = colors.secondary.copy(alpha = .4f)
                 )
-                Text(
-                    text = "Choose the podcast episode you want to transcribe",
-                    style = typography.titleSmall,
-                    color = colors.onBackground,
-                    fontWeight = FontWeight.Light
-                )
-            }
-            if (file == null) {
-                OutlinedIconButton(
-                    border = BorderStroke(0.dp, Color.Transparent),
-                    shape = RoundedCornerShape(16.dp),
-                    onClick = { rememberAudioPicker.invoke() },
-                    modifier = Modifier.fillMaxWidth().height(256.dp).dashedBorder(
-                        color = colors.secondary.copy(alpha = .4f)
-                    )
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(100.dp)
+                            .background(colors.secondaryContainer.copy(alpha = .4f))
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.music),
+                            contentDescription = "Audio file icon",
+                            tint = colors.onSecondaryContainer.copy(.8f),
+                            modifier = Modifier.size(56.dp).align(Alignment.Center)
+                        )
+                    }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(100.dp)
-                                .background(colors.secondaryContainer.copy(alpha = .4f))
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.music),
-                                contentDescription = "Audio file icon",
-                                tint = colors.onSecondaryContainer.copy(.8f),
-                                modifier = Modifier.size(56.dp).align(Alignment.Center)
-                            )
-                        }
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(top = 16.dp)
-                        ) {
-                            Text(
-                                text = "Tap to select audio",
-                                style = typography.titleMedium,
-                                color = colors.onBackground
-                            )
-                            Text(
-                                text = "MP3, WAV M4A supported",
-                                style = typography.titleSmall,
-                                color = colors.onBackground,
-                                fontWeight = FontWeight.Light
-                            )
-                        }
+                        Text(
+                            text = "Tap to select audio",
+                            style = typography.titleMedium,
+                            color = colors.onBackground
+                        )
+                        Text(
+                            text = "MP3, WAV M4A supported",
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light
+                        )
                     }
                 }
-            } else {
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth()
+            }
+        } else {
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .size(64.dp)
+                            .background(colors.secondaryContainer.copy(.4f))
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .size(64.dp)
-                                .background(colors.secondaryContainer.copy(.4f))
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.music),
-                                contentDescription = null,
-                                tint = colors.onSecondaryContainer.copy(.8f),
-                                modifier = Modifier.size(36.dp).align(Alignment.Center)
-                            )
-                        }
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(.8f)
-                        ) {
-                            Text(
-                                text = file.nameWithoutExtension,
-                                style = typography.titleMedium,
-                                color = colors.onBackground,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                modifier = Modifier.basicMarquee()
-                            )
-                            Text(
-                                text = file.getFormattedSize(),
-                                style = typography.titleSmall,
-                                color = colors.onBackground,
-                                fontWeight = FontWeight.Light
-                            )
-                        }
-                        BaseButton(onClick = { onFileSelect(null) }) {
-                            Icon(
-                                painter = painterResource(R.drawable.close),
-                                contentDescription = null,
-                                tint = colors.onBackground,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
+                        Icon(
+                            painter = painterResource(R.drawable.music),
+                            contentDescription = null,
+                            tint = colors.onSecondaryContainer.copy(.8f),
+                            modifier = Modifier.size(36.dp).align(Alignment.Center)
+                        )
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(.8f)
+                    ) {
+                        Text(
+                            text = uri.getFileName(context),
+                            style = typography.titleMedium,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
+                        Text(
+                            text = uri.getFileSize(context).getFormattedSize(),
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light
+                        )
+                    }
+                    BaseButton(onClick = { onUriSelect(null) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.close),
+                            contentDescription = null,
+                            tint = colors.onBackground,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
@@ -518,42 +525,50 @@ private fun AudioStepScreen(
 }
 
 @Composable
-private fun DetailsStepScreen(
-    file: File,
+fun DetailsStepScreen(
+    name: String,
+    defaultTitle: String,
+    defaultDescription: String,
     onTitleChange: (String) -> Unit,
     onDescriptionChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    var titleState by remember { mutableStateOf(TextFieldValue()) }
-    var descriptionState by remember { mutableStateOf(TextFieldValue()) }
+    var titleState by remember(defaultTitle) { mutableStateOf(defaultTitle) }
+    var descriptionState by remember(defaultDescription) { mutableStateOf(defaultDescription) }
 
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.Start
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
-            modifier = Modifier.fillMaxWidth().padding(24.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 24.dp, horizontal = 6.dp)
         ) {
-            Column {
-                Text(
-                    text = "Add details",
-                    style = typography.headlineLarge,
-                    color = colors.onBackground,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Give your transcription a name and description",
-                    style = typography.titleSmall,
-                    color = colors.onBackground,
-                    fontWeight = FontWeight.Light
-                )
-            }
+            Text(
+                text = "Add details",
+                style = typography.headlineLarge,
+                color = colors.onBackground,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Give your transcription a name and description",
+                style = typography.titleSmall,
+                color = colors.onBackground,
+                fontWeight = FontWeight.Light
+            )
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        ) {
             TextField(
                 value = titleState,
                 onValueChange = {
-                    onTitleChange(it.text)
+                    onTitleChange(it)
                     titleState = it
                 },
                 label = {
@@ -566,7 +581,7 @@ private fun DetailsStepScreen(
                 },
                 placeholder = {
                     Text(
-                        text = "e.g., ${file.nameWithoutExtension}",
+                        text = "e.g., $name",
                         style = typography.titleSmall,
                         color = colors.onBackground,
                         fontWeight = FontWeight.Light
@@ -578,7 +593,7 @@ private fun DetailsStepScreen(
             TextField(
                 value = descriptionState,
                 onValueChange = {
-                    onDescriptionChange(it.text)
+                    onDescriptionChange(it)
                     descriptionState = it
                 },
                 label = {
@@ -605,18 +620,15 @@ private fun DetailsStepScreen(
 }
 
 @Composable
-private fun ImageStepScreen(
-    file: File?,
-    onFileSelect: (File?) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun ImageStepScreen(file: File?, onFileSelect: (File?) -> Unit, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val rememberAudioPicker = rememberAudioPicker(
         mimeType = "image/*",
         arrayOf("image/png", "image/jpeg")
     ) {
-        onFileSelect(it)
+        onFileSelect(it.processUriToFile(context))
     }
 
     Column(
@@ -624,124 +636,122 @@ private fun ImageStepScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
+                .padding(vertical = 24.dp, horizontal = 6.dp)
         ) {
-            Column {
-                Text(
-                    text = "Add cover image",
-                    style = typography.headlineLarge,
-                    color = colors.onBackground,
-                    fontWeight = FontWeight.Bold
+            Text(
+                text = "Add cover image",
+                style = typography.headlineLarge,
+                color = colors.onBackground,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Optional: Add a thumbnail for this episode",
+                style = typography.titleSmall,
+                color = colors.onBackground,
+                fontWeight = FontWeight.Light
+            )
+        }
+
+        if (file == null) {
+            OutlinedIconButton(
+                border = BorderStroke(0.dp, Color.Transparent),
+                shape = RoundedCornerShape(16.dp),
+                onClick = { rememberAudioPicker.invoke() },
+                modifier = Modifier.fillMaxWidth().padding(
+                    horizontal = 24.dp
+                ).height(256.dp).dashedBorder(
+                    color = colors.secondary.copy(alpha = .4f)
                 )
-                Text(
-                    text = "Optional: Add a thumbnail for this episode",
-                    style = typography.titleSmall,
-                    color = colors.onBackground,
-                    fontWeight = FontWeight.Light
-                )
-            }
-            if (file == null) {
-                OutlinedIconButton(
-                    border = BorderStroke(0.dp, Color.Transparent),
-                    shape = RoundedCornerShape(16.dp),
-                    onClick = { rememberAudioPicker.invoke() },
-                    modifier = Modifier.fillMaxWidth().padding(
-                        horizontal = 24.dp
-                    ).height(256.dp).dashedBorder(
-                        color = colors.secondary.copy(alpha = .4f)
-                    )
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(100.dp)
+                            .background(colors.secondaryContainer.copy(alpha = .4f))
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.image),
+                            contentDescription = "Audio file icon",
+                            tint = colors.onSecondaryContainer.copy(.8f),
+                            modifier = Modifier.size(56.dp).align(Alignment.Center)
+                        )
+                    }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.padding(top = 16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .size(100.dp)
-                                .background(colors.secondaryContainer.copy(alpha = .4f))
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.image),
-                                contentDescription = "Audio file icon",
-                                tint = colors.onSecondaryContainer.copy(.8f),
-                                modifier = Modifier.size(56.dp).align(Alignment.Center)
-                            )
-                        }
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(top = 16.dp)
-                        ) {
-                            Text(
-                                text = "Tap to select image",
-                                style = typography.titleMedium,
-                                color = colors.onBackground
-                            )
-                            Text(
-                                text = "JPG, PNG supported",
-                                style = typography.titleSmall,
-                                color = colors.onBackground,
-                                fontWeight = FontWeight.Light
-                            )
-                        }
+                        Text(
+                            text = "Tap to select image",
+                            style = typography.titleMedium,
+                            color = colors.onBackground
+                        )
+                        Text(
+                            text = "JPG, PNG supported",
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light
+                        )
                     }
                 }
-            } else {
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            }
+        } else {
+            Card(
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .size(64.dp)
+                            .background(colors.secondaryContainer.copy(.4f))
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(16.dp))
-                                .size(64.dp)
-                                .background(colors.secondaryContainer.copy(.4f))
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.image),
-                                contentDescription = null,
-                                tint = colors.onSecondaryContainer.copy(.8f),
-                                modifier = Modifier.size(36.dp).align(Alignment.Center)
-                            )
-                        }
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(.8f)
-                        ) {
-                            Text(
-                                text = file.nameWithoutExtension,
-                                style = typography.titleMedium,
-                                color = colors.onBackground,
-                                fontWeight = FontWeight.Bold,
-                                maxLines = 1,
-                                modifier = Modifier.basicMarquee()
-                            )
-                            Text(
-                                text = file.getFormattedSize(),
-                                style = typography.titleSmall,
-                                color = colors.onBackground,
-                                fontWeight = FontWeight.Light
-                            )
-                        }
-                        BaseButton(onClick = { onFileSelect(null) }) {
-                            Icon(
-                                painter = painterResource(R.drawable.close),
-                                contentDescription = null,
-                                tint = colors.onBackground,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
+                        Icon(
+                            painter = painterResource(R.drawable.image),
+                            contentDescription = null,
+                            tint = colors.onSecondaryContainer.copy(.8f),
+                            modifier = Modifier.size(36.dp).align(Alignment.Center)
+                        )
+                    }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.weight(.8f)
+                    ) {
+                        Text(
+                            text = file.nameWithoutExtension,
+                            style = typography.titleMedium,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            modifier = Modifier.basicMarquee()
+                        )
+                        Text(
+                            text = file.length().getFormattedSize(),
+                            style = typography.titleSmall,
+                            color = colors.onBackground,
+                            fontWeight = FontWeight.Light
+                        )
+                    }
+                    BaseButton(onClick = { onFileSelect(null) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.close),
+                            contentDescription = null,
+                            tint = colors.onBackground,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
@@ -751,19 +761,20 @@ private fun ImageStepScreen(
 
 @Composable
 private fun ReviewStepScreen(
-    audioFile: File,
+    audioUri: Uri,
     imageFile: File?,
     title: String,
     description: String,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
     @Composable
     fun CardDetails(@DrawableRes icon: Int, title: String, content: @Composable () -> Unit) {
         Card(
-            modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -796,10 +807,9 @@ private fun ReviewStepScreen(
         horizontalAlignment = Alignment.Start
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp)
+                .padding(vertical = 24.dp, horizontal = 6.dp)
         ) {
             Text(
                 text = "Review & create",
@@ -813,80 +823,65 @@ private fun ReviewStepScreen(
                 color = colors.onBackground,
                 fontWeight = FontWeight.Light
             )
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(32.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                CardDetails(R.drawable.music, "Audio File") {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            text = audioFile.nameWithoutExtension,
-                            style = typography.titleMedium,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = audioFile.getFormattedSize(),
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
+        }
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+        ) {
+            CardDetails(R.drawable.music, "Audio File") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = audioUri.getFileName(context),
+                        style = typography.titleMedium,
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = audioUri.getFileSize(context).getFormattedSize(),
+                        style = typography.titleSmall,
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.Light
+                    )
                 }
-                CardDetails(R.drawable.file_text, "Details") {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            text = title.ifEmpty {
-                                audioFile.nameWithoutExtension
-                            },
-                            style = typography.titleMedium,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        Text(
-                            text = description.ifEmpty {
-                                "Description not provided"
-                            },
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light,
-                            fontStyle = if (description.isEmpty()) {
-                                FontStyle.Italic
-                            } else {
-                                FontStyle.Normal
-                            }
-                        )
-                    }
+            }
+            CardDetails(R.drawable.file_text, "Details") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = title,
+                        style = typography.titleMedium,
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = description,
+                        style = typography.titleSmall,
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.Light
+                    )
                 }
-                CardDetails(R.drawable.image, "Cover Image") {
-                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            text = imageFile?.nameWithoutExtension ?: "No cover image selected",
-                            style = typography.titleMedium,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Bold,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            fontStyle = if (imageFile !=
-                                null
-                            ) {
-                                FontStyle.Normal
-                            } else {
-                                FontStyle.Italic
-                            }
-                        )
-                        Text(
-                            text = imageFile?.getFormattedSize() ?: "",
-                            style = typography.titleSmall,
-                            color = colors.onBackground,
-                            fontWeight = FontWeight.Light
-                        )
-                    }
+            }
+            CardDetails(R.drawable.image, "Cover Image") {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = imageFile?.nameWithoutExtension ?: "No cover image selected",
+                        style = typography.titleMedium,
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        fontStyle = if (imageFile != null) FontStyle.Normal else FontStyle.Italic
+                    )
+                    Text(
+                        text = imageFile?.length()?.getFormattedSize() ?: "",
+                        style = typography.titleSmall,
+                        color = colors.onBackground,
+                        fontWeight = FontWeight.Light
+                    )
                 }
             }
         }
@@ -897,19 +892,13 @@ private fun ReviewStepScreen(
 private fun rememberAudioPicker(
     mimeType: String,
     extra: Array<String>,
-    onFileSelect: (File) -> Unit
+    onUriSelect: (Uri) -> Unit
 ): () -> Unit {
-    val context = LocalContext.current
-
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         val uri = result.data?.data ?: return@rememberLauncherForActivityResult
-        val file = uri.processUriToFile(context)
-
-        if (file != null) {
-            onFileSelect(file)
-        }
+        onUriSelect(uri)
     }
 
     return {
@@ -923,7 +912,7 @@ private fun rememberAudioPicker(
 }
 
 @Composable
-private fun BottomButton(
+fun BottomButton(
     onNext: () -> Unit,
     onCreate: () -> Unit,
     step: Step,

@@ -1,15 +1,30 @@
 package io.github.vinnih.kipty.data.database.repository.audio
 
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import kotlinx.coroutines.flow.Flow
 
 interface AudioRepository {
 
-    fun getAll(): Flow<List<AudioEntity>>
+    fun getAllFlow(): Flow<List<AudioEntity>>
 
-    fun getById(id: Int): Flow<AudioEntity?>
+    fun getAll(): List<AudioEntity>
+
+    fun getById(id: Int): AudioEntity?
+
+    fun getFlowById(id: Int): Flow<AudioEntity?>
+
+    fun getFlowPlayTimeById(id: Int): Flow<Long>
+
+    suspend fun incrementPlayTime(id: Int)
 
     suspend fun save(audio: AudioEntity): Long
 
     suspend fun delete(audio: AudioEntity)
+
+    suspend fun updateMetadata(id: Int, duration: Long, size: Long)
+
+    suspend fun updateAudioState(id: Int, state: TranscriptionState)
+
+    suspend fun getAudiosWithMissingMetadata(): List<AudioEntity>
 }

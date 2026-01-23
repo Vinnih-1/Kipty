@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,8 +27,10 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -43,6 +44,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -53,6 +55,7 @@ import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
 import io.github.vinnih.kipty.ui.components.AudioCard
+import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
@@ -70,91 +73,138 @@ fun HomeScreen(
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val audioState = audioController.allAudios.collectAsState()
-    var notificationWarn by remember { mutableStateOf(true) }
-    var searchQuery by remember { mutableStateOf("") }
     var isSearchExpanded by remember { mutableStateOf(false) }
-    val filteredAudios = remember(searchQuery, audioState) {
-        if (searchQuery.isEmpty()) {
-            audioState.value
-        } else {
-            audioState.value.filter { it.name.contains(searchQuery, ignoreCase = true) }
-        }
+    var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
+
+    LaunchedEffect(Unit) {
+        homeController.loadAudios()
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            if (!isSearchExpanded) {
-                HomeTopBar(
-                    notificationController = notificationController,
-                    onNotificationClick = { onNavigate(Screen.Notification) },
-                    onNavigate = { onNavigate(it) },
-                    onSearchClick = { isSearchExpanded = true }
+    DisposableEffect(Unit) {
+        onDispose { selectedAudio = null }
+    }
+
+    AudioConfigSheet(
+        audioController = audioController,
+        playerController = playerController,
+        notificationController = notificationController,
+        audioEntity = selectedAudio,
+        onDismiss = { selectedAudio = null },
+        onNavigate = onNavigate,
+        modifier = Modifier
+    )
+
+    Column(modifier = modifier.fillMaxSize()) {
+        if (!isSearchExpanded) {
+            HomeTopBar(
+                notificationController = notificationController,
+                onNotificationClick = { onNavigate(Screen.Notification) },
+                onNavigate = { onNavigate(it) },
+                onSearchClick = { isSearchExpanded = true }
+            )
+            AudioList(
+                homeController = homeController,
+                onNavigate = { onNavigate(it) },
+                onNotificationClick = { onNavigate(Screen.Notification) },
+                onSelectAudio = { selectedAudio = it },
+                isSearchExpanded = isSearchExpanded,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            )
+        } else {
+            SearchBarView(
+                homeController = homeController,
+                isSearchExpanded = isSearchExpanded,
+                onSearchExpandedChange = { isSearchExpanded = it },
+                onNavigate = { onNavigate(it) },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+    }
+}
+
+@Composable
+private fun AudioList(
+    homeController: HomeController,
+    onNavigate: (Screen) -> Unit,
+    onNotificationClick: () -> Unit,
+    onSelectAudio: (AudioEntity) -> Unit,
+    isSearchExpanded: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val uiState by homeController.homeUiState.collectAsState()
+    var notificationWarn by remember { mutableStateOf(true) }
+
+    if (uiState.isLoading) {
+        LoadingAudios()
+        return
+    }
+
+    if (uiState.audioList.isEmpty()) {
+        AudioListEmpty(onNavigate = onNavigate)
+        return
+    }
+
+    LazyColumn(
+        modifier = modifier.fillMaxSize()
+    ) {
+        if (notificationWarn && !isSearchExpanded) {
+            item(key = "notification_warn") {
+                NotificationPermissionWarn(
+                    onEnable = onNotificationClick,
+                    onDismiss = { notificationWarn = false }
                 )
             }
-
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
-                item {
-                    if (notificationWarn && !isSearchExpanded) {
-                        NotificationPermissionWarn(
-                            onEnable = { homeController.openNotificationSettings() },
-                            onDismiss = { notificationWarn = false }
-                        )
-                    }
-                }
-
-                if (audioState.value.isEmpty()) {
-                    item { AudioListEmpty(onNavigate = { onNavigate(it) }) }
-                }
-
-                items(audioState.value) { audioData ->
-                    AudioCard(
-                        audioEntity = audioData,
-                        onNavigate = {
-                            onNavigate(Screen.Audio(audioData.uid))
-                        },
-                        onPlay = { playerController.playPause(audioData) },
-                        onDelete = {
-                            audioController.deleteAudio(audioData)
-                            if (audioData.uid == playerController.currentAudio.value?.uid) {
-                                playerController.stopAudio()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth().height(200.dp)
-                    )
-                }
-            }
         }
-        SearchBarView(
-            isSearchExpanded = isSearchExpanded,
-            onSearchExpandedChange = { isSearchExpanded = it },
-            searchQuery = searchQuery,
-            onQueryChange = { searchQuery = it },
-            filteredAudios = filteredAudios,
-            onNavigate = { onNavigate(it) },
-            playerController = playerController,
-            audioController = audioController,
-            modifier = Modifier.align(Alignment.TopCenter)
-        )
+
+        items(
+            items = uiState.audioList,
+            key = { it.uid },
+            contentType = { "AudioCard" }
+        ) { audioData ->
+            val playTime by homeController.getPlayTimeById(audioData.uid)
+                .collectAsStateWithLifecycle(0L)
+
+            AudioCard(
+                audioEntity = audioData,
+                playTime = playTime,
+                onNavigate = { id -> onNavigate(Screen.Audio(id)) },
+                onPress = { onSelectAudio(audioData) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchBarView(
+    homeController: HomeController,
     isSearchExpanded: Boolean,
     onSearchExpandedChange: (Boolean) -> Unit,
-    searchQuery: String,
-    onQueryChange: (String) -> Unit,
-    filteredAudios: List<AudioEntity>,
     onNavigate: (Screen) -> Unit,
-    playerController: PlayerController,
-    audioController: AudioController,
     modifier: Modifier = Modifier
 ) {
     if (!isSearchExpanded) return
     val colors = MaterialTheme.colorScheme
     val focusRequester = remember { FocusRequester() }
+    val onCardClick = remember(onNavigate) {
+        { id: Int -> onNavigate(Screen.Audio(id)) }
+    }
+    val uiState by homeController.homeUiState.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+    val filteredAudios by remember(searchQuery, uiState.audioList) {
+        derivedStateOf {
+            if (searchQuery.isEmpty()) {
+                uiState.audioList
+            } else {
+                uiState.audioList.filter { it.name.contains(searchQuery, ignoreCase = true) }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -165,9 +215,9 @@ private fun SearchBarView(
         inputField = {
             SearchBarDefaults.InputField(
                 query = searchQuery,
-                onQueryChange = { onQueryChange(it) },
+                onQueryChange = { searchQuery = it },
                 onSearch = {
-                    onQueryChange("")
+                    searchQuery = ""
                     onSearchExpandedChange(false)
                 },
                 expanded = isSearchExpanded,
@@ -176,7 +226,7 @@ private fun SearchBarView(
                 leadingIcon = {
                     BaseButton(
                         onClick = {
-                            onQueryChange("")
+                            searchQuery = ""
                             onSearchExpandedChange(false)
                         },
                         content = {
@@ -190,7 +240,7 @@ private fun SearchBarView(
                 },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
-                        BaseButton(onClick = { onQueryChange("") }, content = {
+                        BaseButton(onClick = { searchQuery = "" }, content = {
                             Icon(
                                 painter = painterResource(R.drawable.close),
                                 contentDescription = null,
@@ -202,7 +252,7 @@ private fun SearchBarView(
                 modifier = Modifier.focusRequester(focusRequester)
             )
         },
-        expanded = isSearchExpanded,
+        expanded = true,
         onExpandedChange = { onSearchExpandedChange(it) },
         colors = SearchBarDefaults.colors(
             containerColor = colors.background
@@ -213,19 +263,17 @@ private fun SearchBarView(
                 item { NoAudioSearchFound() }
             }
 
-            items(filteredAudios) { audioData ->
+            items(
+                items = filteredAudios,
+                key = { it.uid }
+            ) { audioData ->
                 AudioCard(
                     audioEntity = audioData,
+                    playTime = audioData.playTime,
                     onNavigate = {
-                        onNavigate(Screen.Audio(audioData.uid))
+                        onCardClick(audioData.uid)
                     },
-                    onPlay = { playerController.playPause(audioData) },
-                    onDelete = {
-                        audioController.deleteAudio(audioData)
-                        if (audioData.uid == playerController.currentAudio.value?.uid) {
-                            playerController.stopAudio()
-                        }
-                    },
+                    onPress = {},
                     modifier = Modifier.fillMaxWidth().height(200.dp)
                 )
             }
@@ -398,13 +446,23 @@ private fun NoAudioSearchFound(modifier: Modifier = Modifier) {
 @Composable
 private fun AudioListEmpty(onNavigate: (Screen) -> Unit, modifier: Modifier = Modifier) {
     Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(
-            32.dp,
-            Alignment.CenterVertically
-        ),
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Icon(
+            painter = painterResource(R.drawable.type),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        )
+        Text(
+            text = "No audios found",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
         Button(
             onClick = { onNavigate(Screen.Create) },
             modifier = Modifier.height(48.dp),
@@ -412,6 +470,29 @@ private fun AudioListEmpty(onNavigate: (Screen) -> Unit, modifier: Modifier = Mo
         ) {
             Text("Create a Transcription")
         }
+    }
+}
+
+@Composable
+private fun LoadingAudios(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.music),
+            contentDescription = null,
+            modifier = Modifier.size(64.dp),
+            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+        )
+        Text(
+            text = "Loading audios, please wait...",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
     }
 }
 

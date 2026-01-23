@@ -15,12 +15,12 @@ data class NotificationEntity(
     val read: Boolean = false,
     val audioId: Int,
     val audioName: String,
-    val channel: NotificationChannel,
+    val channel: NotificationCategory,
     val createdAt: String
 )
 
 @Serializable
-enum class NotificationChannel(@DrawableRes val iconId: Int) {
+enum class NotificationCategory(@DrawableRes val iconId: Int) {
     TRANSCRIPTION_INIT(R.drawable.file_text),
     TRANSCRIPTION_DONE(R.drawable.sparkles)
 }

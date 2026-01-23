@@ -35,6 +35,9 @@ import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
 import io.github.vinnih.kipty.ui.create.CreateController
 import io.github.vinnih.kipty.ui.create.CreateViewModel
+import io.github.vinnih.kipty.ui.create.Step
+import io.github.vinnih.kipty.ui.edit.EditController
+import io.github.vinnih.kipty.ui.edit.EditViewModel
 import io.github.vinnih.kipty.ui.home.HomeController
 import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -58,6 +61,8 @@ sealed interface Screen {
     data object Notification : Screen
 
     data object Configuration : Screen
+
+    data class Edit(val id: Int, val step: Step) : Screen
 }
 
 @OptIn(ExperimentalSerializationApi::class)
@@ -78,6 +83,8 @@ class MainActivity : ComponentActivity() {
 
     private val createViewModel: CreateViewModel by viewModels()
 
+    private val editViewModel: EditViewModel by viewModels()
+
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
@@ -94,7 +101,8 @@ class MainActivity : ComponentActivity() {
                     playerController = playerViewModel,
                     notificationController = notificationViewModel,
                     configurationController = configurationViewModel,
-                    createController = createViewModel
+                    createController = createViewModel,
+                    editController = editViewModel
                 )
             }
         }
@@ -109,7 +117,8 @@ class MainActivity : ComponentActivity() {
         playerController: PlayerController,
         notificationController: NotificationController,
         configurationController: ConfigurationController,
-        createController: CreateController
+        createController: CreateController,
+        editController: EditController
     ) {
         val backstack = remember { mutableStateListOf<Screen>(Screen.Home) }
         val scaffoldState = rememberBottomSheetScaffoldState()
@@ -123,7 +132,12 @@ class MainActivity : ComponentActivity() {
         }
 
         splashScreen.setKeepOnScreenCondition { loading }
-        val shouldShowBottomSheet = !backstack.contains(Screen.Create)
+
+        val shouldShowBottomSheet = when (backstack.lastOrNull()) {
+            is Screen.Create -> false
+            is Screen.Edit -> false
+            else -> true
+        }
 
         val animatedPeekHeight by animateDpAsState(
             targetValue = if (shouldShowBottomSheet) 148.dp else 0.dp,
@@ -165,6 +179,7 @@ class MainActivity : ComponentActivity() {
                                 notificationController = notificationController,
                                 configurationController = configurationController,
                                 createController = createController,
+                                editController = editController,
                                 onNavigate = { screen -> backstack.add(screen) },
                                 onBack = { backstack.removeLastOrNull() }
                             )

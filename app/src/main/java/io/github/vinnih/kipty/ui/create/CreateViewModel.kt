@@ -93,7 +93,8 @@ class CreateViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             validateAudioName()
 
-            val name = _uiState.value.data.title
+            val baseName = _uiState.value.data.title
+            val uniqueName = getUniqueAudioName(baseName)
             val description = _uiState.value.data.description
             val image = if (_uiState.value.data.imageFile != null) {
                 _uiState.value.data.imageFile!!.absolutePath
@@ -102,14 +103,14 @@ class CreateViewModel @Inject constructor(
             }
             val path = File(
                 context.filesDir,
-                "transcriptions" + File.separatorChar + name
+                "transcriptions" + File.separatorChar + uniqueName
             ).createFolder()
             val imageFile = File(path, image.substringAfterLast("/"))
 
             File(image).copyTo(imageFile, overwrite = true)
 
             val entity = AudioEntity(
-                name = name,
+                name = uniqueName,
                 description = description.ifEmpty { null },
                 audioPath = "",
                 imagePath = imageFile.absolutePath,
@@ -141,6 +142,24 @@ class CreateViewModel @Inject constructor(
                 androidx.work.ExistingWorkPolicy.KEEP,
                 request
             )
+    }
+
+    private fun getUniqueAudioName(baseName: String): String {
+        val transcriptionsDir = File(context.filesDir, "transcriptions")
+
+        if (!transcriptionsDir.exists() || !File(transcriptionsDir, baseName).exists()) {
+            return baseName
+        }
+
+        var counter = 1
+        var uniqueName: String
+
+        do {
+            uniqueName = "${baseName}_$counter"
+            counter++
+        } while (File(transcriptionsDir, uniqueName).exists())
+
+        return uniqueName
     }
 
     private fun validateAudioName() {

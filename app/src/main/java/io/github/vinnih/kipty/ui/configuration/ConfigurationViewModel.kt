@@ -39,12 +39,12 @@ class ConfigurationViewModel @Inject constructor(
             canCreate,
             appSettings
         ->
-        val canCreate = canCreate.isNotEmpty() && canCreate.all { it.state.isFinished }
+        val canCreate = canCreate.isEmpty() || canCreate.all { it.state.isFinished }
         ConfigurationsUiState(canCreate, appSettings)
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
-        ConfigurationsUiState(false, AppSettings(true, 2, true))
+        ConfigurationsUiState(true, AppSettings(true, 2, true))
     )
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {

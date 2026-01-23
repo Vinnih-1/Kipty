@@ -841,7 +841,7 @@ private fun ReviewStepScreen(
                 CardDetails(R.drawable.file_text, "Details") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(
-                            text = title,
+                            text = title.ifEmpty { audioUri.getFileName(context) },
                             style = typography.titleMedium,
                             color = colors.onBackground,
                             fontWeight = FontWeight.Bold,
@@ -849,10 +849,15 @@ private fun ReviewStepScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                         Text(
-                            text = description,
+                            text = description.ifEmpty { "Description not provided" },
                             style = typography.titleSmall,
                             color = colors.onBackground,
-                            fontWeight = FontWeight.Light
+                            fontWeight = FontWeight.Light,
+                            fontStyle = if (description.isEmpty()) {
+                                FontStyle.Italic
+                            } else {
+                                FontStyle.Normal
+                            }
                         )
                     }
                 }

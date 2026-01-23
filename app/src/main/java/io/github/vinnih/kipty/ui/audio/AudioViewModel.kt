@@ -25,7 +25,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class AudioUiState(val canTranscribe: Boolean = false, val currentUid: Int = -1)
+data class AudioUiState(val canTranscribe: Boolean = false, val currentUid: Int? = null)
 
 @HiltViewModel
 class AudioViewModel @Inject constructor(
@@ -42,7 +42,7 @@ class AudioViewModel @Inject constructor(
         val workInfoList = workInfoArray[0]
         val uid = workInfoList.firstOrNull()?.progress?.getInt("AUDIO_ID", -1)
         val canTranscribe = workInfoList.isEmpty() || workInfoList.all { it.state.isFinished }
-        AudioUiState(canTranscribe, uid!!)
+        AudioUiState(canTranscribe, uid)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AudioUiState())
 
     override fun transcribeAudio(audioEntity: AudioEntity) {

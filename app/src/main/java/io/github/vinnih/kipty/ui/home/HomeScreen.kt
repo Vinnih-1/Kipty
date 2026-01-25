@@ -152,7 +152,7 @@ private fun AudioList(
         if (notificationWarn && !isSearchExpanded) {
             item(key = "notification_warn") {
                 NotificationPermissionWarn(
-                    onEnable = onNotificationClick,
+                    onEnable = { homeController.openNotificationSettings() },
                     onDismiss = { notificationWarn = false }
                 )
             }

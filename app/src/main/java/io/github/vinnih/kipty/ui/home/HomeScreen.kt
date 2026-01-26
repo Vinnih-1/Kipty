@@ -105,7 +105,6 @@ fun HomeScreen(
             AudioList(
                 homeController = homeController,
                 onNavigate = { onNavigate(it) },
-                onNotificationClick = { onNavigate(Screen.Notification) },
                 onSelectAudio = { selectedAudio = it },
                 isSearchExpanded = isSearchExpanded,
                 modifier = Modifier
@@ -128,7 +127,6 @@ fun HomeScreen(
 private fun AudioList(
     homeController: HomeController,
     onNavigate: (Screen) -> Unit,
-    onNotificationClick: () -> Unit,
     onSelectAudio: (AudioEntity) -> Unit,
     isSearchExpanded: Boolean,
     modifier: Modifier = Modifier

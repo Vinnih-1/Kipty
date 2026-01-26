@@ -78,11 +78,8 @@ class MainActivity : ComponentActivity() {
     private val playerViewModel: PlayerViewModel by viewModels()
     private val audioViewModel: AudioViewModel by viewModels()
     private val notificationViewModel: NotificationViewModel by viewModels()
-
     private val configurationViewModel: ConfigurationViewModel by viewModels()
-
     private val createViewModel: CreateViewModel by viewModels()
-
     private val editViewModel: EditViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)

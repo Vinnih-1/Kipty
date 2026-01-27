@@ -89,8 +89,8 @@ fun HomeScreen(
         playerController = playerController,
         notificationController = notificationController,
         audioEntity = selectedAudio,
-        onDismiss = { selectedAudio = null },
         onNavigate = onNavigate,
+        onClose = { selectedAudio = null },
         modifier = Modifier
     )
 

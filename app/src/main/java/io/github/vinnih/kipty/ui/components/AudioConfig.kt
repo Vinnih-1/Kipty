@@ -23,6 +23,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,6 +47,7 @@ import io.github.vinnih.kipty.ui.player.PlayerController
 import io.github.vinnih.kipty.utils.formatTime
 import io.github.vinnih.kipty.utils.getFormattedSize
 import java.io.File
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,17 +56,25 @@ fun AudioConfigSheet(
     playerController: PlayerController,
     notificationController: NotificationController,
     audioEntity: AudioEntity?,
-    onDismiss: () -> Unit,
     onNavigate: (Screen) -> Unit,
+    onClose: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (audioEntity == null) return
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val context = LocalContext.current
     val uiState by audioController.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
-    if (audioEntity == null) return
+    val onDismiss: () -> Unit = remember {
+        {
+            scope.launch { sheetState.hide() }
+            onClose()
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -112,6 +123,7 @@ fun AudioConfigSheet(
                     )
                     AudioConfigItem(
                         onClick = {
+                            onDismiss()
                             onNavigate(Screen.Edit(audioEntity.uid, Step.DETAILS))
                         },
                         icon = {
@@ -139,6 +151,7 @@ fun AudioConfigSheet(
                     )
                     AudioConfigItem(
                         onClick = {
+                            onDismiss()
                             onNavigate(Screen.Edit(audioEntity.uid, Step.DETAILS))
                         },
                         icon = {
@@ -166,6 +179,7 @@ fun AudioConfigSheet(
                     )
                     AudioConfigItem(
                         onClick = {
+                            onDismiss()
                             if (audioEntity.isDefault) {
                                 Toast.makeText(
                                     context,

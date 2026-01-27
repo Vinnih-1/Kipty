@@ -1,5 +1,6 @@
 package io.github.vinnih.kipty.ui.player
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -21,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
@@ -74,6 +76,12 @@ fun PlayerScreen(
     val configurationUiState by configurationController.uiState.collectAsState()
     var visible by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
+
+    BackHandler(
+        enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
+    ) {
+        scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+    }
 
     LaunchedEffect(scaffoldState.bottomSheetState) {
         snapshotFlow {

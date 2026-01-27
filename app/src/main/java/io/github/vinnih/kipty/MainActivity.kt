@@ -150,12 +150,6 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        BackHandler(
-            enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
-        ) {
-            scope.launch { scaffoldState.bottomSheetState.partialExpand() }
-        }
-
         BottomSheetScaffold(
             scaffoldState = scaffoldState,
             sheetPeekHeight = animatedPeekHeight,
@@ -172,7 +166,13 @@ class MainActivity : ComponentActivity() {
             NavDisplay(
                 modifier = Modifier.padding(paddingValues),
                 backStack = backstack,
-                onBack = { backstack.removeLastOrNull() },
+                onBack = {
+                    if (scaffoldState.bottomSheetState.currentValue !=
+                        SheetValue.Expanded
+                    ) {
+                        backstack.removeLastOrNull()
+                    }
+                },
                 entryProvider = { key ->
                     when (key) {
                         is Screen -> NavEntry(key) {

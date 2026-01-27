@@ -142,6 +142,14 @@ class MainActivity : ComponentActivity() {
             label = "bottomSheetPeekHeight"
         )
 
+        val safeOnBack: () -> Unit = remember {
+            {
+                if (backstack.size > 1) {
+                    backstack.removeAt(backstack.size - 1)
+                }
+            }
+        }
+
         BackHandler(
             enabled = scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded
         ) {
@@ -178,7 +186,7 @@ class MainActivity : ComponentActivity() {
                                 createController = createController,
                                 editController = editController,
                                 onNavigate = { screen -> backstack.add(screen) },
-                                onBack = { backstack.removeLastOrNull() }
+                                onBack = safeOnBack
                             )
                         }
                     }

@@ -3,26 +3,19 @@ package io.github.vinnih.kipty.ui.create
 import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.AudioWorker
-import io.github.vinnih.kipty.utils.createFolder
 import io.github.vinnih.kipty.utils.getFileName
 import java.io.File
-import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 data class CreateUiState(val step: Step = Step.FILE, val data: Data = Data()) {
     data class Data(
@@ -41,10 +34,8 @@ enum class Step {
 }
 
 @HiltViewModel
-class CreateViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val audioRepository: AudioRepository
-) : ViewModel(),
+class CreateViewModel @Inject constructor(@ApplicationContext private val context: Context) :
+    ViewModel(),
     CreateController {
 
     private val _uiState = MutableStateFlow(CreateUiState())
@@ -90,45 +81,19 @@ class CreateViewModel @Inject constructor(
     }
 
     override fun createAudio() {
-        viewModelScope.launch(Dispatchers.IO) {
-            validateAudioName()
+        validateAudioName()
 
-            val baseName = _uiState.value.data.title
-            val uniqueName = getUniqueAudioName(baseName)
-            val description = _uiState.value.data.description
-            val image = if (_uiState.value.data.imageFile != null) {
-                _uiState.value.data.imageFile!!.absolutePath
-            } else {
-                File(context.filesDir, "default-icon.png").absolutePath
-            }
-            val path = File(
-                context.filesDir,
-                "transcriptions" + File.separatorChar + uniqueName
-            ).createFolder()
-            val imageFile = File(path, image.substringAfterLast("/"))
-
-            File(image).copyTo(imageFile, overwrite = true)
-
-            val entity = AudioEntity(
-                name = uniqueName,
-                description = description.ifEmpty { null },
-                audioPath = "",
-                imagePath = imageFile.absolutePath,
-                isDefault = false,
-                createdAt = LocalDateTime.now().toString(),
-                duration = 0,
-                audioSize = 0
-            )
-            val uid = audioRepository.save(entity)
-
-            processAudio(uid.toInt(), path)
+        val uniqueName = getUniqueAudioName(_uiState.value.data.title)
+        val description = _uiState.value.data.description
+        val image = if (_uiState.value.data.imageFile != null) {
+            _uiState.value.data.imageFile!!.absolutePath
+        } else {
+            File(context.filesDir, "default-icon.png").absolutePath
         }
-    }
-
-    private fun processAudio(uid: Int, folder: File) {
         val data = Data.Builder()
-            .putInt("uid", uid)
-            .putString("folderPath", folder.absolutePath)
+            .putString("name", uniqueName)
+            .putString("description", description)
+            .putString("imagePath", image)
             .putString("audioUri", _uiState.value.data.audioUri.toString())
             .build()
         val request = OneTimeWorkRequestBuilder<AudioWorker>()

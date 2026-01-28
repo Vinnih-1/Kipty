@@ -20,7 +20,6 @@ import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
 
-@UnstableApi
 class FakeKiptyPlayer : KiptyPlayer {
     override fun getApplicationLooper(): Looper = Looper.getMainLooper()
 
@@ -70,6 +69,7 @@ class FakeKiptyPlayer : KiptyPlayer {
 
     override fun canAdvertiseSession(): Boolean = true
 
+    @UnstableApi
     override fun getAvailableCommands(): Player.Commands =
         Player.Commands.Builder().addAllCommands().build()
 
@@ -143,6 +143,7 @@ class FakeKiptyPlayer : KiptyPlayer {
 
     override fun getCurrentTracks(): Tracks = Tracks.EMPTY
 
+    @UnstableApi
     override fun getTrackSelectionParameters(): TrackSelectionParameters =
         TrackSelectionParameters.DEFAULT_WITHOUT_CONTEXT
 
@@ -154,20 +155,24 @@ class FakeKiptyPlayer : KiptyPlayer {
 
     override fun setPlaylistMetadata(mediaMetadata: MediaMetadata) {}
 
+    @UnstableApi
     override fun getCurrentManifest(): Any? = null
 
     override fun getCurrentTimeline(): Timeline = Timeline.EMPTY
 
     override fun getCurrentPeriodIndex(): Int = 0
 
+    @UnstableApi
     override fun getCurrentWindowIndex(): Int = 0
 
     override fun getCurrentMediaItemIndex(): Int = 0
 
+    @UnstableApi
     override fun getNextWindowIndex(): Int = -1
 
     override fun getNextMediaItemIndex(): Int = -1
 
+    @UnstableApi
     override fun getPreviousWindowIndex(): Int = -1
 
     override fun getPreviousMediaItemIndex(): Int = -1
@@ -188,16 +193,19 @@ class FakeKiptyPlayer : KiptyPlayer {
 
     override fun getTotalBufferedDuration(): Long = 2000000
 
+    @UnstableApi
     override fun isCurrentWindowDynamic(): Boolean = false
 
     override fun isCurrentMediaItemDynamic(): Boolean = false
 
+    @UnstableApi
     override fun isCurrentWindowLive(): Boolean = false
 
     override fun isCurrentMediaItemLive(): Boolean = false
 
     override fun getCurrentLiveOffset(): Long = 0L
 
+    @UnstableApi
     override fun isCurrentWindowSeekable(): Boolean = true
 
     override fun isCurrentMediaItemSeekable(): Boolean = true
@@ -240,8 +248,10 @@ class FakeKiptyPlayer : KiptyPlayer {
 
     override fun getVideoSize(): VideoSize = VideoSize.UNKNOWN
 
+    @UnstableApi
     override fun getSurfaceSize(): Size = Size.UNKNOWN
 
+    @UnstableApi
     override fun getCurrentCues(): CueGroup = CueGroup.EMPTY_TIME_ZERO
 
     override fun getDeviceInfo(): DeviceInfo = DeviceInfo.UNKNOWN

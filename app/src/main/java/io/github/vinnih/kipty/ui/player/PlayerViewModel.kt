@@ -31,11 +31,21 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+enum class PlaybackSpeed(val value: Float, val text: String) {
+    HALF(0.5f, "0.5x"),
+    THREE_QUARTERS(0.75f, "0.75x"),
+    NORMAL(1.0f, "1x"),
+    ONE_AND_A_QUARTER(1.25f, "1.25x"),
+    ONE_AND_A_HALF(1.5f, "1.5x"),
+    DOUBLE(2.0f, "2x")
+}
+
 data class PlayerUiState(
     val currentAudio: AudioEntity? = null,
     val progress: Float = 0f,
     val currentPosition: Long = 0L,
-    val duration: Long = 0L
+    val duration: Long = 0L,
+    val playbackSpeed: PlaybackSpeed = PlaybackSpeed.NORMAL
 )
 
 @OptIn(UnstableApi::class)
@@ -54,15 +64,19 @@ class PlayerViewModel
 
     private val progress: StateFlow<Pair<Float, Long>> = createProgressFlow()
 
-    override val uiState: StateFlow<PlayerUiState> = combine(currentAudio, progress) {
-            audio,
-            progress
-        ->
+    private val playbackSpeed = MutableStateFlow(PlaybackSpeed.NORMAL)
+
+    override val uiState: StateFlow<PlayerUiState> = combine(
+        currentAudio,
+        progress,
+        playbackSpeed
+    ) { audio, progress, speed ->
         PlayerUiState(
             currentAudio = audio,
             progress = progress.first,
             currentPosition = progress.second,
-            duration = player.duration
+            duration = player.duration,
+            playbackSpeed = speed
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
@@ -145,6 +159,18 @@ class PlayerViewModel
             player.seekToDefaultPosition(index)
             player.play()
         }
+    }
+
+    override fun seekTo(position: Long) {
+        player.seekTo(position)
+    }
+
+    override fun changePlaybackSpeed() {
+        val allSpeeds = PlaybackSpeed.entries
+        val currentIndex = allSpeeds.indexOf(playbackSpeed.value)
+        val nextSpeed = allSpeeds[(currentIndex + 1) % allSpeeds.size]
+        playbackSpeed.value = nextSpeed
+        player.setPlaybackSpeed(nextSpeed.value)
     }
 
     private fun preparePlayer(audioEntity: AudioEntity) {

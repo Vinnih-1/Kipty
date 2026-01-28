@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.BottomSheetScaffoldState
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,11 +27,14 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,6 +46,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -54,6 +61,7 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import java.io.File
@@ -71,7 +79,6 @@ fun PlayerScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val playerUiState by playerController.uiState.collectAsState()
-    val configurationUiState by configurationController.uiState.collectAsState()
     var visible by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
 
@@ -107,17 +114,10 @@ fun PlayerScreen(
                     scope.launch { scaffoldState.bottomSheetState.partialExpand() }
                 },
                 player = playerController.player,
+                playerController = playerController,
+                configurationController = configurationController,
                 peekHeight = peekHeight
-            ) {
-                TextViewer(
-                    playerController = playerController,
-                    onClick = { start, _ ->
-                        playerController.seekTo(playerUiState.currentAudio!!, start, 0)
-                    },
-                    showTimestamp = configurationUiState.appSettings.showTimestamp,
-                    modifier = Modifier.padding(bottom = 48.dp)
-                )
-            }
+            )
         }
     }
 }
@@ -127,13 +127,27 @@ fun PlayerScreen(
 private fun Player(
     onCollapse: () -> Unit,
     player: Player,
+    playerController: PlayerController,
+    configurationController: ConfigurationController,
     peekHeight: Dp,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    modifier: Modifier = Modifier
 ) {
-    val playPause = rememberPlayPauseButtonState(player)
+    val playerUiState by playerController.uiState.collectAsState()
+    val configurationUiState by configurationController.uiState.collectAsState()
 
-    Scaffold(modifier = modifier) { paddingValues -> 
+    Scaffold(
+        bottomBar = {
+            PlayerBottom(
+                player = player,
+                uiState = playerUiState,
+                onSeek = { playerController.seekTo(it) },
+                onSeekBack = { playerController.seekTo(playerUiState.currentPosition - 10_000) },
+                onSeekForward = { playerController.seekTo(playerUiState.currentPosition + 10_000) },
+                onPlaybackSpeed = playerController::changePlaybackSpeed
+            )
+        },
+        modifier = modifier.windowInsetsPadding(WindowInsets.navigationBars)
+    ) { paddingValues ->
         Column(modifier = Modifier.padding(paddingValues)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -149,19 +163,43 @@ private fun Player(
                         contentDescription = "Dismiss player screen modal"
                     )
                 }
-                Text(text = "Player")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth(.8f)
+                ) {
+                    Text(
+                        text = "NOW PLAYING",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Light
+                    )
+                    Text(
+                        text = playerUiState.currentAudio?.name ?: "Nothing playing",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE)
+                    )
+                }
                 IconButton(
-                    onClick = playPause::onClick
+                    onClick = {}
                 ) {
                     Icon(
-                        painter = painterResource(
-                            if (playPause.showPlay) R.drawable.play else R.drawable.pause
-                        ),
-                        contentDescription = "Play and pause button"
+                        painter = painterResource(R.drawable.more_vertical),
+                        contentDescription = null
                     )
                 }
             }
-            content.invoke()
+            TextViewer(
+                playerController = playerController,
+                onClick = { start, _ ->
+                    playerController.seekTo(playerUiState.currentAudio!!, start, 0)
+                },
+                showTimestamp = configurationUiState.appSettings.showTimestamp,
+                modifier = Modifier.padding(bottom = 48.dp)
+            )
         }
     }
 }
@@ -291,27 +329,165 @@ private fun MiniPlayer(
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PlayerBottom(
+    player: Player,
+    uiState: PlayerUiState,
+    onSeek: (Long) -> Unit,
+    onSeekBack: () -> Unit,
+    onSeekForward: () -> Unit,
+    onPlaybackSpeed: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val playPause = rememberPlayPauseButtonState(player)
+    val skipPrevious = rememberPreviousButtonState(player)
+    val skipNext = rememberNextButtonState(player)
+    var isUserSeeking by remember { mutableStateOf(false) }
+    var seekPosition by remember { mutableFloatStateOf(0f) }
+    val colors = MaterialTheme.colorScheme
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Slider(
+                value = if (isUserSeeking) seekPosition else uiState.progress,
+                onValueChange = { newValue ->
+                    isUserSeeking = true
+                    seekPosition = newValue
+                },
+                onValueChangeFinished = {
+                    onSeek((seekPosition * uiState.duration).toLong())
+                    isUserSeeking = false
+                },
+                colors = SliderDefaults.colors(
+                    thumbColor = colors.primary,
+                    activeTrackColor = colors.primary
+                ),
+                thumb = {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(colors.primary, shape = CircleShape)
+                    )
+                },
+                track = { sliderState ->
+                    SliderDefaults.Track(
+                        sliderState = sliderState,
+                        modifier = Modifier.height(6.dp),
+                        colors = SliderDefaults.colors(
+                            activeTrackColor = colors.primary
+                        ),
+                        drawStopIndicator = {}
+                    )
+                }
+            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp)
+            ) {
+                Text(
+                    text = uiState.currentPosition.formatTime(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.secondary.copy(alpha = .8f)
+                )
+                Text(
+                    text = uiState.duration.formatTime(),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.secondary.copy(alpha = .8f)
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BaseButton(onClick = onSeekBack) {
+                Icon(
+                    painter = painterResource(R.drawable.rotate_left),
+                    contentDescription = null,
+                    tint = colors.secondary.copy(alpha = .8f),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            ) {
+                BaseButton(onClick = skipPrevious::onClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.skip_previous),
+                        contentDescription = null,
+                        tint = colors.secondary,
+                        modifier = Modifier.size(42.dp)
+                    )
+                }
+                BaseButton(
+                    onClick = playPause::onClick,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(72.dp)
+                        .background(colors.secondaryContainer)
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (playPause.showPlay) R.drawable.play else R.drawable.pause
+                        ),
+                        contentDescription = null,
+                        tint = colors.onSecondaryContainer,
+                        modifier = Modifier.size(36.dp)
+                    )
+                }
+                BaseButton(onClick = skipNext::onClick) {
+                    Icon(
+                        painter = painterResource(R.drawable.skip_next),
+                        contentDescription = null,
+                        tint = colors.secondary,
+                        modifier = Modifier.size(42.dp)
+                    )
+                }
+            }
+            BaseButton(onClick = onSeekForward) {
+                Icon(
+                    painter = painterResource(R.drawable.rotate_right),
+                    contentDescription = null,
+                    tint = colors.secondary.copy(alpha = .8f),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BaseButton(onClick = onPlaybackSpeed) {
+                Text(
+                    text = uiState.playbackSpeed.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.secondary.copy(alpha = .8f)
+                )
+            }
+        }
+    }
+}
+
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 private fun PlayerPreview() {
     val playerController = FakePlayerViewModel()
-    val uiState by playerController.uiState.collectAsState()
 
     AppTheme {
         Player(
             onCollapse = {},
             player = playerController.player,
+            playerController = FakePlayerViewModel(),
+            configurationController = FakeConfigurationViewModel(),
             peekHeight = 100.dp
-        ) {
-            TextViewer(
-                playerController = playerController,
-                onClick = { start, _ ->
-                    playerController.seekTo(uiState.currentAudio!!, start, 0)
-                },
-                showTimestamp = true,
-                modifier = Modifier.padding(bottom = 48.dp)
-            )
-        }
+        )
     }
 }
 

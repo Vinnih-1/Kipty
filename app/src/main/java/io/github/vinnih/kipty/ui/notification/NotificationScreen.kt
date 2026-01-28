@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.R
@@ -278,13 +279,17 @@ private fun NotificationComponent(
                     Text(
                         text = notificationEntity.content,
                         style = typography.bodyMedium,
-                        color = colors.onBackground.copy(alpha = .6f)
+                        color = colors.onBackground.copy(alpha = .6f),
+                        maxLines = 4,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = notificationEntity.audioName,
                         style = typography.bodyLarge,
                         color = colors.primary,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
                 Row(

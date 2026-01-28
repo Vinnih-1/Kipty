@@ -58,10 +58,17 @@ import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import androidx.media3.ui.compose.state.rememberPreviousButtonState
 import coil3.compose.AsyncImage
 import io.github.vinnih.kipty.R
+import io.github.vinnih.kipty.Screen
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.ui.audio.AudioController
+import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
+import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
+import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
+import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import java.io.File
@@ -72,7 +79,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlayerScreen(
     playerController: PlayerController,
+    audioController: AudioController,
+    notificationController: NotificationController,
     configurationController: ConfigurationController,
+    onNavigate: (Screen) -> Unit,
     scaffoldState: BottomSheetScaffoldState,
     modifier: Modifier = Modifier,
     peekHeight: Dp = 100.dp
@@ -115,7 +125,13 @@ fun PlayerScreen(
                 },
                 player = playerController.player,
                 playerController = playerController,
+                audioController = audioController,
+                notificationController = notificationController,
                 configurationController = configurationController,
+                onNavigate = {
+                    onNavigate(it)
+                    scope.launch { scaffoldState.bottomSheetState.partialExpand() }
+                },
                 peekHeight = peekHeight
             )
         }
@@ -128,12 +144,16 @@ private fun Player(
     onCollapse: () -> Unit,
     player: Player,
     playerController: PlayerController,
+    audioController: AudioController,
+    notificationController: NotificationController,
     configurationController: ConfigurationController,
+    onNavigate: (Screen) -> Unit,
     peekHeight: Dp,
     modifier: Modifier = Modifier
 ) {
     val playerUiState by playerController.uiState.collectAsState()
     val configurationUiState by configurationController.uiState.collectAsState()
+    var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -184,7 +204,7 @@ private fun Player(
                     )
                 }
                 IconButton(
-                    onClick = {}
+                    onClick = { selectedAudio = playerUiState.currentAudio }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.more_vertical),
@@ -201,6 +221,16 @@ private fun Player(
                 modifier = Modifier.padding(bottom = 48.dp)
             )
         }
+
+        AudioConfigSheet(
+            audioController = audioController,
+            playerController = playerController,
+            notificationController = notificationController,
+            audioEntity = selectedAudio,
+            onNavigate = onNavigate,
+            onClose = { selectedAudio = null },
+            modifier = Modifier
+        )
     }
 }
 
@@ -485,7 +515,10 @@ private fun PlayerPreview() {
             onCollapse = {},
             player = playerController.player,
             playerController = FakePlayerViewModel(),
+            audioController = FakeAudioViewModel(),
+            notificationController = FakeNotificationViewModel(),
             configurationController = FakeConfigurationViewModel(),
+            onNavigate = {},
             peekHeight = 100.dp
         )
     }

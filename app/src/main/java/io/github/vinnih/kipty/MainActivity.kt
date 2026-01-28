@@ -2,7 +2,6 @@ package io.github.vinnih.kipty
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.animation.core.animateDpAsState
@@ -47,7 +46,6 @@ import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.player.PlayerViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.ui.theme.EnableEdgeToEdge
-import kotlinx.coroutines.launch
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
@@ -157,6 +155,9 @@ class MainActivity : ComponentActivity() {
                 PlayerScreen(
                     playerController = playerController,
                     configurationController = configurationController,
+                    audioController = audioController,
+                    notificationController = notificationController,
+                    onNavigate = { screen -> backstack.add(screen) },
                     scaffoldState = scaffoldState
                 )
             },

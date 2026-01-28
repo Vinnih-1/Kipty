@@ -11,12 +11,18 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import io.github.vinnih.kipty.ui.create.BottomButton
 import io.github.vinnih.kipty.ui.create.CreateTopBar
 import io.github.vinnih.kipty.ui.create.DetailsStepScreen
 import io.github.vinnih.kipty.ui.create.ImageStepScreen
 import io.github.vinnih.kipty.ui.create.ProgressStepSection
 import io.github.vinnih.kipty.ui.create.Step
+import io.github.vinnih.kipty.ui.theme.AppTheme
+import java.io.File
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @Composable
 fun EditScreen(
@@ -81,5 +87,63 @@ fun EditScreen(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EditScreenPreviewDetails() {
+    AppTheme {
+        EditScreen(
+            editController = object : EditController {
+                private val _uiState = MutableStateFlow(
+                    EditUiState(
+                        title = "My recording",
+                        description = "A short description of my recording.",
+                        imageFile = null
+                    )
+                )
+                override val uiState: StateFlow<EditUiState> = _uiState.asStateFlow()
+
+                override fun retrieveData(id: Int) {}
+                override fun editTitle(title: String) {}
+                override fun editDescription(description: String) {}
+                override fun editImage(image: File?) {}
+                override fun completeEdit(onSuccess: () -> Unit) {}
+                override fun clearUiState() {}
+            },
+            id = 1,
+            step = Step.DETAILS,
+            onBack = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun EditScreenPreviewImage() {
+    AppTheme {
+        EditScreen(
+            editController = object : EditController {
+                private val _uiState = MutableStateFlow(
+                    EditUiState(
+                        title = "My recording",
+                        description = "A short description of my recording.",
+                        imageFile = null
+                    )
+                )
+                override val uiState: StateFlow<EditUiState> = _uiState.asStateFlow()
+
+                override fun retrieveData(id: Int) {}
+                override fun editTitle(title: String) {}
+                override fun editDescription(description: String) {}
+                override fun editImage(image: File?) {}
+                override fun completeEdit(onSuccess: () -> Unit) {}
+                override fun clearUiState() {}
+            },
+            id = 1,
+            step = Step.IMAGE,
+            onBack = {}
+        )
     }
 }

@@ -22,6 +22,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -132,34 +133,36 @@ private fun Player(
 ) {
     val playPause = rememberPlayPauseButtonState(player)
 
-    Column(modifier = modifier) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(peekHeight)
-                .padding(top = 24.dp, start = 16.dp, end = 16.dp)
-        ) {
-            IconButton(onClick = onCollapse) {
-                Icon(
-                    painter = painterResource(R.drawable.keyboard_arrow_down),
-                    contentDescription = "Dismiss player screen modal"
-                )
-            }
-            Text(text = "Player")
-            IconButton(
-                onClick = playPause::onClick
+    Scaffold(modifier = modifier) { paddingValues -> 
+        Column(modifier = Modifier.padding(paddingValues)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(peekHeight)
+                    .padding(horizontal = 16.dp)
             ) {
-                Icon(
-                    painter = painterResource(
-                        if (playPause.showPlay) R.drawable.play else R.drawable.pause
-                    ),
-                    contentDescription = "Play and pause button"
-                )
+                IconButton(onClick = onCollapse) {
+                    Icon(
+                        painter = painterResource(R.drawable.keyboard_arrow_down),
+                        contentDescription = "Dismiss player screen modal"
+                    )
+                }
+                Text(text = "Player")
+                IconButton(
+                    onClick = playPause::onClick
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            if (playPause.showPlay) R.drawable.play else R.drawable.pause
+                        ),
+                        contentDescription = "Play and pause button"
+                    )
+                }
             }
+            content.invoke()
         }
-        content.invoke()
     }
 }
 
@@ -288,7 +291,7 @@ private fun MiniPlayer(
     }
 }
 
-@Preview(showSystemUi = false, showBackground = true)
+@Preview(showSystemUi = true, showBackground = true)
 @Composable
 private fun PlayerPreview() {
     val playerController = FakePlayerViewModel()

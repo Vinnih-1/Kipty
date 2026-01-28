@@ -1,6 +1,6 @@
 package io.github.vinnih.kipty.ui.player
 
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.Player
 import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.json
@@ -9,27 +9,22 @@ import kotlinx.coroutines.flow.StateFlow
 
 class FakePlayerViewModel : PlayerController {
 
-    override val player: ExoPlayer
-        get() = TODO("Not yet implemented")
+    override val player: Player
+        get() = FakeKiptyPlayer()
 
     override val uiState: StateFlow<PlayerUiState>
         get() = MutableStateFlow(
             PlayerUiState(
                 json.decodeFromString<AudioEntity>(FakeAudioData.audio_1888_11_13),
-                0f,
-                0L
+                0.5f,
+                1800000L,
+                3600000L
             )
         )
 
-    override fun stopAudio() {
-        TODO("Not yet implemented")
-    }
+    override fun stopAudio() {}
 
-    override fun seekTo(audioEntity: AudioEntity, start: Long, end: Long) {
-        TODO("Not yet implemented")
-    }
+    override fun seekTo(audioEntity: AudioEntity, start: Long, end: Long) {}
 
-    override fun seekTo(audioEntity: AudioEntity) {
-        TODO("Not yet implemented")
-    }
+    override fun seekTo(audioEntity: AudioEntity) {}
 }

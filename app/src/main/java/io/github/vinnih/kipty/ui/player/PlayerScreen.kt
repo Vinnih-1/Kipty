@@ -24,7 +24,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,14 +53,12 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
-import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import java.io.File
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
-@androidx.annotation.OptIn(UnstableApi::class)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
@@ -125,7 +122,6 @@ fun PlayerScreen(
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Player(
     onCollapse: () -> Unit,
@@ -168,7 +164,6 @@ private fun Player(
 }
 
 @androidx.annotation.OptIn(UnstableApi::class)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MiniPlayer(
     onExpand: () -> Unit,
@@ -293,17 +288,42 @@ private fun MiniPlayer(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@Preview(showSystemUi = false, showBackground = true)
 @Composable
-private fun PlayerScreenPreview() {
-    val scaffoldState = rememberBottomSheetScaffoldState()
+private fun PlayerPreview() {
+    val playerController = FakePlayerViewModel()
+    val uiState by playerController.uiState.collectAsState()
 
     AppTheme {
-        PlayerScreen(
-            playerController = FakePlayerViewModel(),
-            configurationController = FakeConfigurationViewModel(),
-            scaffoldState = scaffoldState
+        Player(
+            onCollapse = {},
+            player = playerController.player,
+            peekHeight = 100.dp
+        ) {
+            TextViewer(
+                playerController = playerController,
+                onClick = { start, _ ->
+                    playerController.seekTo(uiState.currentAudio!!, start, 0)
+                },
+                showTimestamp = true,
+                modifier = Modifier.padding(bottom = 48.dp)
+            )
+        }
+    }
+}
+
+@Preview(showSystemUi = false, showBackground = true)
+@Composable
+private fun MiniPlayerPreview() {
+    val playerController = FakePlayerViewModel()
+    val uiState by playerController.uiState.collectAsState()
+
+    AppTheme {
+        MiniPlayer(
+            onExpand = {},
+            player = playerController.player,
+            playerUiState = uiState,
+            peekHeight = 100.dp
         )
     }
 }

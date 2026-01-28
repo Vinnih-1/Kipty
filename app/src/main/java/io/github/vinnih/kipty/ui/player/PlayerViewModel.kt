@@ -9,7 +9,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -44,7 +43,7 @@ data class PlayerUiState(
 class PlayerViewModel
 @Inject constructor(
     @ApplicationContext context: Context,
-    override val player: ExoPlayer,
+    override val player: Player,
     private val audioRepository: AudioRepository
 ) : ViewModel(),
     PlayerController {

@@ -1,12 +1,12 @@
 package io.github.vinnih.kipty.ui.player
 
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.Player
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import kotlinx.coroutines.flow.StateFlow
 
 interface PlayerController {
 
-    val player: ExoPlayer
+    val player: Player
 
     val uiState: StateFlow<PlayerUiState>
 

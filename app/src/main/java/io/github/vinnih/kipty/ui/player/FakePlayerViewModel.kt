@@ -6,14 +6,22 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakePlayerViewModel : PlayerController {
+
     override val player: Player = FakeKiptyPlayer()
 
     override val uiState: StateFlow<PlayerUiState> = MutableStateFlow(PlayerUiState())
+
+    override suspend fun calculatePronunciationScore(expected: String) {}
+
+    override fun toggleRecording() {}
+
     override fun stopAudio() {}
 
     override fun seekTo(audioEntity: AudioEntity) {}
 
     override fun seekTo(audioEntity: AudioEntity, start: Long, end: Long) {}
+
     override fun seekTo(position: Long) {}
+
     override fun changePlaybackSpeed() {}
 }

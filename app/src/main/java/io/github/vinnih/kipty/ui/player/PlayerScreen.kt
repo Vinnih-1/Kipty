@@ -64,6 +64,7 @@ import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
+import io.github.vinnih.kipty.ui.components.TapTalk
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
@@ -154,6 +155,7 @@ private fun Player(
     val playerUiState by playerController.uiState.collectAsState()
     val configurationUiState by configurationController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
+    var phrase by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -217,10 +219,17 @@ private fun Player(
                 onClick = { start, _ ->
                     playerController.seekTo(playerUiState.currentAudio!!, start, 0)
                 },
+                onPress = { phrase = it },
                 showTimestamp = configurationUiState.appSettings.showTimestamp,
                 modifier = Modifier.padding(bottom = 48.dp)
             )
         }
+
+        TapTalk(
+            playerController = playerController,
+            phrase = phrase,
+            onDismiss = { phrase = null }
+        )
 
         AudioConfigSheet(
             audioController = audioController,

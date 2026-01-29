@@ -74,4 +74,9 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
 
         return audioEntity.copy(transcription = transcriptions)
     }
+
+    override suspend fun transcribe(floatArray: FloatArray): String = whisperContext.transcribeData(
+        data = floatArray,
+        numThreads = 8
+    ).convertTranscription().joinToString(separator = " ") { it.text }
 }

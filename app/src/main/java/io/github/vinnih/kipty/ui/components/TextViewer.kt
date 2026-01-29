@@ -2,7 +2,7 @@ package io.github.vinnih.kipty.ui.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +25,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,7 @@ fun TextViewer(
 fun TextViewer(
     playerController: PlayerController,
     onClick: (Long, Long) -> Unit,
+    onPress: (String) -> Unit,
     showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -69,6 +72,7 @@ fun TextViewer(
     TextViewerBase(
         playerController = playerController,
         onClick = onClick,
+        onPress = onPress,
         showTimestamp = showTimestamp,
         modifier = modifier
     )
@@ -100,6 +104,7 @@ private fun TextViewerBase(
 private fun TextViewerBase(
     playerController: PlayerController,
     onClick: (Long, Long) -> Unit,
+    onPress: (String) -> Unit,
     showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -132,7 +137,8 @@ private fun TextViewerBase(
                 transcription = item,
                 onClick = onClick,
                 selected = isActive,
-                showTimestamp = showTimestamp
+                showTimestamp = showTimestamp,
+                onPress = onPress
             )
         }
     }
@@ -144,19 +150,27 @@ private fun TextSection(
     onClick: (Long, Long) -> Unit,
     selected: Boolean,
     showTimestamp: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onPress: (String) -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val haptics = LocalHapticFeedback.current
 
     Column(
         modifier = modifier
             .drawIfSelected(selected)
             .padding(horizontal = 12.dp)
             .clip(RoundedCornerShape(32.dp))
-            .clickable(onClick = {
-                onClick(transcription.start, transcription.end)
-            })
+            .combinedClickable(
+                onClick = {
+                    onClick(transcription.start, transcription.end)
+                },
+                onLongClick = {
+                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onPress(transcription.text)
+                }
+            )
             .background(
                 if (selected) {
                     colors.secondaryContainer.copy(alpha = .2f)

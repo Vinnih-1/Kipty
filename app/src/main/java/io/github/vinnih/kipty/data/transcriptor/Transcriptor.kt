@@ -17,4 +17,6 @@ interface Transcriptor {
         numThreads: Int,
         onProgress: (Int) -> Unit
     ): AudioEntity
+
+    suspend fun transcribe(floatArray: FloatArray): String
 }

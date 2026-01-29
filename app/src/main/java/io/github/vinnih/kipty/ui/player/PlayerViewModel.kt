@@ -155,10 +155,11 @@ class PlayerViewModel
 
         if (index == -1) {
             preparePlayer(audioEntity)
+            player.seekToDefaultPosition(player.mediaItemCount - 1)
         } else {
             player.seekToDefaultPosition(index)
-            player.play()
         }
+        player.play()
     }
 
     override fun seekTo(position: Long) {

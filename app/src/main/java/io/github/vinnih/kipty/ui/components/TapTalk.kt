@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -55,6 +54,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.R
@@ -150,6 +150,7 @@ fun TapTalk(
                     phrase = phrase,
                     uiState = uiState,
                     onRetry = {
+                        recordController.clearAll()
                         scene = Scene.TOGGLE
                     },
                     onPlay = onPlay
@@ -359,23 +360,57 @@ private fun ResultScene(
 
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val expectedWords = phrase.text.split(" ")
-    val userWords = uiState.result.first.split(" ")
+    val score = uiState.result.second
+
+    val scoreColor = when {
+        score >= 90 -> Color(0xFF2E7D32)
+        score >= 80 -> Color(0xFF66BB6A)
+        score >= 70 -> Color(0xFF4CAF50)
+        score >= 60 -> Color(0xFFFFA726)
+        score >= 40 -> Color(0xFFFF9800)
+        else -> Color(0xFFEF5350)
+    }
+
+    val feedbackMessage = when {
+        score >= 90 -> "Excellent!"
+        score >= 80 -> "Great job!"
+        score >= 70 -> "Good work!"
+        score >= 60 -> "Not bad! Keep practicing"
+        score >= 40 -> "Keep trying!"
+        else -> "Try again! Practice makes perfect"
+    }
+
+    val expectedWords = phrase.text
+        .lowercase()
+        .replace(Regex("[,.:;!?\"'-]"), "")
+        .split(Regex("\\s+"))
+
+    val userWords = uiState.result.first
+        .lowercase()
+        .replace(Regex("[,.:;!?\"'-]"), "")
+        .split(Regex("\\s+"))
 
     val annotatedString = buildAnnotatedString {
         expectedWords.forEachIndexed { index, expectedWord ->
             val userWord = userWords.getOrNull(index) ?: ""
-            val isCorrect = expectedWord.equals(userWord, ignoreCase = true)
-            val color = if (isCorrect) {
-                Color(0xFF81C784)
+
+            val similarity = if (expectedWord == userWord) {
+                1f
             } else {
-                Color(0xFFE57373)
+                calculateSimilarity(expectedWord, userWord)
+            }
+
+            val wordColor = when {
+                similarity >= 0.95f -> Color(0xFF2E7D32)
+                similarity >= 0.80f -> Color(0xFF66BB6A)
+                similarity >= 0.60f -> Color(0xFFFFA726)
+                else -> Color(0xFFEF5350)
             }
 
             withStyle(
                 style = SpanStyle(
-                    color = color,
-                    fontWeight = if (!isCorrect) FontWeight.Bold else FontWeight.Normal
+                    color = wordColor,
+                    fontWeight = if (similarity < 0.8f) FontWeight.Bold else FontWeight.Normal
                 )
             ) {
                 append(expectedWord)
@@ -389,7 +424,7 @@ private fun ResultScene(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(32.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
         modifier = modifier.fillMaxWidth()
     ) {
         Text(
@@ -398,42 +433,55 @@ private fun ResultScene(
             color = colors.onSecondaryContainer,
             fontWeight = FontWeight.Bold
         )
+
         Text(
-            text = "${uiState.result.second}%",
-            style = typography.displayMedium,
-            color = colors.onSecondaryContainer,
+            text = "$score%",
+            style = typography.displayLarge.copy(fontSize = 72.sp),
+            color = scoreColor,
             fontWeight = FontWeight.Bold
         )
+
+        Text(
+            text = feedbackMessage,
+            style = typography.titleMedium,
+            color = colors.onSecondaryContainer,
+            textAlign = TextAlign.Center
+        )
+
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = colors.secondary
             ),
             modifier = Modifier.padding(horizontal = 24.dp)
         ) {
-            Text(
-                text = annotatedString,
-                style = typography.titleLarge,
-                color = colors.onSecondary.copy(alpha = .7f),
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(16.dp)
-            )
+            Column(
+                modifier = Modifier.padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = annotatedString,
+                    style = typography.titleLarge,
+                    lineHeight = 28.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
         }
+
         Row(
-            horizontalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 24.dp)
         ) {
             Button(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.secondary.copy(alpha = .8f)
+                    containerColor = colors.secondary
                 ),
                 modifier = Modifier
-                    .width(200.dp)
-                    .height(55.dp)
-                    .weight(.5f),
+                    .weight(.5f)
+                    .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
                 Row(
@@ -443,25 +491,25 @@ private fun ResultScene(
                     Icon(
                         painter = painterResource(R.drawable.rotate_left),
                         contentDescription = null,
-                        tint = colors.onSecondary.copy(alpha = .8f),
-                        modifier = Modifier.size(32.dp)
+                        tint = colors.onSecondary,
+                        modifier = Modifier.size(24.dp)
                     )
                     Text(
                         text = "Try Again",
                         style = typography.titleMedium,
-                        color = colors.onSecondary.copy(alpha = .8f)
+                        color = colors.onSecondary
                     )
                 }
             }
+
             Button(
                 onClick = { onPlay(speechEntity.speechPath) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.primary
                 ),
                 modifier = Modifier
-                    .width(200.dp)
-                    .height(55.dp)
-                    .weight(.5f),
+                    .weight(.5f)
+                    .height(56.dp),
                 shape = MaterialTheme.shapes.large
             ) {
                 Row(
@@ -472,7 +520,7 @@ private fun ResultScene(
                         painter = painterResource(R.drawable.mic),
                         contentDescription = null,
                         tint = colors.onPrimary,
-                        modifier = Modifier.size(32.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                     Text(
                         text = "Listen",
@@ -556,6 +604,37 @@ fun AudioWaveform(amplitudes: List<Float>, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+private fun calculateSimilarity(word1: String, word2: String): Float {
+    if (word1 == word2) return 1f
+
+    val distance = levenshteinDistance(word1, word2)
+    val maxLength = maxOf(word1.length, word2.length)
+
+    if (maxLength == 0) return 1f
+
+    return 1f - (distance.toFloat() / maxLength)
+}
+
+private fun levenshteinDistance(s1: String, s2: String): Int {
+    val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
+
+    for (i in 0..s1.length) dp[i][0] = i
+    for (j in 0..s2.length) dp[0][j] = j
+
+    for (i in 1..s1.length) {
+        for (j in 1..s2.length) {
+            val cost = if (s1[i - 1] == s2[j - 1]) 0 else 1
+            dp[i][j] = minOf(
+                dp[i - 1][j] + 1,
+                dp[i][j - 1] + 1,
+                dp[i - 1][j - 1] + cost
+            )
+        }
+    }
+
+    return dp[s1.length][s2.length]
 }
 
 @Composable

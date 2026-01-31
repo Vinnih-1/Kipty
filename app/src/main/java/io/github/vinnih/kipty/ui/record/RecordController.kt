@@ -15,4 +15,6 @@ interface RecordController {
     fun abortRecording()
 
     suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long
+
+    fun clearAll()
 }

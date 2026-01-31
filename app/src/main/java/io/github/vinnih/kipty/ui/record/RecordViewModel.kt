@@ -115,10 +115,8 @@ class RecordViewModel @Inject constructor(
             )
             resampledFile.delete()
             transferTo()
-            val uid = saveSpeech(phrase)
-            clearAll()
 
-            return@withContext uid
+            return@withContext saveSpeech(phrase)
         }
 
     private fun startRecording(audioPath: String) {
@@ -180,7 +178,7 @@ class RecordViewModel @Inject constructor(
         return@withContext speechRepository.save(speechEntity)
     }
 
-    private fun clearAll() {
+    override fun clearAll() {
         isRecording.value = false
         amplitudes.value = emptyList()
         recordingTime.value = 0

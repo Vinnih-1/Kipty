@@ -4,10 +4,36 @@ import io.github.vinnih.kipty.data.transcriptor.Transcriptor
 import javax.inject.Inject
 import javax.inject.Singleton
 
+data class WordScore(val word: String, val isCorrect: Boolean, val similarity: Float)
+
+data class DetailedPronunciationResult(
+    val transcription: String,
+    val overallScore: Int,
+    val wordScores: List<WordScore>,
+    val correctWords: Int,
+    val totalWords: Int
+)
+
 @Singleton
 class SpeechResult @Inject constructor(private val transcriptor: Transcriptor) {
 
     private suspend fun transcript(floatArray: FloatArray) = transcriptor.transcribe(floatArray)
+
+    private fun normalizeText(text: String): String = text.lowercase()
+        .replace(Regex("[,.:;!?\"'-]"), "")
+        .replace(Regex("\\s+"), " ")
+        .trim()
+
+    private fun wordSimilarity(word1: String, word2: String): Float {
+        if (word1 == word2) return 1f
+
+        val distance = levenshteinDistance(word1, word2)
+        val maxLength = maxOf(word1.length, word2.length)
+
+        if (maxLength == 0) return 1f
+
+        return 1f - (distance.toFloat() / maxLength)
+    }
 
     private fun levenshteinDistance(s1: String, s2: String): Int {
         val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
@@ -29,6 +55,79 @@ class SpeechResult @Inject constructor(private val transcriptor: Transcriptor) {
         return dp[s1.length][s2.length]
     }
 
+    private fun findBestMatch(
+        expectedWord: String,
+        transcribedWords: List<String>,
+        usedIndices: MutableSet<Int>
+    ): Pair<Int, Float> {
+        var bestIndex = -1
+        var bestSimilarity = 0f
+
+        transcribedWords.forEachIndexed { index, transcribedWord ->
+            if (index !in usedIndices) {
+                val similarity = wordSimilarity(expectedWord, transcribedWord)
+                if (similarity > bestSimilarity) {
+                    bestSimilarity = similarity
+                    bestIndex = index
+                }
+            }
+        }
+
+        return bestIndex to bestSimilarity
+    }
+
+    private fun evaluateDetailed(
+        expected: String,
+        transcribed: String
+    ): DetailedPronunciationResult {
+        val expectedNormalized = normalizeText(expected)
+        val transcribedNormalized = normalizeText(transcribed)
+
+        val expectedWords = expectedNormalized.split(" ")
+        val transcribedWords = transcribedNormalized.split(" ")
+
+        val wordScores = mutableListOf<WordScore>()
+        val usedIndices = mutableSetOf<Int>()
+        var totalSimilarity = 0f
+
+        expectedWords.forEach { expectedWord ->
+            val (bestIndex, similarity) = findBestMatch(
+                expectedWord,
+                transcribedWords,
+                usedIndices
+            )
+
+            if (bestIndex != -1) {
+                usedIndices.add(bestIndex)
+            }
+
+            val isCorrect = similarity >= 0.8f
+
+            wordScores.add(
+                WordScore(
+                    word = expectedWord,
+                    isCorrect = isCorrect,
+                    similarity = similarity
+                )
+            )
+
+            totalSimilarity += similarity
+        }
+
+        val correctWords = wordScores.count { it.isCorrect }
+        val overallScore = ((totalSimilarity / expectedWords.size) * 100)
+            .toInt()
+            .coerceIn(0, 100)
+
+        return DetailedPronunciationResult(
+            transcription = transcribed,
+            overallScore = overallScore,
+            wordScores = wordScores,
+            correctWords = correctWords,
+            totalWords = expectedWords.size
+        )
+    }
+
     suspend fun calculatePronunciationScore(
         expected: String,
         floatArray: FloatArray
@@ -36,14 +135,8 @@ class SpeechResult @Inject constructor(private val transcriptor: Transcriptor) {
         transcriptor.initialize()
 
         val transcription = transcript(floatArray)
+        val result = evaluateDetailed(expected, transcription)
 
-        val distance = levenshteinDistance(
-            expected.lowercase().trim(),
-            transcription.lowercase().trim()
-        )
-        val maxLength = maxOf(expected.length, transcription.length)
-        val similarity = (1 - (distance.toFloat() / maxLength)) * 100
-
-        return transcription to similarity.toInt()
+        return transcription to result.overallScore
     }
 }

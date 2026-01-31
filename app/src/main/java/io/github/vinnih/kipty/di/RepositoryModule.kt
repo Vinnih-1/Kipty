@@ -8,6 +8,8 @@ import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.database.repository.audio.impl.AudioRepositoryImpl
 import io.github.vinnih.kipty.data.database.repository.notification.NotificationRepository
 import io.github.vinnih.kipty.data.database.repository.notification.impl.NotificationRepositoryImpl
+import io.github.vinnih.kipty.data.database.repository.speech.SpeechRepository
+import io.github.vinnih.kipty.data.database.repository.speech.impl.SpeechRepositoryImpl
 import javax.inject.Singleton
 
 @Module
@@ -23,4 +25,8 @@ abstract class RepositoryModule {
     abstract fun bindNotificationRepository(
         impl: NotificationRepositoryImpl
     ): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindSpeechRepository(impl: SpeechRepositoryImpl): SpeechRepository
 }

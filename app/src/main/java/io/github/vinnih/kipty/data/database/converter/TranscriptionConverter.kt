@@ -14,4 +14,10 @@ class TranscriptionConverter {
     @TypeConverter
     fun toList(list: String?): List<AudioTranscription>? =
         list?.let { json.decodeFromString<List<AudioTranscription>>(it) }
+
+    @TypeConverter
+    fun fromObject(obj: AudioTranscription): String = obj.let { json.encodeToString(it) }
+
+    @TypeConverter
+    fun toObject(obj: String): AudioTranscription = json.decodeFromString(obj)
 }

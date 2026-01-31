@@ -41,6 +41,10 @@ class AppModule {
 
     @Provides
     @Singleton
+    fun getSpeechDao(database: AppDatabase) = database.speechDao()
+
+    @Provides
+    @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
         context.dataStore
 }

@@ -6,11 +6,13 @@ import java.io.File
 
 interface Transcriptor {
 
-    var whisperContext: WhisperContext
+    val whisperContext: WhisperContext
 
     fun copyModel(): File
 
     fun loadModel(): WhisperContext
+
+    suspend fun initialize()
 
     suspend fun transcribe(
         audioEntity: AudioEntity,

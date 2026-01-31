@@ -11,21 +11,34 @@ import io.github.vinnih.kipty.utils.processAudioSegments
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Singleton
 class TranscriptorImpl @Inject constructor(@ApplicationContext private val context: Context) :
     Transcriptor {
 
-    override var whisperContext: WhisperContext
+    private var _whisperContext: WhisperContext? = null
 
-    init {
-        copyModel()
-        whisperContext = loadModel()
+    override val whisperContext: WhisperContext
+        get() = _whisperContext
+            ?: throw IllegalStateException(
+                "WhisperContext not initialized. Call initialize() first."
+            )
+
+    override suspend fun initialize() {
+        if (_whisperContext == null) {
+            withContext(Dispatchers.IO) {
+                copyModel()
+                _whisperContext = loadModel()
+            }
+        }
     }
 
     override fun copyModel(): File {
         val modelsPath = File(context.filesDir, "models").createFolder()
-        val model = context.assets.list("models/")?.firstOrNull()!!
+        val model = context.assets.list("models/")?.firstOrNull()
+            ?: throw IllegalStateException("No model found in assets")
 
         context.assets.open("models/$model").use { inputStream ->
             File(modelsPath, model).outputStream().use { outputStream ->
@@ -38,7 +51,8 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
 
     override fun loadModel(): WhisperContext {
         val modelsPath = File(context.filesDir, "models")
-        val model = modelsPath.listFiles()!!.first()
+        val model = modelsPath.listFiles()?.firstOrNull()
+            ?: throw IllegalStateException("No model file found")
 
         return WhisperContext.createContextFromFile(model.absolutePath)
     }

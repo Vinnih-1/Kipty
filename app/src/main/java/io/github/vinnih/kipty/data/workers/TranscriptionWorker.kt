@@ -38,6 +38,7 @@ class TranscriptionWorker @AssistedInject constructor(
         val audioId = inputData.getInt("AUDIO_ID", -1)
 
         if (audioId == -1) return@withContext Result.failure()
+        transcriptor.initialize()
 
         this@TranscriptionWorker.setProgress(workDataOf("AUDIO_ID" to audioId))
         audioRepository.updateAudioState(audioId, TranscriptionState.TRANSCRIBING)

@@ -33,6 +33,8 @@ class SpeechResult @Inject constructor(private val transcriptor: Transcriptor) {
         expected: String,
         floatArray: FloatArray
     ): Pair<String, Int> {
+        transcriptor.initialize()
+
         val transcription = transcript(floatArray)
 
         val distance = levenshteinDistance(

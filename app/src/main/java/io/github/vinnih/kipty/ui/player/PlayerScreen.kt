@@ -31,6 +31,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -60,6 +61,7 @@ import coil3.compose.AsyncImage
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
@@ -155,7 +157,14 @@ private fun Player(
     val playerUiState by playerController.uiState.collectAsState()
     val configurationUiState by configurationController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
-    var phrase by remember { mutableStateOf<String?>(null) }
+    var phrase by remember { mutableStateOf<AudioTranscription?>(null) }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            selectedAudio = null
+            phrase = null
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -226,8 +235,8 @@ private fun Player(
         }
 
         TapTalk(
-            playerController = playerController,
             phrase = phrase,
+            selectedAudio = playerUiState.currentAudio,
             onDismiss = { phrase = null }
         )
 

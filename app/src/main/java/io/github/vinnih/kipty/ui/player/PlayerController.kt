@@ -10,10 +10,6 @@ interface PlayerController {
 
     val uiState: StateFlow<PlayerUiState>
 
-    suspend fun calculatePronunciationScore(expected: String)
-
-    fun toggleRecording()
-
     fun stopAudio()
 
     fun seekTo(audioEntity: AudioEntity)

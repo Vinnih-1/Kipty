@@ -59,7 +59,7 @@ fun TextViewer(
 fun TextViewer(
     playerController: PlayerController,
     onClick: (Long, Long) -> Unit,
-    onPress: (String) -> Unit,
+    onPress: (AudioTranscription) -> Unit,
     showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -104,7 +104,7 @@ private fun TextViewerBase(
 private fun TextViewerBase(
     playerController: PlayerController,
     onClick: (Long, Long) -> Unit,
-    onPress: (String) -> Unit,
+    onPress: (AudioTranscription) -> Unit,
     showTimestamp: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -151,7 +151,7 @@ private fun TextSection(
     selected: Boolean,
     showTimestamp: Boolean,
     modifier: Modifier = Modifier,
-    onPress: (String) -> Unit = {}
+    onPress: (AudioTranscription) -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
@@ -168,7 +168,7 @@ private fun TextSection(
                 },
                 onLongClick = {
                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onPress(transcription.text)
+                    onPress(transcription)
                 }
             )
             .background(

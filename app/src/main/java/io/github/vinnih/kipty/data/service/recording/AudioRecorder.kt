@@ -48,16 +48,13 @@ class AudioRecorder @Inject constructor(@ApplicationContext private val context:
             start()
         }
 
-        // Coletar amplitudes em tempo real
         amplitudeJob = CoroutineScope(Dispatchers.Default).launch {
             while (isActive) {
                 mediaRecorder?.let { recorder ->
                     try {
-                        // maxAmplitude retorna 0-32767
                         val amplitude = recorder.maxAmplitude / 32767f
                         amplitudes.add(amplitude)
 
-                        // Manter apenas as últimas 100 amplitudes
                         if (amplitudes.size > 100) {
                             amplitudes.removeAt(0)
                         }
@@ -65,7 +62,7 @@ class AudioRecorder @Inject constructor(@ApplicationContext private val context:
                         e.printStackTrace()
                     }
                 }
-                delay(50) // Atualizar a cada 50ms
+                delay(50)
             }
         }
     }

@@ -11,10 +11,6 @@ class FakePlayerViewModel : PlayerController {
 
     override val uiState: StateFlow<PlayerUiState> = MutableStateFlow(PlayerUiState())
 
-    override suspend fun calculatePronunciationScore(expected: String) {}
-
-    override fun toggleRecording() {}
-
     override fun stopAudio() {}
 
     override fun seekTo(audioEntity: AudioEntity) {}

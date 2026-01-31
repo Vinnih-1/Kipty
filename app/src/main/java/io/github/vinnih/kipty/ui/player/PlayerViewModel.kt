@@ -2,29 +2,20 @@ package io.github.vinnih.kipty.ui.player
 
 import android.content.Context
 import android.net.Uri
-import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.data.service.recording.AudioRecorder
-import io.github.vinnih.kipty.data.service.recording.SpeechResult
 import io.github.vinnih.kipty.data.workers.PopulateWorker
-import io.github.vinnih.kipty.utils.AudioResampler
-import io.github.vinnih.kipty.utils.AudioResampler.resample
-import io.github.vinnih.kipty.utils.normalizeAudio
-import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +28,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 enum class PlaybackSpeed(val value: Float, val text: String) {
     HALF(0.5f, "0.5x"),
@@ -48,31 +38,20 @@ enum class PlaybackSpeed(val value: Float, val text: String) {
     DOUBLE(2.0f, "2x")
 }
 
-data class RecordingState(
-    val isRecording: Boolean = false,
-    val amplitudes: List<Float> = emptyList(),
-    val recordingTime: Long = 0L,
-    val result: Pair<String, Int> = Pair("", 0)
-)
-
 data class PlayerUiState(
     val currentAudio: AudioEntity? = null,
     val progress: Float = 0f,
     val currentPosition: Long = 0L,
     val duration: Long = 0L,
-    val playbackSpeed: PlaybackSpeed = PlaybackSpeed.NORMAL,
-    val recordingState: RecordingState = RecordingState()
+    val playbackSpeed: PlaybackSpeed = PlaybackSpeed.NORMAL
 )
 
-@OptIn(UnstableApi::class)
 @HiltViewModel
 class PlayerViewModel
 @Inject constructor(
     @ApplicationContext private val context: Context,
     override val player: Player,
-    private val audioRepository: AudioRepository,
-    private val audioRecorder: AudioRecorder,
-    private val speechResult: SpeechResult
+    private val audioRepository: AudioRepository
 ) : ViewModel(),
     PlayerController {
 
@@ -84,70 +63,22 @@ class PlayerViewModel
 
     private val playbackSpeed = MutableStateFlow(PlaybackSpeed.NORMAL)
 
-    private val isRecording = MutableStateFlow(false)
-
-    private val amplitudes = MutableStateFlow<List<Float>>(emptyList())
-
-    private val recordingTime = MutableStateFlow(0L)
-
-    private val audioPath = MutableStateFlow<String?>(null)
-
-    private val result = MutableStateFlow(Pair("", 0))
-
-    private var timerJob: Job? = null
-
-    private val recordingState = combine(
-        isRecording,
-        amplitudes,
-        recordingTime,
-        result
-    ) { recording, amps, time, result ->
-        RecordingState(
-            isRecording = recording,
-            amplitudes = amps,
-            recordingTime = time,
-            result = result
-        )
-    }
-
     override val uiState: StateFlow<PlayerUiState> = combine(
         currentAudio,
         progress,
-        playbackSpeed,
-        recordingState
-    ) { audio, progress, speed, recording ->
+        playbackSpeed
+    ) { audio, progress, speed ->
         PlayerUiState(
             currentAudio = audio,
             progress = progress.first,
             currentPosition = progress.second,
             duration = player.duration,
-            playbackSpeed = speed,
-            recordingState = recording
+            playbackSpeed = speed
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
-    override suspend fun calculatePronunciationScore(expected: String) =
-        withContext(Dispatchers.IO) {
-            val resampledFile = File(audioPath.value!!).resample(
-                format = AudioResampler.OutputFormat.WAV,
-                context = context
-            )
-            val audioBytes = resampledFile.readBytes()
-
-            result.value = speechResult.calculatePronunciationScore(
-                expected = expected,
-                floatArray = normalizeAudio(audioBytes)
-            )
-        }
-
     init {
         listener()
-
-        viewModelScope.launch {
-            audioRecorder.amplitudeFlow.collect { amps ->
-                amplitudes.value = amps
-            }
-        }
 
         viewModelScope.launch {
             while (isActive) {
@@ -177,53 +108,6 @@ class PlayerViewModel
                     preparePlayer(it)
                 }
         }
-    }
-
-    override fun toggleRecording() {
-        if (isRecording.value) {
-            stopRecording()
-        } else {
-            startRecording()
-        }
-    }
-
-    private fun startRecording() {
-        val outputFile = File(
-            context.cacheDir,
-            "recording_${System.currentTimeMillis()}.m4a"
-        )
-
-        audioPath.value = outputFile.absolutePath
-        audioRecorder.startRecording(outputFile)
-        isRecording.value = true
-        recordingTime.value = 0
-
-        timerJob = viewModelScope.launch {
-            while (isActive) {
-                delay(1000)
-                recordingTime.value += 1
-            }
-        }
-    }
-
-    private fun stopRecording() {
-        audioRecorder.stopRecording()
-        isRecording.value = false
-        timerJob?.cancel()
-    }
-
-    private fun listener() {
-        player.addListener(object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                if (mediaItem == null) return
-
-                viewModelScope.launch(Dispatchers.IO) {
-                    val audioEntity =
-                        audioRepository.getById(mediaItem.mediaId.toInt()) ?: return@launch
-                    currentAudio.value = audioEntity
-                }
-            }
-        })
     }
 
     override fun stopAudio() {
@@ -271,6 +155,20 @@ class PlayerViewModel
         val nextSpeed = allSpeeds[(currentIndex + 1) % allSpeeds.size]
         playbackSpeed.value = nextSpeed
         player.setPlaybackSpeed(nextSpeed.value)
+    }
+
+    private fun listener() {
+        player.addListener(object : Player.Listener {
+            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                if (mediaItem == null) return
+
+                viewModelScope.launch(Dispatchers.IO) {
+                    val audioEntity =
+                        audioRepository.getById(mediaItem.mediaId.toInt()) ?: return@launch
+                    currentAudio.value = audioEntity
+                }
+            }
+        })
     }
 
     private fun preparePlayer(audioEntity: AudioEntity) {

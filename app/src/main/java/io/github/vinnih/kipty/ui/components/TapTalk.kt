@@ -56,8 +56,11 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.lerp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.ui.player.PlayerController
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+import io.github.vinnih.kipty.ui.record.RecordViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import kotlinx.coroutines.launch
@@ -72,27 +75,28 @@ private enum class Scene {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TapTalk(
-    playerController: PlayerController,
-    phrase: String?,
+    phrase: AudioTranscription?,
+    selectedAudio: AudioEntity?,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    recordController: RecordViewModel = hiltViewModel()
 ) {
-    if (phrase == null) return
+    if (phrase == null || selectedAudio == null) return
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val colors = MaterialTheme.colorScheme
     var permissionGranted by remember { mutableStateOf(false) }
     var scene by remember { mutableStateOf(Scene.TOGGLE) }
-    val uiState by playerController.uiState.collectAsState()
-    val amplitudes = uiState.recordingState.amplitudes
-    val recordingTime = uiState.recordingState.recordingTime
+    val uiState by recordController.uiState.collectAsState()
+    val amplitudes = uiState.amplitudes
+    val recordingTime = uiState.recordingTime
     val scope = rememberCoroutineScope()
 
     RequestAudioPermission {
         permissionGranted = true
     }
 
-    LaunchedEffect(uiState.recordingState.result) {
+    LaunchedEffect(uiState.result) {
         if (scene == Scene.PROCESSING) {
             scene = Scene.RESULT
         }
@@ -111,7 +115,7 @@ fun TapTalk(
                     permissionGranted = permissionGranted,
                     phrase = phrase,
                     onToggle = {
-                        playerController.toggleRecording()
+                        recordController.toggleRecording(selectedAudio.audioPath)
                         scene = Scene.RECORDING
                     }
                 )
@@ -122,10 +126,10 @@ fun TapTalk(
                     amplitudes = amplitudes,
                     recordingTime = recordingTime,
                     onRecord = {
-                        playerController.toggleRecording()
+                        recordController.toggleRecording(selectedAudio.audioPath)
                         scope.launch {
                             scene = Scene.PROCESSING
-                            playerController.calculatePronunciationScore(phrase)
+                            recordController.calculatePronunciationScore(phrase)
                         }
                     }
                 )
@@ -136,9 +140,9 @@ fun TapTalk(
             onResult = {
                 ResultScene(
                     phrase = phrase,
-                    result = uiState.recordingState.result,
+                    result = uiState.result,
                     onRetry = {
-                        playerController.toggleRecording()
+                        recordController.toggleRecording(selectedAudio.audioPath)
                         scene = Scene.RECORDING
                     },
                     onDone = {
@@ -152,7 +156,7 @@ fun TapTalk(
 
 @Composable
 private fun ToggleScene(
-    phrase: String,
+    phrase: AudioTranscription,
     permissionGranted: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier
@@ -187,7 +191,7 @@ private fun ToggleScene(
             modifier = Modifier.padding(horizontal = 24.dp)
         ) {
             Text(
-                text = phrase,
+                text = phrase.text,
                 style = typography.titleLarge,
                 color = colors.onSecondary,
                 fontWeight = FontWeight.Bold,
@@ -222,7 +226,7 @@ private fun ToggleScene(
 
 @Composable
 private fun RecordingScene(
-    phrase: String,
+    phrase: AudioTranscription,
     amplitudes: List<Float>,
     recordingTime: Long,
     onRecord: () -> Unit,
@@ -258,7 +262,7 @@ private fun RecordingScene(
             modifier = Modifier.padding(horizontal = 24.dp)
         ) {
             Text(
-                text = phrase,
+                text = phrase.text,
                 style = typography.titleLarge,
                 color = colors.onSecondary.copy(alpha = .7f),
                 fontWeight = FontWeight.Bold,
@@ -339,7 +343,7 @@ private fun ProcessingScene(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ResultScene(
-    phrase: String,
+    phrase: AudioTranscription,
     result: Pair<String, Int>,
     onRetry: () -> Unit,
     onDone: () -> Unit,
@@ -347,7 +351,7 @@ private fun ResultScene(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val expectedWords = phrase.split(" ")
+    val expectedWords = phrase.text.split(" ")
     val userWords = result.first.split(" ")
 
     println(
@@ -573,8 +577,12 @@ fun RequestAudioPermission(onPermissionGranted: () -> Unit) {
 private fun TapTalkPreview() {
     AppTheme {
         ResultScene(
-            phrase = "natural, and easy to understand everyday English conversations." +
-                " Today, I am joined by my co-host",
+            phrase = AudioTranscription(
+                text = "natural, and easy to understand everyday English conversations." +
+                    " Today, I am joined by my co-host",
+                start = 0L,
+                end = 0L
+            ),
             result = Pair(
                 "natural, and easy to understand everyday English conversations." +
                     " Today, I am joined by my co-host",

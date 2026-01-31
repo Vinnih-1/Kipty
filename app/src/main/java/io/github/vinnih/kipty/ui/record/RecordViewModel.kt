@@ -97,6 +97,7 @@ class RecordViewModel @Inject constructor(
         }
 
         stopRecording()
+        clearAll()
     }
 
     override suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long =

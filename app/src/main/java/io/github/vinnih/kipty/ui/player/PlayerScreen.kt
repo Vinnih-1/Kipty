@@ -159,11 +159,9 @@ private fun Player(
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
     var phrase by remember { mutableStateOf<AudioTranscription?>(null) }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            selectedAudio = null
-            phrase = null
-        }
+    LaunchedEffect(playerUiState.currentAudio) {
+        selectedAudio = null
+        phrase = null
     }
 
     Scaffold(

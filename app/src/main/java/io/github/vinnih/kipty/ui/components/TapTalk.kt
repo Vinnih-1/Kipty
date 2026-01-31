@@ -105,7 +105,10 @@ fun TapTalk(
     }
 
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            onDismiss.invoke()
+            recordController.abortRecording()
+        },
         sheetState = sheetState,
         containerColor = colors.secondaryContainer,
         modifier = modifier

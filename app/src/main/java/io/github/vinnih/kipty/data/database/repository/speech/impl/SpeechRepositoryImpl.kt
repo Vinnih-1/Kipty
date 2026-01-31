@@ -12,4 +12,6 @@ class SpeechRepositoryImpl @Inject constructor(private val dao: SpeechDao) : Spe
     override suspend fun save(speech: SpeechEntity): Long = withContext(Dispatchers.IO) {
         return@withContext dao.save(speech)
     }
+
+    override suspend fun getById(id: Int): SpeechEntity? = dao.getById(id)
 }

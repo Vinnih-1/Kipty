@@ -71,6 +71,8 @@ class RecordViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RecordUiState())
 
+    override suspend fun getById(id: Int): SpeechEntity? = speechRepository.getById(id)
+
     init {
         viewModelScope.launch {
             audioRecorder.amplitudeFlow.collect { amps ->
@@ -97,7 +99,7 @@ class RecordViewModel @Inject constructor(
         stopRecording()
     }
 
-    override suspend fun calculatePronunciationScore(phrase: AudioTranscription): Unit =
+    override suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long =
         withContext(Dispatchers.IO) {
             val recordPath = filesPath.value.first
             val resampledFile = File(recordPath).resample(
@@ -112,8 +114,10 @@ class RecordViewModel @Inject constructor(
             )
             resampledFile.delete()
             transferTo()
-            saveSpeech(phrase)
+            val uid = saveSpeech(phrase)
             clearAll()
+
+            return@withContext uid
         }
 
     private fun startRecording(audioPath: String) {
@@ -142,14 +146,16 @@ class RecordViewModel @Inject constructor(
     private fun transferTo() {
         val recordPath = filesPath.value.first
         val audioPath = filesPath.value.second
+
+        val audioFile = File(audioPath)
+        val parentFolderName = audioFile.parentFile?.name ?: "unknown"
+
         val path = File(
             context.filesDir,
-            "speeches" + File.separatorChar + audioPath
-                .substringAfterLast("/")
-                .substringBeforeLast(".")
+            "speeches${File.separator}$parentFolderName"
         ).createFolder()
-        val audioFile = File(recordPath)
-        val resampledFile = audioFile.resample(
+        val speechFile = File(recordPath)
+        val resampledFile = speechFile.resample(
             context = context,
             format = AudioResampler.OutputFormat.OPUS
         )
@@ -157,7 +163,7 @@ class RecordViewModel @Inject constructor(
 
         filesPath.value = Pair(destination.absolutePath, audioPath)
         resampledFile.copyTo(destination, true)
-        audioFile.delete()
+        speechFile.delete()
         resampledFile.delete()
     }
 

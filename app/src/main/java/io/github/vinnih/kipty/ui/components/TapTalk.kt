@@ -60,6 +60,8 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
+import io.github.vinnih.kipty.data.database.entity.SpeechEntity
+import io.github.vinnih.kipty.ui.record.RecordUiState
 import io.github.vinnih.kipty.ui.record.RecordViewModel
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
@@ -77,6 +79,7 @@ private enum class Scene {
 fun TapTalk(
     phrase: AudioTranscription?,
     selectedAudio: AudioEntity?,
+    onPlay: (String) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     recordController: RecordViewModel = hiltViewModel()
@@ -86,10 +89,9 @@ fun TapTalk(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val colors = MaterialTheme.colorScheme
     var permissionGranted by remember { mutableStateOf(false) }
+    var speechEntity by remember { mutableStateOf<SpeechEntity?>(null) }
     var scene by remember { mutableStateOf(Scene.TOGGLE) }
     val uiState by recordController.uiState.collectAsState()
-    val amplitudes = uiState.amplitudes
-    val recordingTime = uiState.recordingTime
     val scope = rememberCoroutineScope()
 
     RequestAudioPermission {
@@ -123,13 +125,15 @@ fun TapTalk(
             onRecording = {
                 RecordingScene(
                     phrase = phrase,
-                    amplitudes = amplitudes,
-                    recordingTime = recordingTime,
+                    amplitudes = uiState.amplitudes,
+                    recordingTime = uiState.recordingTime,
                     onRecord = {
                         recordController.toggleRecording(selectedAudio.audioPath)
                         scope.launch {
                             scene = Scene.PROCESSING
-                            recordController.calculatePronunciationScore(phrase)
+                            speechEntity = recordController.getById(
+                                recordController.calculatePronunciationScore(phrase).toInt()
+                            )
                         }
                     }
                 )
@@ -139,15 +143,13 @@ fun TapTalk(
             },
             onResult = {
                 ResultScene(
+                    speechEntity = speechEntity,
                     phrase = phrase,
-                    result = uiState.result,
+                    uiState = uiState,
                     onRetry = {
-                        recordController.toggleRecording(selectedAudio.audioPath)
-                        scene = Scene.RECORDING
+                        scene = Scene.TOGGLE
                     },
-                    onDone = {
-                        scope.launch { sheetState.partialExpand() }
-                    }
+                    onPlay = onPlay
                 )
             }
         )
@@ -343,23 +345,19 @@ private fun ProcessingScene(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ResultScene(
+    speechEntity: SpeechEntity?,
     phrase: AudioTranscription,
-    result: Pair<String, Int>,
+    uiState: RecordUiState,
     onRetry: () -> Unit,
-    onDone: () -> Unit,
+    onPlay: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (speechEntity == null) return
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val expectedWords = phrase.text.split(" ")
-    val userWords = result.first.split(" ")
-
-    println(
-        """
-        expectedWords: $expectedWords
-        userWords: $userWords
-        """.trimIndent()
-    )
+    val userWords = uiState.result.first.split(" ")
 
     val annotatedString = buildAnnotatedString {
         expectedWords.forEachIndexed { index, expectedWord ->
@@ -398,7 +396,7 @@ private fun ResultScene(
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "${result.second}%",
+            text = "${uiState.result.second}%",
             style = typography.displayMedium,
             color = colors.onSecondaryContainer,
             fontWeight = FontWeight.Bold
@@ -422,7 +420,7 @@ private fun ResultScene(
             horizontalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp)
+                .padding(16.dp)
         ) {
             Button(
                 onClick = onRetry,
@@ -453,7 +451,7 @@ private fun ResultScene(
                 }
             }
             Button(
-                onClick = onDone,
+                onClick = { onPlay(speechEntity.speechPath) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.primary
                 ),
@@ -468,13 +466,13 @@ private fun ResultScene(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.check),
+                        painter = painterResource(R.drawable.mic),
                         contentDescription = null,
                         tint = colors.onPrimary,
                         modifier = Modifier.size(32.dp)
                     )
                     Text(
-                        text = "Done",
+                        text = "Listen",
                         style = typography.titleMedium,
                         color = colors.onPrimary
                     )
@@ -577,19 +575,16 @@ fun RequestAudioPermission(onPermissionGranted: () -> Unit) {
 private fun TapTalkPreview() {
     AppTheme {
         ResultScene(
+            speechEntity = null,
             phrase = AudioTranscription(
                 text = "natural, and easy to understand everyday English conversations." +
                     " Today, I am joined by my co-host",
                 start = 0L,
                 end = 0L
             ),
-            result = Pair(
-                "natural, and easy to understand everyday English conversations." +
-                    " Today, I am joined by my co-host",
-                100
-            ),
+            uiState = RecordUiState(),
             onRetry = {},
-            onDone = {}
+            onPlay = {}
         )
     }
 }

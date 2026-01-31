@@ -158,6 +158,7 @@ private fun Player(
     val configurationUiState by configurationController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
     var phrase by remember { mutableStateOf<AudioTranscription?>(null) }
+    val playPause = rememberPlayPauseButtonState(player)
 
     LaunchedEffect(playerUiState.currentAudio) {
         selectedAudio = null
@@ -226,7 +227,12 @@ private fun Player(
                 onClick = { start, _ ->
                     playerController.seekTo(playerUiState.currentAudio!!, start, 0)
                 },
-                onPress = { phrase = it },
+                onPress = {
+                    if (!playPause.showPlay) {
+                        playPause.onClick()
+                    }
+                    phrase = it
+                },
                 showTimestamp = configurationUiState.appSettings.showTimestamp,
                 modifier = Modifier.padding(bottom = 48.dp)
             )
@@ -235,7 +241,13 @@ private fun Player(
         TapTalk(
             phrase = phrase,
             selectedAudio = playerUiState.currentAudio,
-            onDismiss = { phrase = null }
+            onPlay = {
+                playerController.playTempAudio(it)
+            },
+            onDismiss = {
+                playerController.stopTempAudio()
+                phrase = null
+            }
         )
 
         AudioConfigSheet(

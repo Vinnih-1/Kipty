@@ -11,6 +11,10 @@ class FakePlayerViewModel : PlayerController {
 
     override val uiState: StateFlow<PlayerUiState> = MutableStateFlow(PlayerUiState())
 
+    override fun playTempAudio(audioFilePath: String) {}
+
+    override fun stopTempAudio() {}
+
     override fun stopAudio() {}
 
     override fun seekTo(audioEntity: AudioEntity) {}

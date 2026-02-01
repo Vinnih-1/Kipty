@@ -80,8 +80,6 @@ class PopulateWorker @AssistedInject constructor(
                         val description = appContext.assets.open(
                             "samples/$folder/$sampleFolder/description.txt"
                         )
-                        println(sample.length())
-
                         data.invoke(
                             "samples/$folder/$sampleFolder/${sample.name}",
                             transcription.bufferedReader().readText(),

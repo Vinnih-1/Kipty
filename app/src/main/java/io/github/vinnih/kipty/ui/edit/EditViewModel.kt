@@ -63,7 +63,6 @@ class EditViewModel @Inject constructor(
 
     override fun editImage(image: File?) {
         _uiState.update { currentState ->
-            println(image?.absolutePath)
             currentState.copy(imageFile = image)
         }
     }

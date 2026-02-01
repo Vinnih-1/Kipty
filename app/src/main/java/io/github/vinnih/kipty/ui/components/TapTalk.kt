@@ -238,6 +238,8 @@ private fun RecordingScene(
     onRecord: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (recordingTime == 60L) onRecord.invoke()
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -283,7 +285,7 @@ private fun RecordingScene(
         )
 
         Text(
-            text = recordingTime.formatTime(),
+            text = recordingTime.times(1_000).formatTime(),
             style = MaterialTheme.typography.headlineMedium,
             color = colors.primary,
             fontWeight = FontWeight.Bold

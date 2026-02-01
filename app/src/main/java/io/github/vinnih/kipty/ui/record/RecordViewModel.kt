@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -131,7 +130,7 @@ class RecordViewModel @Inject constructor(
         recordingTime.value = 0
 
         timerJob = viewModelScope.launch {
-            while (isActive) {
+            while (isRecording.value) {
                 delay(1000)
                 recordingTime.value += 1
             }
@@ -140,6 +139,7 @@ class RecordViewModel @Inject constructor(
 
     private fun stopRecording() {
         audioRecorder.stopRecording()
+        timerJob?.cancel()
     }
 
     private fun transferTo() {
@@ -155,6 +155,7 @@ class RecordViewModel @Inject constructor(
         ).createFolder()
         val speechFile = File(recordPath)
         val resampledFile = speechFile.resample(
+            bitrate = 192,
             context = context,
             format = AudioResampler.OutputFormat.OPUS
         )

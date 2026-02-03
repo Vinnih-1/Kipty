@@ -535,7 +535,7 @@ private fun ResultScene(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.mic),
+                        painter = painterResource(R.drawable.headphones),
                         contentDescription = null,
                         tint = colors.onPrimary,
                         modifier = Modifier.size(24.dp)

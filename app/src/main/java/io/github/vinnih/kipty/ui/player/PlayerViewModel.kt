@@ -2,13 +2,11 @@ package io.github.vinnih.kipty.ui.player
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,7 +21,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.first
@@ -58,13 +55,6 @@ class PlayerViewModel
 ) : ViewModel(),
     PlayerController {
 
-    private val tempPlayer: ExoPlayer by lazy {
-        ExoPlayer.Builder(context).build()
-    }
-
-    private val _isTempAudioPlaying = MutableStateFlow(false)
-    val isTempAudioPlaying = _isTempAudioPlaying.asStateFlow()
-
     private val currentAudio = MutableStateFlow<AudioEntity?>(null)
 
     private val section = MutableStateFlow<AudioTranscription?>(null)
@@ -89,7 +79,6 @@ class PlayerViewModel
 
     init {
         listener()
-        setupTempPlayerListener()
 
         viewModelScope.launch {
             while (isActive) {
@@ -140,59 +129,6 @@ class PlayerViewModel
         section.value = AudioTranscription(start, end, "")
         player.seekTo(index, start)
         player.play()
-    }
-
-    override fun playTempAudio(audioFilePath: String) {
-        viewModelScope.launch {
-            val wasPlaying = player.isPlaying
-
-            if (wasPlaying) {
-                player.pause()
-            }
-            val mediaItem = MediaItem.fromUri(audioFilePath.toUri())
-
-            tempPlayer.setMediaItem(mediaItem)
-            tempPlayer.prepare()
-            tempPlayer.play()
-            _isTempAudioPlaying.value = true
-
-            tempPlayer.addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_ENDED) {
-                        _isTempAudioPlaying.value = false
-                        tempPlayer.removeListener(this)
-
-                        if (wasPlaying) {
-                            player.play()
-                        }
-                    }
-                }
-            })
-        }
-    }
-
-    override fun stopTempAudio() {
-        if (tempPlayer.isPlaying) {
-            tempPlayer.stop()
-            _isTempAudioPlaying.value = false
-        }
-    }
-
-    private fun setupTempPlayerListener() {
-        tempPlayer.addListener(object : Player.Listener {
-            override fun onPlaybackStateChanged(playbackState: Int) {
-                when (playbackState) {
-                    Player.STATE_ENDED -> {
-                        _isTempAudioPlaying.value = false
-                    }
-                }
-            }
-        })
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        tempPlayer.release()
     }
 
     override fun seekTo(audioEntity: AudioEntity) {

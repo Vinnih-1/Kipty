@@ -1,8 +1,14 @@
 package io.github.vinnih.kipty.ui.record
 
 import android.content.Context
+import android.os.Looper
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
@@ -43,6 +49,15 @@ class RecordViewModel @Inject constructor(
     private val speechRepository: SpeechRepository
 ) : ViewModel(),
     RecordController {
+
+    @delegate:UnstableApi
+    private val tempPlayer: ExoPlayer by lazy {
+        ExoPlayer.Builder(context)
+            .setLooper(Looper.getMainLooper())
+            .build()
+    }
+
+    private val isTempAudioPlaying = MutableStateFlow(false)
 
     private val isRecording = MutableStateFlow(false)
 
@@ -186,5 +201,31 @@ class RecordViewModel @Inject constructor(
         filesPath.value = Pair("", "")
         result.value = Pair("", 0)
         timerJob?.cancel()
+        tempPlayer.stop()
+    }
+
+    override fun playTempAudio(audioFilePath: String) {
+        viewModelScope.launch(Dispatchers.Main) {
+            val mediaItem = MediaItem.fromUri(audioFilePath.toUri())
+
+            tempPlayer.setMediaItem(mediaItem)
+            tempPlayer.prepare()
+            tempPlayer.play()
+            isTempAudioPlaying.value = true
+
+            tempPlayer.addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        isTempAudioPlaying.value = false
+                        tempPlayer.removeListener(this)
+                    }
+                }
+            })
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        tempPlayer.release()
     }
 }

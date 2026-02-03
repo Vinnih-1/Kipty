@@ -17,4 +17,6 @@ interface RecordController {
     suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long
 
     fun clearAll()
+
+    fun playTempAudio(audioFilePath: String)
 }

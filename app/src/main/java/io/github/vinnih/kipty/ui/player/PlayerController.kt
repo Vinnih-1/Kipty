@@ -10,10 +10,6 @@ interface PlayerController {
 
     val uiState: StateFlow<PlayerUiState>
 
-    fun playTempAudio(audioFilePath: String)
-
-    fun stopTempAudio()
-
     fun stopAudio()
 
     fun seekTo(audioEntity: AudioEntity)

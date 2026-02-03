@@ -79,7 +79,6 @@ private enum class Scene {
 fun TapTalk(
     phrase: AudioTranscription?,
     selectedAudio: AudioEntity?,
-    onPlay: (String) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     recordController: RecordViewModel = hiltViewModel()
@@ -153,7 +152,9 @@ fun TapTalk(
                         recordController.clearAll()
                         scene = Scene.TOGGLE
                     },
-                    onPlay = onPlay
+                    onPlay = {
+                        recordController.playTempAudio(it)
+                    }
                 )
             }
         )

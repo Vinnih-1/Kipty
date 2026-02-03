@@ -19,4 +19,6 @@ interface RecordController {
     fun clearAll()
 
     fun playTempAudio(audioFilePath: String)
+
+    fun stopTempAudio()
 }

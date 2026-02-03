@@ -79,6 +79,7 @@ private enum class Scene {
 fun TapTalk(
     phrase: AudioTranscription?,
     selectedAudio: AudioEntity?,
+    onPlay: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     recordController: RecordViewModel = hiltViewModel()
@@ -118,6 +119,10 @@ fun TapTalk(
                 ToggleScene(
                     permissionGranted = permissionGranted,
                     phrase = phrase,
+                    onPlay = {
+                        recordController.stopTempAudio()
+                        onPlay.invoke()
+                    },
                     onToggle = {
                         recordController.toggleRecording(selectedAudio.audioPath)
                         scene = Scene.RECORDING
@@ -153,6 +158,10 @@ fun TapTalk(
                         scene = Scene.TOGGLE
                     },
                     onPlay = {
+                        recordController.stopTempAudio()
+                        onPlay.invoke()
+                    },
+                    onListen = {
                         recordController.playTempAudio(it)
                     }
                 )
@@ -165,6 +174,7 @@ fun TapTalk(
 private fun ToggleScene(
     phrase: AudioTranscription,
     permissionGranted: Boolean,
+    onPlay: () -> Unit,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -195,7 +205,9 @@ private fun ToggleScene(
             colors = CardDefaults.cardColors(
                 containerColor = colors.secondary
             ),
-            modifier = Modifier.padding(horizontal = 24.dp)
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .clickable(onClick = onPlay)
         ) {
             Text(
                 text = phrase.text,
@@ -356,7 +368,8 @@ private fun ResultScene(
     phrase: AudioTranscription,
     uiState: RecordUiState,
     onRetry: () -> Unit,
-    onPlay: (String) -> Unit,
+    onPlay: () -> Unit,
+    onListen: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (speechEntity == null) return
@@ -455,7 +468,9 @@ private fun ResultScene(
             colors = CardDefaults.cardColors(
                 containerColor = colors.secondary
             ),
-            modifier = Modifier.padding(horizontal = 24.dp)
+            modifier = Modifier
+                .padding(horizontal = 24.dp)
+                .clickable(onClick = onPlay)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp),
@@ -506,7 +521,7 @@ private fun ResultScene(
             }
 
             Button(
-                onClick = { onPlay(speechEntity.speechPath) },
+                onClick = { onListen(speechEntity.speechPath) },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colors.primary
                 ),
@@ -669,7 +684,8 @@ private fun TapTalkPreview() {
             ),
             uiState = RecordUiState(),
             onRetry = {},
-            onPlay = {}
+            onPlay = {},
+            onListen = {}
         )
     }
 }

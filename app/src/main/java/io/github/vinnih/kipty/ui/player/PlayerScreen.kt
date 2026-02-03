@@ -240,6 +240,9 @@ private fun Player(
         TapTalk(
             phrase = phrase,
             selectedAudio = playerUiState.currentAudio,
+            onPlay = {
+                playerController.seekTo(playerUiState.currentAudio!!, phrase!!.start, phrase!!.end)
+            },
             onDismiss = {
                 phrase = null
             }

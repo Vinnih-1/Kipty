@@ -46,7 +46,8 @@ class RecordViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val audioRecorder: AudioRecorder,
     private val speechResult: SpeechResult,
-    private val speechRepository: SpeechRepository
+    private val speechRepository: SpeechRepository,
+    private val player: Player
 ) : ViewModel(),
     RecordController {
 
@@ -134,6 +135,8 @@ class RecordViewModel @Inject constructor(
         }
 
     private fun startRecording(audioPath: String) {
+        if (player.isPlaying) player.pause()
+
         val outputFile = File(
             context.cacheDir,
             "recording_${System.currentTimeMillis()}.m4a"
@@ -206,6 +209,8 @@ class RecordViewModel @Inject constructor(
 
     override fun playTempAudio(audioFilePath: String) {
         viewModelScope.launch(Dispatchers.Main) {
+            if (player.isPlaying) player.pause()
+
             val mediaItem = MediaItem.fromUri(audioFilePath.toUri())
 
             tempPlayer.setMediaItem(mediaItem)
@@ -222,6 +227,11 @@ class RecordViewModel @Inject constructor(
                 }
             })
         }
+    }
+
+    override fun stopTempAudio() {
+        tempPlayer.stop()
+        isTempAudioPlaying.value = false
     }
 
     override fun onCleared() {

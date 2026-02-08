@@ -656,12 +656,12 @@ private fun levenshteinDistance(s1: String, s2: String): Int {
 }
 
 @Composable
-fun RequestAudioPermission(onPermissionGranted: () -> Unit) {
+fun RequestAudioPermission(onPermissionGrant: () -> Unit) {
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            onPermissionGranted()
+            onPermissionGrant()
         }
     }
 

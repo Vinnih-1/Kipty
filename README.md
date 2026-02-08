@@ -1,8 +1,18 @@
-# Kipty
+<p align="center">
+  <img src="images/icon.png" alt="Kipty Logo" width="160"/>
+</p>
 
-![Android](https://img.shields.io/badge/platform-Android-green)
-![Kotlin](https://img.shields.io/badge/language-Kotlin-blue)
-![License](https://img.shields.io/github/license/Vinnih-1/Kipty)
+<h1 align="center">Kipty</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/platform-Android-green" />
+  <img src="https://img.shields.io/badge/language-Kotlin-blue" />
+  <img src="https://img.shields.io/github/license/Vinnih-1/Kipty" />
+</p>
+
+<p align="center">
+  Mobile app for audio transcription focused on English learning
+</p>
 
 > **Note:** Audio transcriptions in Kipty are generated using the *base* and *tiny* Whisper.cpp models. As these are lightweight models, transcription errors may occur, especially with noisy audio or fast speech.
 

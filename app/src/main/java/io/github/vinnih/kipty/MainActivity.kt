@@ -17,7 +17,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
@@ -113,11 +112,11 @@ class MainActivity : ComponentActivity() {
         notificationController: NotificationController,
         configurationController: ConfigurationController,
         createController: CreateController,
-        editController: EditController
+        editController: EditController,
+        modifier: Modifier = Modifier
     ) {
         val backstack = remember { mutableStateListOf<Screen>(Screen.Home) }
         val scaffoldState = rememberBottomSheetScaffoldState()
-        val scope = rememberCoroutineScope()
         var loading by remember { mutableStateOf(true) }
 
         LaunchedEffect(Unit) {
@@ -162,7 +161,8 @@ class MainActivity : ComponentActivity() {
                 )
             },
             sheetShape = RectangleShape,
-            sheetDragHandle = null
+            sheetDragHandle = null,
+            modifier = modifier
         ) { paddingValues ->
             NavDisplay(
                 modifier = Modifier.padding(paddingValues),

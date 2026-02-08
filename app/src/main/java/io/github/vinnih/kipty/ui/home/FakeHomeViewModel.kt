@@ -20,9 +20,11 @@ class FakeHomeViewModel : HomeController {
     override val homeUiState: StateFlow<HomeUiState> =
         MutableStateFlow(HomeUiState(audioList = fakeAudioList, isLoading = false))
 
-    override fun getPlayTimeById(id: Int): Flow<Long> {
-        return flowOf(fakeAudioList.find { it.uid == id }?.playTime ?: 0L)
-    }
+    override fun getPlayTimeById(id: Int): Flow<Long> = flowOf(
+        fakeAudioList.find {
+            it.uid == id
+        }?.playTime ?: 0L
+    )
 
     override fun loadAudios() {}
 

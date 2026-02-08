@@ -20,13 +20,9 @@ class FakeAudioViewModel : AudioController {
         return flow { emit(audioEntity) }
     }
 
-    override suspend fun saveAudio(audioEntity: AudioEntity): Long {
-        return 1
-    }
+    override suspend fun saveAudio(audioEntity: AudioEntity): Long = 1
 
-    override suspend fun getById(id: Int): AudioEntity? {
-        return null
-    }
+    override suspend fun getById(id: Int): AudioEntity? = null
 
     override fun deleteAudio(audioEntity: AudioEntity) {}
 

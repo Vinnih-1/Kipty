@@ -84,41 +84,43 @@ fun HomeScreen(
         onDispose { selectedAudio = null }
     }
 
-    AudioConfigSheet(
-        audioController = audioController,
-        playerController = playerController,
-        notificationController = notificationController,
-        audioEntity = selectedAudio,
-        onNavigate = onNavigate,
-        onClose = { selectedAudio = null },
-        modifier = Modifier
-    )
+    Column(modifier = modifier) {
+        AudioConfigSheet(
+            audioController = audioController,
+            playerController = playerController,
+            notificationController = notificationController,
+            audioEntity = selectedAudio,
+            onNavigate = onNavigate,
+            onClose = { selectedAudio = null },
+            modifier = Modifier
+        )
 
-    Column(modifier = modifier.fillMaxSize()) {
-        if (!isSearchExpanded) {
-            HomeTopBar(
-                notificationController = notificationController,
-                onNotificationClick = { onNavigate(Screen.Notification) },
-                onNavigate = { onNavigate(it) },
-                onSearchClick = { isSearchExpanded = true }
-            )
-            AudioList(
-                homeController = homeController,
-                onNavigate = { onNavigate(it) },
-                onSelectAudio = { selectedAudio = it },
-                isSearchExpanded = isSearchExpanded,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .weight(1f)
-            )
-        } else {
-            SearchBarView(
-                homeController = homeController,
-                isSearchExpanded = isSearchExpanded,
-                onSearchExpandedChange = { isSearchExpanded = it },
-                onNavigate = { onNavigate(it) },
-                modifier = Modifier.fillMaxWidth()
-            )
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (!isSearchExpanded) {
+                HomeTopBar(
+                    notificationController = notificationController,
+                    onNotificationClick = { onNavigate(Screen.Notification) },
+                    onNavigate = { onNavigate(it) },
+                    onSearchClick = { isSearchExpanded = true }
+                )
+                AudioList(
+                    homeController = homeController,
+                    onNavigate = { onNavigate(it) },
+                    onSelectAudio = { selectedAudio = it },
+                    isSearchExpanded = isSearchExpanded,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f)
+                )
+            } else {
+                SearchBarView(
+                    homeController = homeController,
+                    isSearchExpanded = isSearchExpanded,
+                    onSearchExpandedChange = { isSearchExpanded = it },
+                    onNavigate = { onNavigate(it) },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
         }
     }
 }

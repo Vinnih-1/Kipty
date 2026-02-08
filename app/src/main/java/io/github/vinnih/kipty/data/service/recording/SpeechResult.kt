@@ -1,6 +1,6 @@
 package io.github.vinnih.kipty.data.service.recording
 
-import io.github.vinnih.kipty.data.transcriptor.Transcriptor
+import io.github.vinnih.kipty.data.service.transcriptor.Transcriptor
 import javax.inject.Inject
 import javax.inject.Singleton
 

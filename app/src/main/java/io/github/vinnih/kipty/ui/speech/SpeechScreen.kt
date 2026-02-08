@@ -1,5 +1,6 @@
-package io.github.vinnih.kipty.ui.components
+package io.github.vinnih.kipty.ui.speech
 
+import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -61,8 +62,7 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
-import io.github.vinnih.kipty.ui.record.RecordUiState
-import io.github.vinnih.kipty.ui.record.RecordViewModel
+import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import kotlinx.coroutines.launch
@@ -76,13 +76,13 @@ private enum class Scene {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TapTalk(
+fun SpeechScreen(
     phrase: AudioTranscription?,
     selectedAudio: AudioEntity?,
     onPlay: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    recordController: RecordViewModel = hiltViewModel()
+    recordController: SpeechViewModel = hiltViewModel()
 ) {
     if (phrase == null || selectedAudio == null) return
 
@@ -113,7 +113,7 @@ fun TapTalk(
         containerColor = colors.secondaryContainer,
         modifier = modifier
     ) {
-        RecordingScreen(
+        SpeechComponent(
             scene = scene,
             onToggle = {
                 ToggleScene(
@@ -366,7 +366,7 @@ private fun ProcessingScene(modifier: Modifier = Modifier) {
 private fun ResultScene(
     speechEntity: SpeechEntity?,
     phrase: AudioTranscription,
-    uiState: RecordUiState,
+    uiState: SpeechUiState,
     onRetry: () -> Unit,
     onPlay: () -> Unit,
     onListen: (String) -> Unit,
@@ -552,7 +552,7 @@ private fun ResultScene(
 }
 
 @Composable
-private fun RecordingScreen(
+private fun SpeechComponent(
     scene: Scene,
     onToggle: @Composable () -> Unit,
     onRecording: @Composable () -> Unit,
@@ -666,13 +666,13 @@ fun RequestAudioPermission(onPermissionGrant: () -> Unit) {
     }
 
     LaunchedEffect(Unit) {
-        launcher.launch(android.Manifest.permission.RECORD_AUDIO)
+        launcher.launch(Manifest.permission.RECORD_AUDIO)
     }
 }
 
 @Composable
 @Preview(showSystemUi = false, showBackground = true)
-private fun TapTalkPreview() {
+private fun SpeechPreview() {
     AppTheme {
         ResultScene(
             speechEntity = null,
@@ -682,7 +682,7 @@ private fun TapTalkPreview() {
                 start = 0L,
                 end = 0L
             ),
-            uiState = RecordUiState(),
+            uiState = SpeechUiState(),
             onRetry = {},
             onPlay = {},
             onListen = {}

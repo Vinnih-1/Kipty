@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.ui.record
+package io.github.vinnih.kipty.ui.speech
 
 import android.content.Context
 import android.os.Looper
@@ -34,7 +34,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class RecordUiState(
+data class SpeechUiState(
     val isRecording: Boolean = false,
     val amplitudes: List<Float> = emptyList(),
     val recordingTime: Long = 0L,
@@ -42,14 +42,14 @@ data class RecordUiState(
 )
 
 @HiltViewModel
-class RecordViewModel @Inject constructor(
+class SpeechViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val audioRecorder: AudioRecorder,
     private val speechResult: SpeechResult,
     private val speechRepository: SpeechRepository,
     private val player: Player
 ) : ViewModel(),
-    RecordController {
+    SpeechController {
 
     @delegate:UnstableApi
     private val tempPlayer: ExoPlayer by lazy {
@@ -72,19 +72,19 @@ class RecordViewModel @Inject constructor(
 
     private var timerJob: Job? = null
 
-    override val uiState: StateFlow<RecordUiState> = combine(
+    override val uiState: StateFlow<SpeechUiState> = combine(
         isRecording,
         amplitudes,
         recordingTime,
         result
     ) { recording, amps, time, result ->
-        RecordUiState(
+        SpeechUiState(
             isRecording = recording,
             amplitudes = amps,
             recordingTime = time,
             result = result
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), RecordUiState())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SpeechUiState())
 
     override suspend fun getById(id: Int): SpeechEntity? = speechRepository.getById(id)
 
@@ -105,10 +105,10 @@ class RecordViewModel @Inject constructor(
     }
 
     override fun abortRecording() {
-        val recordPath = filesPath.value.first
+        val speechPath = filesPath.value.first
 
-        if (recordPath.isNotEmpty()) {
-            File(recordPath).delete()
+        if (speechPath.isNotEmpty()) {
+            File(speechPath).delete()
         }
 
         stopRecording()
@@ -117,8 +117,8 @@ class RecordViewModel @Inject constructor(
 
     override suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long =
         withContext(Dispatchers.IO) {
-            val recordPath = filesPath.value.first
-            val resampledFile = File(recordPath).resample(
+            val speechPath = filesPath.value.first
+            val resampledFile = File(speechPath).resample(
                 format = AudioResampler.OutputFormat.WAV,
                 context = context
             )
@@ -161,7 +161,7 @@ class RecordViewModel @Inject constructor(
     }
 
     private fun transferTo() {
-        val recordPath = filesPath.value.first
+        val speechPath = filesPath.value.first
         val audioPath = filesPath.value.second
 
         val audioFile = File(audioPath)
@@ -171,7 +171,7 @@ class RecordViewModel @Inject constructor(
             context.filesDir,
             "speeches${File.separator}$parentFolderName"
         ).createFolder()
-        val speechFile = File(recordPath)
+        val speechFile = File(speechPath)
         val resampledFile = speechFile.resample(
             bitrate = 192,
             context = context,

@@ -65,12 +65,12 @@ import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
-import io.github.vinnih.kipty.ui.components.TapTalk
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
 import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
+import io.github.vinnih.kipty.ui.speech.SpeechScreen
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import java.io.File
@@ -237,7 +237,7 @@ private fun Player(
             )
         }
 
-        TapTalk(
+        SpeechScreen(
             phrase = phrase,
             selectedAudio = playerUiState.currentAudio,
             onPlay = {

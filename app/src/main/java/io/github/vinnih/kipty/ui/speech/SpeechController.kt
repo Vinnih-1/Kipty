@@ -1,12 +1,12 @@
-package io.github.vinnih.kipty.ui.record
+package io.github.vinnih.kipty.ui.speech
 
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
 import kotlinx.coroutines.flow.StateFlow
 
-interface RecordController {
+interface SpeechController {
 
-    val uiState: StateFlow<RecordUiState>
+    val uiState: StateFlow<SpeechUiState>
 
     suspend fun getById(id: Int): SpeechEntity?
 

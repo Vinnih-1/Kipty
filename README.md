@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="images/icon.png" alt="Kipty Logo" width="160"/>
+  <img src="images/icon 2.png" alt="Kipty Logo" width="360"/>
 </p>
-
-<h1 align="center">Kipty</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Android-green" />
@@ -10,9 +8,9 @@
   <img src="https://img.shields.io/github/license/Vinnih-1/Kipty" />
 </p>
 
-<p align="center">
+<h3 align="center">
   Mobile app for audio transcription focused on English learning
-</p>
+</h3>
 
 > **Note:** Audio transcriptions in Kipty are generated using the *base* and *tiny* Whisper.cpp models. As these are lightweight models, transcription errors may occur, especially with noisy audio or fast speech.
 

@@ -130,11 +130,11 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
 
     suspend fun calculatePronunciationScore(
         expected: String,
-        floatArray: FloatArray
+        byteArray: ByteArray
     ): Pair<String, Int> {
         transcriptor.initialize()
 
-        val transcription = transcript(floatArray)
+        val transcription = transcript(transcriptor.normalizeAudio(byteArray))
         val result = evaluateDetailed(expected, transcription)
 
         return transcription to result.overallScore

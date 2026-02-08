@@ -14,12 +14,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
 import io.github.vinnih.kipty.data.database.repository.speech.SpeechRepository
+import io.github.vinnih.kipty.data.service.AudioResampler
+import io.github.vinnih.kipty.data.service.AudioResampler.resample
 import io.github.vinnih.kipty.data.service.recording.RecorderService
 import io.github.vinnih.kipty.data.service.recording.SpeechResult
-import io.github.vinnih.kipty.utils.AudioResampler
-import io.github.vinnih.kipty.utils.AudioResampler.resample
 import io.github.vinnih.kipty.utils.createFolder
-import io.github.vinnih.kipty.utils.normalizeAudio
 import java.io.File
 import java.time.LocalDateTime
 import javax.inject.Inject
@@ -126,7 +125,7 @@ class SpeechViewModel @Inject constructor(
 
             result.value = speechResult.calculatePronunciationScore(
                 expected = phrase.text,
-                floatArray = normalizeAudio(audioBytes)
+                byteArray = audioBytes
             )
             resampledFile.delete()
             transferTo()

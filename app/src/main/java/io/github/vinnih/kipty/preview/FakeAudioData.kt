@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data
+package io.github.vinnih.kipty.preview
 
 object FakeAudioData {
 

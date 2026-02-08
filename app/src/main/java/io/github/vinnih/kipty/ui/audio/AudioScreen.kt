@@ -37,11 +37,11 @@ import androidx.compose.ui.unit.dp
 import androidx.media3.common.util.UnstableApi
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
-import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.preview.FakeAudioData
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer

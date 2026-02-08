@@ -1,9 +1,9 @@
 package io.github.vinnih.kipty.ui.notification
 
-import io.github.vinnih.kipty.data.FakeNotificationData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
+import io.github.vinnih.kipty.preview.FakeNotificationData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 

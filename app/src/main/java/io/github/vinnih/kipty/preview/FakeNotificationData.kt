@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data
+package io.github.vinnih.kipty.preview
 
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory

@@ -40,9 +40,9 @@ import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import io.github.vinnih.kipty.R
-import io.github.vinnih.kipty.data.FakeAudioData
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.json
+import io.github.vinnih.kipty.preview.FakeAudioData
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatDate
 import io.github.vinnih.kipty.utils.formatTime

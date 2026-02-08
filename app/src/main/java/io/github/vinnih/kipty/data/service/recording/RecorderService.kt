@@ -20,7 +20,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 @Singleton
-class AudioRecorder @Inject constructor(@ApplicationContext private val context: Context) {
+class RecorderService @Inject constructor(@ApplicationContext private val context: Context) {
     private var mediaRecorder: MediaRecorder? = null
     private val amplitudes = mutableStateListOf<Float>()
     private var amplitudeJob: Job? = null

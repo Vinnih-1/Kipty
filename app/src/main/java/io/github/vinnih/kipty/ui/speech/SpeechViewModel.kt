@@ -14,7 +14,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
 import io.github.vinnih.kipty.data.database.repository.speech.SpeechRepository
-import io.github.vinnih.kipty.data.service.recording.AudioRecorder
+import io.github.vinnih.kipty.data.service.recording.RecorderService
 import io.github.vinnih.kipty.data.service.recording.SpeechResult
 import io.github.vinnih.kipty.utils.AudioResampler
 import io.github.vinnih.kipty.utils.AudioResampler.resample
@@ -44,7 +44,7 @@ data class SpeechUiState(
 @HiltViewModel
 class SpeechViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val audioRecorder: AudioRecorder,
+    private val recorderService: RecorderService,
     private val speechResult: SpeechResult,
     private val speechRepository: SpeechRepository,
     private val player: Player
@@ -90,7 +90,7 @@ class SpeechViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            audioRecorder.amplitudeFlow.collect { amps ->
+            recorderService.amplitudeFlow.collect { amps ->
                 amplitudes.value = amps
             }
         }
@@ -143,7 +143,7 @@ class SpeechViewModel @Inject constructor(
         )
 
         filesPath.value = Pair(outputFile.absolutePath, audioPath)
-        audioRecorder.startRecording(outputFile)
+        recorderService.startRecording(outputFile)
         isRecording.value = true
         recordingTime.value = 0
 
@@ -156,7 +156,7 @@ class SpeechViewModel @Inject constructor(
     }
 
     private fun stopRecording() {
-        audioRecorder.stopRecording()
+        recorderService.stopRecording()
         timerJob?.cancel()
     }
 

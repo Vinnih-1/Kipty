@@ -1,6 +1,6 @@
 package io.github.vinnih.kipty.data.service.recording
 
-import io.github.vinnih.kipty.data.service.transcriptor.Transcriptor
+import io.github.vinnih.kipty.data.service.transcriptor.TranscriptorService
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,7 +15,7 @@ data class DetailedPronunciationResult(
 )
 
 @Singleton
-class SpeechResult @Inject constructor(private val transcriptor: Transcriptor) {
+class SpeechResult @Inject constructor(private val transcriptor: TranscriptorService) {
 
     private suspend fun transcript(floatArray: FloatArray) = transcriptor.transcribe(floatArray)
 

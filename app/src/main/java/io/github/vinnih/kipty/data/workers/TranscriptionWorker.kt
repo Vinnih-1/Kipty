@@ -14,8 +14,8 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.service.notification.NotificationChannels
 import io.github.vinnih.kipty.data.service.notification.NotificationService
+import io.github.vinnih.kipty.data.service.transcriptor.TranscriptorService
 import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
-import io.github.vinnih.kipty.data.transcriptor.Transcriptor
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -26,7 +26,7 @@ class TranscriptionWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val appPreferencesRepository: AppPreferencesRepository,
     private val audioRepository: AudioRepository,
-    private val transcriptor: Transcriptor,
+    private val transcriptor: TranscriptorService,
     private val notificationService: NotificationService
 ) : CoroutineWorker(appContext, workerParams) {
 

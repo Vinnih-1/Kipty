@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data.transcriptor
+package io.github.vinnih.kipty.data.service.transcriptor
 
 import android.content.Context
 import com.whispercpp.whisper.WhisperContext
@@ -6,7 +6,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.utils.convertTranscription
-import io.github.vinnih.kipty.utils.createFolder
 import io.github.vinnih.kipty.utils.processAudioSegments
 import java.io.File
 import javax.inject.Inject
@@ -15,49 +14,34 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Singleton
-class TranscriptorImpl @Inject constructor(@ApplicationContext private val context: Context) :
-    Transcriptor {
+class TranscriptorService @Inject constructor(@ApplicationContext private val context: Context) {
 
     private var _whisperContext: WhisperContext? = null
 
-    override val whisperContext: WhisperContext
+    val whisperContext: WhisperContext
         get() = _whisperContext
             ?: throw IllegalStateException(
                 "WhisperContext not initialized. Call initialize() first."
             )
 
-    override suspend fun initialize() {
+    suspend fun initialize() {
         if (_whisperContext == null) {
             withContext(Dispatchers.IO) {
-                copyModel()
                 _whisperContext = loadModel()
             }
         }
     }
 
-    override fun copyModel(): File {
-        val modelsPath = File(context.filesDir, "models").createFolder()
-        val model = context.assets.list("models/")?.firstOrNull()
-            ?: throw IllegalStateException("No model found in assets")
+    fun loadModel(): WhisperContext {
+        val model = context.assets.list("models/")?.first()
 
-        context.assets.open("models/$model").use { inputStream ->
-            File(modelsPath, model).outputStream().use { outputStream ->
-                inputStream.copyTo(outputStream)
-            }
-        }
-
-        return File(modelsPath, model)
+        return WhisperContext.createContextFromAsset(
+            context.assets,
+            "models" + File.separator + model
+        )
     }
 
-    override fun loadModel(): WhisperContext {
-        val modelsPath = File(context.filesDir, "models")
-        val model = modelsPath.listFiles()?.firstOrNull()
-            ?: throw IllegalStateException("No model file found")
-
-        return WhisperContext.createContextFromFile(model.absolutePath)
-    }
-
-    override suspend fun transcribe(
+    suspend fun transcribe(
         audioEntity: AudioEntity,
         numThreads: Int,
         onProgress: (Int) -> Unit
@@ -89,7 +73,7 @@ class TranscriptorImpl @Inject constructor(@ApplicationContext private val conte
         return audioEntity.copy(transcription = transcriptions)
     }
 
-    override suspend fun transcribe(floatArray: FloatArray): String = whisperContext.transcribeData(
+    suspend fun transcribe(floatArray: FloatArray): String = whisperContext.transcribeData(
         data = floatArray,
         numThreads = 8
     ).convertTranscription().joinToString(separator = " ") { it.text }

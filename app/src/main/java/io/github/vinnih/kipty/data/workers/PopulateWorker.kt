@@ -9,8 +9,8 @@ import dagger.assisted.AssistedInject
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.data.service.AudioResampler.getAudioDuration
+import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.utils.convertTranscription
 import io.github.vinnih.kipty.utils.copyTo
 import io.github.vinnih.kipty.utils.createFile

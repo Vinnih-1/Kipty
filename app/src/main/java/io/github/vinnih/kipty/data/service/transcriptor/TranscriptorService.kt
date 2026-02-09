@@ -153,7 +153,7 @@ class TranscriptorService @Inject constructor(@ApplicationContext private val co
                 buffer.copyOf(bytesRead)
             }
             val floatArray = normalizeAudio(fullSegment)
-            val startTime = if (segmentNumber ==1) {
+            val startTime = if (segmentNumber == 1) {
                 0L
             } else {
                 currentPositionBytes - previousOverlap.size

@@ -20,6 +20,7 @@ import androidx.media3.common.text.CueGroup
 import androidx.media3.common.util.Size
 import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 class FakeKiptyPlayer : KiptyPlayer {
     override fun getApplicationLooper(): Looper = Looper.getMainLooper()
 
@@ -227,6 +228,10 @@ class FakeKiptyPlayer : KiptyPlayer {
     override fun setVolume(volume: Float) {}
 
     override fun getVolume(): Float = 1.0f
+
+    override fun mute() {}
+
+    override fun unmute() {}
 
     override fun clearVideoSurface() {}
 

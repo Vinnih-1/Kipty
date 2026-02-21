@@ -12,44 +12,61 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
+import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
+import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.data.workers.PopulateWorker
 import jakarta.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class HomeUiState(val audioList: List<AudioEntity>, val isLoading: Boolean = true)
+data class HomeUiState(
+    val audioList: List<AudioEntity> = listOf(),
+    val appSettings: AppSettings? = null,
+    val isAudioLoading: Boolean = true,
+    val isSettingsLoading: Boolean = true
+)
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     @ApplicationContext val context: Context,
+    appPreferencesRepository: AppPreferencesRepository,
     private val audioRepository: AudioRepository
 ) : ViewModel(),
     HomeController {
 
-    private val _homeUiState = MutableStateFlow(HomeUiState(listOf()))
-
-    override val homeUiState: StateFlow<HomeUiState> = _homeUiState.stateIn(
+    private val audioFlow = audioRepository.getAllFlow().stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = HomeUiState(emptyList())
+        started = SharingStarted.Eagerly,
+        initialValue = listOf()
+    )
+
+    private val appSettings = appPreferencesRepository.appSettingsFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
+
+    override val homeUiState: StateFlow<HomeUiState> = combine(audioFlow, appSettings) {
+            audioList,
+            appSettings
+        ->
+        HomeUiState(
+            audioList = audioList,
+            appSettings = appSettings,
+            isAudioLoading = audioList.isEmpty(),
+            isSettingsLoading = appSettings == null
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = HomeUiState()
     )
 
     override fun getPlayTimeById(id: Int): Flow<Long> = audioRepository.getFlowPlayTimeById(id)
-
-    override fun loadAudios() {
-        if (_homeUiState.value.audioList.isNotEmpty()) return
-
-        viewModelScope.launch(Dispatchers.IO) {
-            audioRepository.getAllFlow().collect {
-                _homeUiState.value = HomeUiState(it, false)
-            }
-        }
-    }
 
     override fun openNotificationSettings() {
         val intent = Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {

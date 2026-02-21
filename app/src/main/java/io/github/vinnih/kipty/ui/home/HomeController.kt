@@ -7,8 +7,6 @@ interface HomeController {
 
     val homeUiState: StateFlow<HomeUiState>
 
-    fun loadAudios()
-
     fun openNotificationSettings()
 
     fun getPlayTimeById(id: Int): Flow<Long>

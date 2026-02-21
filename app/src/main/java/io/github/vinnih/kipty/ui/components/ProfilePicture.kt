@@ -14,9 +14,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
@@ -29,6 +31,9 @@ fun ProfilePicture(
     iconPath: String,
     updatedAt: Long,
     modifier: Modifier = Modifier,
+    showUpdateIcon: Boolean = true,
+    size: Dp = 100.dp,
+    shape: Shape = CircleShape,
     onClick: () -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -40,7 +45,7 @@ fun ProfilePicture(
                 .memoryCacheKey("$iconPath-$updatedAt")
                 .diskCacheKey("$iconPath-$updatedAt")
                 .crossfade(true)
-                .size(100, 100)
+                .size(size.value.toInt())
                 .build()
         } else {
             null
@@ -48,13 +53,13 @@ fun ProfilePicture(
     }
 
     Box(
-        modifier = modifier.size(100.dp),
+        modifier = modifier.size(size),
         contentAlignment = Alignment.BottomEnd
     ) {
         Box(
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
+                .size(size)
+                .clip(shape)
                 .background(colors.secondaryContainer)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
@@ -70,29 +75,29 @@ fun ProfilePicture(
                 )
             } else {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    painter = painterResource(id = R.drawable.user),
                     contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    tint = colors.onSecondaryContainer
+                    tint = colors.onSecondaryContainer,
+                    modifier = Modifier.size(38.dp)
                 )
             }
         }
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(CircleShape)
-                .background(colors.secondaryContainer)
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.camera),
-                contentDescription = null,
-                modifier = Modifier.size(14.dp),
-                tint = colors.onSecondaryContainer
-            )
+        if (showUpdateIcon) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(colors.secondaryContainer)
+                    .clickable(onClick = onClick),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.camera),
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp),
+                    tint = colors.onSecondaryContainer
+                )
+            }
         }
     }
 }

@@ -2,7 +2,6 @@ package io.github.vinnih.kipty.ui.home
 
 import android.Manifest
 import android.content.res.Configuration
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -37,7 +36,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
@@ -51,12 +49,15 @@ import com.google.accompanist.permissions.rememberPermissionState
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.NotificationEntity
+import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
 import io.github.vinnih.kipty.ui.components.AudioCard
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
+import io.github.vinnih.kipty.ui.components.ProfilePicture
 import io.github.vinnih.kipty.ui.components.WarnType
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -73,12 +74,13 @@ fun HomeScreen(
     onNavigate: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val homeUiState by homeController.homeUiState.collectAsState()
+
+    if (homeUiState.appSettings == null) return
+
+    val notificationState by notificationController.uiState.collectAsState()
     var isSearchExpanded by remember { mutableStateOf(false) }
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
-
-    LaunchedEffect(Unit) {
-        homeController.loadAudios()
-    }
 
     DisposableEffect(Unit) {
         onDispose { selectedAudio = null }
@@ -98,7 +100,8 @@ fun HomeScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             if (!isSearchExpanded) {
                 HomeTopBar(
-                    notificationController = notificationController,
+                    appSettings = homeUiState.appSettings!!,
+                    unreadList = notificationState.unread,
                     onNotificationClick = { onNavigate(Screen.Notification) },
                     onNavigate = { onNavigate(it) },
                     onSearchClick = { isSearchExpanded = true }
@@ -136,7 +139,7 @@ private fun AudioList(
     val uiState by homeController.homeUiState.collectAsState()
     var notificationWarn by remember { mutableStateOf(true) }
 
-    if (uiState.isLoading) {
+    if (uiState.isAudioLoading) {
         LoadingAudios()
         return
     }
@@ -284,7 +287,8 @@ private fun SearchBarView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeTopBar(
-    notificationController: NotificationController,
+    appSettings: AppSettings,
+    unreadList: List<NotificationEntity>,
     onNotificationClick: () -> Unit,
     onNavigate: (Screen) -> Unit,
     onSearchClick: () -> Unit,
@@ -292,29 +296,20 @@ fun HomeTopBar(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val notificationState by notificationController.uiState.collectAsState()
 
     TopAppBar(
         title = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                BaseButton(
-                    onClick = {
-                        onNavigate(Screen.Configuration)
-                    },
-                    content = {
-                        Icon(
-                            painter = painterResource(R.drawable.user),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    },
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(colors.secondaryContainer.copy(alpha = .6f))
-                        .size(58.dp)
+                ProfilePicture(
+                    iconPath = appSettings.profileIconPath,
+                    onClick = { onNavigate(Screen.Configuration) },
+                    updatedAt = appSettings.profileIconUpdatedAt,
+                    showUpdateIcon = false,
+                    size = 58.dp,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.clickable(onClick = { onNavigate(Screen.Configuration) })
                 )
                 Column {
                     Text(
@@ -324,7 +319,7 @@ fun HomeTopBar(
                         color = colors.secondary.copy(alpha = .5f)
                     )
                     Text(
-                        text = "Account User",
+                        text = appSettings.username,
                         style = typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = colors.primary
@@ -346,7 +341,7 @@ fun HomeTopBar(
                 })
                 BaseButton(onClick = onNotificationClick, content = {
                     BadgedBox(badge = {
-                        if (notificationState.unread.isNotEmpty()) {
+                        if (unreadList.isNotEmpty()) {
                             Badge()
                         }
                     }) {

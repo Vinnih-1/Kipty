@@ -892,7 +892,7 @@ private fun ReviewStepScreen(
 }
 
 @Composable
-private fun rememberAudioPicker(
+fun rememberAudioPicker(
     mimeType: String,
     extra: Array<String>,
     onUriSelect: (Uri) -> Unit

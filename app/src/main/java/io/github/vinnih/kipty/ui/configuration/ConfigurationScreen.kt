@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
@@ -37,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,13 +45,30 @@ import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.BuildConfig
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
+import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.ui.components.BaseButton
+import io.github.vinnih.kipty.ui.components.ProfilePicture
+import io.github.vinnih.kipty.ui.create.rememberAudioPicker
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import io.github.vinnih.kipty.utils.processUriToFile
+import java.io.File
 
 @Composable
-fun ProfileSection(modifier: Modifier = Modifier) {
+fun ProfileSection(
+    appSettings: AppSettings,
+    onPickPhoto: (File) -> Unit,
+    modifier: Modifier = Modifier
+) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val context = LocalContext.current
+    val rememberAudioPicker = rememberAudioPicker(
+        mimeType = "image/*",
+        arrayOf("image/png", "image/jpeg")
+    ) {
+        val file = it.processUriToFile(context)
+        if (file != null) onPickPhoto(file)
+    }
 
     Card(modifier = modifier.padding(horizontal = 16.dp)) {
         Column(
@@ -61,28 +78,17 @@ fun ProfileSection(modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .background(colors.secondaryContainer)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
-                    contentDescription = "Account User",
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(24.dp),
-                    tint = colors.onSecondaryContainer
-                )
-            }
-
+            ProfilePicture(
+                iconPath = appSettings.profileIconPath,
+                onClick = { rememberAudioPicker.invoke() },
+                updatedAt = appSettings.profileIconUpdatedAt
+            )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Account User",
+                    text = appSettings.username.ifEmpty { "Account User" },
                     style = typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
@@ -93,13 +99,11 @@ fun ProfileSection(modifier: Modifier = Modifier) {
                     tint = colors.onBackground.copy(alpha = 0.6f)
                 )
             }
-
             Text(
                 text = "Tap photo to change, tap name to edit",
                 style = typography.bodyMedium,
                 color = colors.onBackground.copy(alpha = 0.7f)
             )
-
             StatsRow()
         }
     }
@@ -395,6 +399,8 @@ fun ConfigurationScreen(
 ) {
     val uiState by configurationController.uiState.collectAsState()
 
+    if (uiState.isLoading) return
+
     Column(
         modifier = modifier.fillMaxSize()
     ) {
@@ -405,7 +411,9 @@ fun ConfigurationScreen(
                 .padding(top = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            ProfileSection()
+            ProfileSection(appSettings = uiState.appSettings!!, onPickPhoto = {
+                configurationController.updateProfileIcon(it)
+            })
             ConfigurationSection(
                 title = "TRANSCRIPTION",
                 items = listOf(
@@ -414,7 +422,7 @@ fun ConfigurationScreen(
                             title = "Show timestamp",
                             description = "Display time markers in transcriptions",
                             iconRes = R.drawable.schedule,
-                            checked = uiState.appSettings.showTimestamp,
+                            checked = uiState.appSettings!!.showTimestamp,
                             onCheckedChange = { configurationController.updateShowTimestamp(it) }
                         )
                     },
@@ -423,7 +431,7 @@ fun ConfigurationScreen(
                             title = "Processing threads",
                             description = "Number of threads (1-8)",
                             iconRes = R.drawable.memory,
-                            value = uiState.appSettings.minimumThreads,
+                            value = uiState.appSettings!!.minimumThreads,
                             onValueChange = {
                                 configurationController.updateMinimumThreads(it.coerceIn(1, 8))
                             }
@@ -458,7 +466,7 @@ fun ConfigurationScreen(
                             title = "Notifications",
                             description = "Receive notifications about new episodes",
                             iconRes = R.drawable.notifications,
-                            checked = uiState.appSettings.receiveAlert,
+                            checked = uiState.appSettings!!.receiveAlert,
                             onCheckedChange = { configurationController.updateReceiveAlert(it) }
                         )
                     }
@@ -485,7 +493,7 @@ private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifie
             Column {
                 Text(
                     text = "Settings",
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
                 Text(

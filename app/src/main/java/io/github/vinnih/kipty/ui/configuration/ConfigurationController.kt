@@ -1,5 +1,6 @@
 package io.github.vinnih.kipty.ui.configuration
 
+import java.io.File
 import kotlinx.coroutines.flow.StateFlow
 
 interface ConfigurationController {
@@ -10,4 +11,6 @@ interface ConfigurationController {
     fun updateMinimumThreads(minimumThreads: Int)
 
     fun updateReceiveAlert(receiveAlert: Boolean)
+
+    fun updateProfileIcon(file: File)
 }

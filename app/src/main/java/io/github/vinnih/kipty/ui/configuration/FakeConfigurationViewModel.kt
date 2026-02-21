@@ -1,13 +1,13 @@
 package io.github.vinnih.kipty.ui.configuration
 
-import io.github.vinnih.kipty.data.settings.AppSettings
+import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 class FakeConfigurationViewModel : ConfigurationController {
     override val uiState: StateFlow<ConfigurationsUiState>
         get() = MutableStateFlow(
-            ConfigurationsUiState(canCreate = true, appSettings = AppSettings(true, 2, true))
+            ConfigurationsUiState(canCreate = true, appSettings = null)
         )
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {
@@ -19,6 +19,10 @@ class FakeConfigurationViewModel : ConfigurationController {
     }
 
     override fun updateReceiveAlert(receiveAlert: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun updateProfileIcon(file: File) {
         TODO("Not yet implemented")
     }
 }

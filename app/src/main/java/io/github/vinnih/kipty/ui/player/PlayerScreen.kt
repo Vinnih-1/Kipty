@@ -153,8 +153,11 @@ private fun Player(
     peekHeight: Dp,
     modifier: Modifier = Modifier
 ) {
-    val playerUiState by playerController.uiState.collectAsState()
     val configurationUiState by configurationController.uiState.collectAsState()
+
+    if (configurationUiState.appSettings == null) return
+
+    val playerUiState by playerController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
     var phrase by remember { mutableStateOf<AudioTranscription?>(null) }
     val playPause = rememberPlayPauseButtonState(player)
@@ -232,7 +235,7 @@ private fun Player(
                     }
                     phrase = it
                 },
-                showTimestamp = configurationUiState.appSettings.showTimestamp,
+                showTimestamp = configurationUiState.appSettings!!.showTimestamp,
                 modifier = Modifier.padding(bottom = 48.dp)
             )
         }

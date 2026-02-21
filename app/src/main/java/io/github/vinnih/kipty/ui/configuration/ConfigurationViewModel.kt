@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.data.workers.AudioWorker
+import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +18,17 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-data class ConfigurationsUiState(val canCreate: Boolean, val appSettings: AppSettings)
+data class ConfigurationsUiState(
+    val canCreate: Boolean,
+    val appSettings: AppSettings?,
+    val isLoading: Boolean = appSettings == null
+)
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val appPreferencesRepository: AppPreferencesRepository
+    private val appPreferencesRepository: AppPreferencesRepository,
+    private val audioRepository: AudioRepository
 ) : ViewModel(),
     ConfigurationController {
 
@@ -32,7 +39,7 @@ class ConfigurationViewModel @Inject constructor(
     private val appSettings = appPreferencesRepository.appSettingsFlow.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        initialValue = AppSettings(true, 2, true)
+        initialValue = null
     )
 
     override val uiState: StateFlow<ConfigurationsUiState> = combine(canCreate, appSettings) {
@@ -42,9 +49,9 @@ class ConfigurationViewModel @Inject constructor(
         val canCreate = canCreate.isEmpty() || canCreate.all { it.state.isFinished }
         ConfigurationsUiState(canCreate, appSettings)
     }.stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(5000),
-        ConfigurationsUiState(true, AppSettings(true, 2, true))
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = ConfigurationsUiState(false, null)
     )
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {
@@ -62,6 +69,15 @@ class ConfigurationViewModel @Inject constructor(
     override fun updateReceiveAlert(receiveAlert: Boolean) {
         viewModelScope.launch {
             appPreferencesRepository.updateReceiveAlert(receiveAlert)
+        }
+    }
+
+    override fun updateProfileIcon(file: File) {
+        viewModelScope.launch {
+            val destination = File(context.filesDir, "profile_icon.png")
+            file.copyTo(destination, overwrite = true)
+
+            appPreferencesRepository.updateProfileIconPath(destination.absolutePath)
         }
     }
 }

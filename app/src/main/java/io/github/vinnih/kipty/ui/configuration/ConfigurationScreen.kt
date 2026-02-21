@@ -3,6 +3,7 @@ package io.github.vinnih.kipty.ui.configuration
 import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,8 +16,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,15 +35,23 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -57,6 +70,7 @@ import java.io.File
 fun ProfileSection(
     appSettings: AppSettings,
     onPickPhoto: (File) -> Unit,
+    onUsernameChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -83,28 +97,93 @@ fun ProfileSection(
                 onClick = { rememberAudioPicker.invoke() },
                 updatedAt = appSettings.profileIconUpdatedAt
             )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = appSettings.username.ifEmpty { "Account User" },
-                    style = typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Icon(
-                    painter = painterResource(id = R.drawable.pencil),
-                    contentDescription = "Edit name",
-                    modifier = Modifier.size(20.dp),
-                    tint = colors.onBackground.copy(alpha = 0.6f)
-                )
-            }
+            UsernameSection(
+                username = appSettings.username,
+                onUsernameChange = { onUsernameChange(it) }
+            )
             Text(
                 text = "Tap photo to change, tap name to edit",
                 style = typography.bodyMedium,
                 color = colors.onBackground.copy(alpha = 0.7f)
             )
             StatsRow()
+        }
+    }
+}
+
+@Composable
+fun UsernameSection(
+    username: String,
+    onUsernameChange: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    var isEditing by remember { mutableStateOf(false) }
+    var draft by remember(username) { mutableStateOf(username) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(isEditing) {
+        if (isEditing) focusRequester.requestFocus()
+    }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
+        if (isEditing) {
+            BasicTextField(
+                value = draft,
+                onValueChange = { if (it.length <= 16) draft = it },
+                textStyle = typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onBackground
+                ),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        val trimmed = draft.trim()
+                        if (trimmed.isNotEmpty()) onUsernameChange(trimmed)
+                        isEditing = false
+                    }
+                ),
+                cursorBrush = SolidColor(colors.primary),
+                modifier = Modifier
+                    .focusRequester(focusRequester)
+                    .widthIn(min = 48.dp, max = 200.dp)
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.check),
+                contentDescription = "Confirm",
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable {
+                        val trimmed = draft.trim()
+                        if (trimmed.isNotEmpty()) onUsernameChange(trimmed)
+                        isEditing = false
+                    },
+                tint = colors.primary
+            )
+        } else {
+            Text(
+                text = username,
+                style = typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.pencil),
+                contentDescription = "Edit name",
+                modifier = Modifier
+                    .size(20.dp)
+                    .clickable { isEditing = true },
+                tint = colors.onBackground.copy(alpha = 0.6f)
+            )
         }
     }
 }
@@ -411,9 +490,15 @@ fun ConfigurationScreen(
                 .padding(top = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            ProfileSection(appSettings = uiState.appSettings!!, onPickPhoto = {
-                configurationController.updateProfileIcon(it)
-            })
+            ProfileSection(
+                appSettings = uiState.appSettings!!,
+                onPickPhoto = {
+                    configurationController.updateProfileIcon(it)
+                },
+                onUsernameChange = {
+                    configurationController.updateUsername(it)
+                }
+            )
             ConfigurationSection(
                 title = "TRANSCRIPTION",
                 items = listOf(

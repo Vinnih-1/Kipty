@@ -13,4 +13,6 @@ interface ConfigurationController {
     fun updateReceiveAlert(receiveAlert: Boolean)
 
     fun updateProfileIcon(file: File)
+
+    fun updateUsername(username: String)
 }

@@ -80,4 +80,10 @@ class ConfigurationViewModel @Inject constructor(
             appPreferencesRepository.updateProfileIconPath(destination.absolutePath)
         }
     }
+
+    override fun updateUsername(username: String) {
+        viewModelScope.launch {
+            appPreferencesRepository.updateUsername(username)
+        }
+    }
 }

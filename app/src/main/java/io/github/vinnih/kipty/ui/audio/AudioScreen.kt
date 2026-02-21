@@ -66,11 +66,11 @@ fun AudioScreen(
     modifier: Modifier = Modifier
 ) {
     val loadedAudio by audioController.getFlowById(id).collectAsState(null)
+    val configurationUiState by configurationController.uiState.collectAsState()
 
-    if (loadedAudio == null) return
+    if (loadedAudio == null || configurationUiState.appSettings == null) return
 
     val audioEntity = loadedAudio!!
-    val configurationUiState by configurationController.uiState.collectAsState()
     val playerUiState by playerController.uiState.collectAsState()
     val audioUiState by audioController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
@@ -121,7 +121,7 @@ fun AudioScreen(
                         onClick = { start, end ->
                             playerController.seekTo(audioEntity, start, end)
                         },
-                        showTimestamp = configurationUiState.appSettings.showTimestamp
+                        showTimestamp = configurationUiState.appSettings!!.showTimestamp
                     )
                 } else {
                     NoTranscriptionFound()

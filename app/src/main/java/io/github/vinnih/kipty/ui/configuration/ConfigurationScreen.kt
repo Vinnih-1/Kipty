@@ -1,37 +1,45 @@
 package io.github.vinnih.kipty.ui.configuration
 
 import android.content.res.Configuration
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.Typography
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.BuildConfig
@@ -40,93 +48,215 @@ import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
-sealed interface SettingsType {
-    class Switch(val value: Boolean) : SettingsType
+@Composable
+fun ProfileSection(modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
-    class Increment(val value: Int) : SettingsType
-
-    class Button(val onClick: () -> Unit) : SettingsType
-}
-
-abstract class ConfigurationProvider(val title: String, val description: String) {
-
-    @Composable
-    abstract fun Icon(colors: ColorScheme, typography: Typography, modifier: Modifier = Modifier)
-
-    @Composable
-    abstract fun Settings(
-        colors: ColorScheme,
-        typography: Typography,
-        modifier: Modifier = Modifier
-    )
-
-    class ShowTimestampConfig(val value: Boolean, val onValueChange: (Boolean) -> Unit) :
-        ConfigurationProvider(
-            title = "Show timestamp",
-            description = "Display time markers in transcriptions"
-        ),
-        SettingsType by SettingsType.Switch(value) {
-
-        @Composable
-        override fun Icon(colors: ColorScheme, typography: Typography, modifier: Modifier) {
+    Card(modifier = modifier.padding(horizontal = 16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(vertical = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             Box(
-                modifier = modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colors.secondaryContainer.copy(alpha = .3f))
-                    .size(48.dp)
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .background(colors.secondaryContainer)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.schedule),
-                    contentDescription = null,
-                    tint = colors.onSecondaryContainer,
-                    modifier = Modifier.align(Alignment.Center).size(36.dp)
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                    contentDescription = "Account User",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    tint = colors.onSecondaryContainer
                 )
             }
-        }
 
-        @Composable
-        override fun Settings(colors: ColorScheme, typography: Typography, modifier: Modifier) {
-            androidx.compose.material3.Switch(
-                checked = value,
-                onCheckedChange = {
-                    onValueChange(it)
-                },
-                colors = SwitchDefaults.colors(
-                    checkedTrackColor = colors.primary
-                )
-            )
-        }
-    }
-
-    class MinimumThreadsConfig(val value: Int, val onValueChange: (Int) -> Unit) :
-        ConfigurationProvider(
-            title = "Minimum threads",
-            description = "Number of processing threads (1-8)"
-        ),
-        SettingsType by SettingsType.Increment(value) {
-
-        @Composable
-        override fun Icon(colors: ColorScheme, typography: Typography, modifier: Modifier) {
-            Box(
-                modifier = modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colors.secondaryContainer.copy(alpha = .3f))
-                    .size(48.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.memory),
-                    contentDescription = null,
-                    tint = colors.onSecondaryContainer,
-                    modifier = Modifier.align(Alignment.Center).size(36.dp)
-                )
-            }
-        }
-
-        @Composable
-        override fun Settings(colors: ColorScheme, typography: Typography, modifier: Modifier) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "Account User",
+                    style = typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Icon(
+                    painter = painterResource(id = R.drawable.pencil),
+                    contentDescription = "Edit name",
+                    modifier = Modifier.size(20.dp),
+                    tint = colors.onBackground.copy(alpha = 0.6f)
+                )
+            }
+
+            Text(
+                text = "Tap photo to change, tap name to edit",
+                style = typography.bodyMedium,
+                color = colors.onBackground.copy(alpha = 0.7f)
+            )
+
+            StatsRow()
+        }
+    }
+}
+
+@Composable
+fun StatsRow(modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+
+    Box(
+        modifier = modifier
+            .padding(horizontal = 24.dp)
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .background(
+                color = colors.secondaryContainer.copy(alpha = .3f),
+                shape = MaterialTheme.shapes.medium
+            )
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            StatItem(count = "24", label = "Audios", modifier = Modifier.weight(1f))
+            VerticalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 1.dp,
+                color = Color.Gray.copy(alpha = 0.5f)
+            )
+            StatItem(count = "18", label = "Transcribed", modifier = Modifier.weight(1f))
+            VerticalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = 1.dp,
+                color = Color.Gray.copy(alpha = 0.5f)
+            )
+            StatItem(count = "12h", label = "Listened", modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+fun StatItem(count: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Text(text = count, style = MaterialTheme.typography.titleLarge)
+        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun SettingItemLayout(
+    icon: @Composable () -> Unit,
+    title: String,
+    description: String,
+    settingControl: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(90.dp)
+            .padding(horizontal = 12.dp)
+    ) {
+        icon()
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Light,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        settingControl()
+    }
+}
+
+@Composable
+private fun SettingIcon(
+    @DrawableRes iconRes: Int,
+    contentDescription: String?,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.secondaryContainer.copy(alpha = .3f))
+            .size(48.dp)
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = contentDescription,
+            tint = colors.onSecondaryContainer,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(36.dp)
+        )
+    }
+}
+
+@Composable
+fun SwitchSettingItem(
+    title: String,
+    description: String,
+    @DrawableRes iconRes: Int,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    SettingItemLayout(
+        icon = { SettingIcon(iconRes, title) },
+        title = title,
+        description = description,
+        settingControl = {
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun IncrementSettingItem(
+    title: String,
+    description: String,
+    @DrawableRes iconRes: Int,
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = MaterialTheme.colorScheme
+
+    SettingItemLayout(
+        icon = { SettingIcon(iconRes, title) },
+        title = title,
+        description = description,
+        settingControl = {
+            Box(
+                modifier = Modifier.width(110.dp)
             ) {
                 BaseButton(
                     onClick = { onValueChange(value - 1) },
@@ -139,15 +269,17 @@ abstract class ConfigurationProvider(val title: String, val description: String)
                         )
                     },
                     modifier = Modifier
+                        .align(Alignment.CenterStart)
                         .clip(RoundedCornerShape(12.dp))
                         .size(42.dp)
                         .background(colors.secondaryContainer.copy(.3f))
                 )
                 Text(
                     text = "$value",
-                    style = typography.titleLarge,
+                    style = MaterialTheme.typography.titleLarge,
                     color = colors.onSecondaryContainer,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.align(Alignment.Center)
                 )
                 BaseButton(
                     onClick = { onValueChange(value + 1) },
@@ -160,95 +292,96 @@ abstract class ConfigurationProvider(val title: String, val description: String)
                         )
                     },
                     modifier = Modifier
+                        .align(Alignment.CenterEnd)
                         .clip(RoundedCornerShape(12.dp))
                         .size(42.dp)
                         .background(colors.secondaryContainer.copy(.3f))
                 )
             }
-        }
-    }
+        },
+        modifier = modifier
+    )
+}
 
-    class CreateNewAudio(val uiState: ConfigurationsUiState, val onClick: () -> Unit) :
-        ConfigurationProvider(
-            title = "Transcript your audio",
-            description = "Create a transcription of your favourite podcast"
-        ),
-        SettingsType by SettingsType.Button(onClick) {
+@Composable
+fun ButtonSettingItem(
+    title: String,
+    description: String,
+    @DrawableRes iconRes: Int,
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    buttonText: String? = null
+) {
+    val colors = MaterialTheme.colorScheme
 
-        @Composable
-        override fun Icon(colors: ColorScheme, typography: Typography, modifier: Modifier) {
-            Box(
-                modifier = modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colors.secondaryContainer.copy(alpha = .3f))
-                    .size(48.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.mic),
-                    contentDescription = null,
-                    tint = colors.onSecondaryContainer,
-                    modifier = Modifier.align(Alignment.Center).size(36.dp)
-                )
-            }
-        }
-
-        @Composable
-        override fun Settings(colors: ColorScheme, typography: Typography, modifier: Modifier) {
-            androidx.compose.material3.Button(
+    SettingItemLayout(
+        icon = { SettingIcon(iconRes, title) },
+        title = title,
+        description = description,
+        settingControl = {
+            TextButton(
                 onClick = onClick,
                 shape = MaterialTheme.shapes.medium,
-                enabled = uiState.canCreate,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.secondaryContainer.copy(alpha = .6f),
-                    disabledContainerColor = colors.secondaryContainer.copy(alpha = .3f)
-                )
+                enabled = enabled
             ) {
-                Text(
-                    text = "Transcript",
-                    style = typography.titleMedium,
-                    color = colors.onSecondaryContainer.copy(
-                        alpha = if (uiState.canCreate) 1f else .5f
+                Box(
+                    modifier = Modifier.fillMaxWidth(.32f)
+                ) {
+                    if (buttonText != null) {
+                        Text(
+                            text = buttonText,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = colors.onSecondaryContainer.copy(
+                                alpha = if (enabled) 1f else .5f
+                            ),
+                            modifier = Modifier.align(Alignment.CenterStart)
+                        )
+                    }
+                    Icon(
+                        painter = painterResource(R.drawable.chevron_right),
+                        contentDescription = null,
+                        tint = colors.onSecondaryContainer.copy(
+                            alpha = if (enabled) 1f else .5f
+                        ),
+                        modifier = Modifier
+                            .size(18.dp)
+                            .align(Alignment.CenterEnd)
                     )
-                )
+                }
             }
-        }
-    }
+        },
+        modifier = modifier
+    )
+}
 
-    class ReceiveAlertConfig(val value: Boolean, val onValueChange: (Boolean) -> Unit) :
-        ConfigurationProvider(
-            title = "Notifications",
-            description = "Receive alerts when transcription completes"
-        ),
-        SettingsType by SettingsType.Switch(value) {
+@Composable
+fun ConfigurationSection(
+    title: String,
+    items: List<@Composable () -> Unit>,
+    modifier: Modifier = Modifier
+) {
+    val typography = MaterialTheme.typography
+    val colors = MaterialTheme.colorScheme
 
-        @Composable
-        override fun Icon(colors: ColorScheme, typography: Typography, modifier: Modifier) {
-            Box(
-                modifier = modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(colors.secondaryContainer.copy(alpha = .3f))
-                    .size(48.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.notifications),
-                    contentDescription = null,
-                    tint = colors.onSecondaryContainer,
-                    modifier = Modifier.align(Alignment.Center).size(36.dp)
-                )
+    Column(modifier = modifier) {
+        Text(
+            text = title,
+            modifier = Modifier.padding(start = 24.dp, top = 16.dp, bottom = 8.dp),
+            style = typography.labelSmall,
+            color = colors.onSurfaceVariant,
+            fontWeight = FontWeight.Bold
+        )
+        Card(
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            items.forEachIndexed { index, item ->
+                item()
+
+                if (index < items.lastIndex) {
+                    HorizontalDivider()
+                }
             }
-        }
-
-        @Composable
-        override fun Settings(colors: ColorScheme, typography: Typography, modifier: Modifier) {
-            androidx.compose.material3.Switch(
-                checked = value,
-                onCheckedChange = {
-                    onValueChange(it)
-                },
-                colors = SwitchDefaults.colors(
-                    checkedTrackColor = colors.primary
-                )
-            )
         }
     }
 }
@@ -260,135 +393,105 @@ fun ConfigurationScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-    val scrollState = rememberScrollState()
     val uiState by configurationController.uiState.collectAsState()
 
     Column(
-        modifier = modifier.fillMaxSize().verticalScroll(scrollState)
+        modifier = modifier.fillMaxSize()
     ) {
         ConfigurationTopBar(onBack = onBack)
-
         Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Card(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    ConfigurationItem(
-                        ConfigurationProvider.ShowTimestampConfig(
-                            uiState.appSettings.showTimestamp
-                        ) {
-                            configurationController.updateShowTimestamp(it)
-                        },
-                        true
-                    )
-                    ConfigurationItem(
-                        ConfigurationProvider.MinimumThreadsConfig(
-                            uiState.appSettings.minimumThreads
-                        ) {
-                            configurationController.updateMinimumThreads(it.coerceIn(1, 8))
-                        },
-                        true
-                    )
-                    ConfigurationItem(
-                        ConfigurationProvider.CreateNewAudio(uiState = uiState) {
-                            onNavigate(Screen.Create)
-                        },
-                        true
-                    )
-                    ConfigurationItem(
-                        ConfigurationProvider.ReceiveAlertConfig(uiState.appSettings.receiveAlert) {
-                            configurationController.updateReceiveAlert(it)
-                        },
-                        false
-                    )
-                }
-            }
+            ProfileSection()
+            ConfigurationSection(
+                title = "TRANSCRIPTION",
+                items = listOf(
+                    {
+                        SwitchSettingItem(
+                            title = "Show timestamp",
+                            description = "Display time markers in transcriptions",
+                            iconRes = R.drawable.schedule,
+                            checked = uiState.appSettings.showTimestamp,
+                            onCheckedChange = { configurationController.updateShowTimestamp(it) }
+                        )
+                    },
+                    {
+                        IncrementSettingItem(
+                            title = "Processing threads",
+                            description = "Number of threads (1-8)",
+                            iconRes = R.drawable.memory,
+                            value = uiState.appSettings.minimumThreads,
+                            onValueChange = {
+                                configurationController.updateMinimumThreads(it.coerceIn(1, 8))
+                            }
+                        )
+                    },
+                    {
+                        ButtonSettingItem(
+                            title = "New transcription",
+                            description = "Transcribe your favourite podcast",
+                            iconRes = R.drawable.mic,
+                            onClick = { onNavigate(Screen.Create) },
+                            enabled = uiState.canCreate
+                        )
+                    },
+                    {
+                        ButtonSettingItem(
+                            title = "Language",
+                            description = "Select app language",
+                            buttonText = "English",
+                            iconRes = R.drawable.language,
+                            onClick = { },
+                            enabled = false
+                        )
+                    }
+                )
+            )
+            ConfigurationSection(
+                title = "NOTIFICATIONS",
+                items = listOf(
+                    {
+                        SwitchSettingItem(
+                            title = "Notifications",
+                            description = "Receive notifications about new episodes",
+                            iconRes = R.drawable.notifications,
+                            checked = uiState.appSettings.receiveAlert,
+                            onCheckedChange = { configurationController.updateReceiveAlert(it) }
+                        )
+                    }
+                )
+            )
+            Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "Kipty v${BuildConfig.VERSION_NAME}",
-                style = typography.bodyMedium,
-                color = colors.onBackground,
-                modifier = Modifier.padding(bottom = 16.dp)
+                text = "Kipty v${BuildConfig.VERSION_NAME} · Made with care",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .align(Alignment.CenterHorizontally)
             )
         }
     }
-}
-
-@Composable
-private fun ConfigurationItem(
-    configurationProvider: ConfigurationProvider,
-    divider: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = modifier.padding(vertical = 36.dp)
-    ) {
-        configurationProvider.Icon(colors, typography)
-        Column(modifier = Modifier.fillMaxWidth().weight(.7f)) {
-            Text(
-                text = configurationProvider.title,
-                style = typography.titleMedium,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = configurationProvider.description,
-                style = typography.bodyMedium,
-                color = colors.onBackground,
-                fontWeight = FontWeight.Light
-            )
-        }
-        configurationProvider.Settings(colors, typography)
-    }
-    if (divider) HorizontalDivider()
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-
     TopAppBar(
         title = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(colors.secondary.copy(.1f))
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.settings),
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .size(36.dp)
-                    )
-                }
+            Column {
                 Text(
                     text = "Settings",
-                    style = typography.displaySmall,
-                    color = colors.onBackground,
+                    style = MaterialTheme.typography.displaySmall,
                     fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Customize your experience",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
             }
         },
@@ -397,15 +500,13 @@ private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifie
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
                     contentDescription = null,
-                    tint = colors.onBackground,
                     modifier = Modifier.size(36.dp)
                 )
             })
         },
-        modifier = modifier,
-        expandedHeight = 100.dp
+        modifier = modifier
     )
-    HorizontalDivider(color = colors.primary)
+    HorizontalDivider()
 }
 
 @Preview(

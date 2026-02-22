@@ -132,7 +132,7 @@ fun UsernameSection(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
+        modifier = modifier.clickable { isEditing = true }
     ) {
         if (isEditing) {
             BasicTextField(
@@ -181,9 +181,7 @@ fun UsernameSection(
             Icon(
                 painter = painterResource(id = R.drawable.pencil),
                 contentDescription = "Edit name",
-                modifier = Modifier
-                    .size(20.dp)
-                    .clickable { isEditing = true },
+                modifier = Modifier.size(20.dp),
                 tint = colors.onBackground.copy(alpha = 0.6f)
             )
         }
@@ -418,38 +416,32 @@ fun ButtonSettingItem(
         title = title,
         description = description,
         settingControl = {
-            TextButton(
-                onClick = onClick,
-                shape = MaterialTheme.shapes.medium,
-                enabled = enabled
+            Box(
+                modifier = Modifier.fillMaxWidth(.32f)
             ) {
-                Box(
-                    modifier = Modifier.fillMaxWidth(.32f)
-                ) {
-                    if (buttonText != null) {
-                        Text(
-                            text = buttonText,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = colors.onSecondaryContainer.copy(
-                                alpha = if (enabled) 1f else .5f
-                            ),
-                            modifier = Modifier.align(Alignment.CenterStart)
-                        )
-                    }
-                    Icon(
-                        painter = painterResource(R.drawable.chevron_right),
-                        contentDescription = null,
-                        tint = colors.onSecondaryContainer.copy(
+                if (buttonText != null) {
+                    Text(
+                        text = buttonText,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = colors.onSecondaryContainer.copy(
                             alpha = if (enabled) 1f else .5f
                         ),
-                        modifier = Modifier
-                            .size(18.dp)
-                            .align(Alignment.CenterEnd)
+                        modifier = Modifier.align(Alignment.CenterStart)
                     )
                 }
+                Icon(
+                    painter = painterResource(R.drawable.chevron_right),
+                    contentDescription = null,
+                    tint = colors.onSecondaryContainer.copy(
+                        alpha = if (enabled) 1f else .5f
+                    ),
+                    modifier = Modifier
+                        .size(18.dp)
+                        .align(Alignment.CenterEnd)
+                )
             }
         },
-        modifier = modifier
+        modifier = modifier.clickable(onClick = onClick)
     )
 }
 

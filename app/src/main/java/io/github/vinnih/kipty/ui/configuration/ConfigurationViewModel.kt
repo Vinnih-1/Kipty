@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.data.settings.AppSettings
@@ -19,16 +20,18 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class ConfigurationsUiState(
-    val canCreate: Boolean,
-    val appSettings: AppSettings?,
-    val isLoading: Boolean = appSettings == null
+    val canCreate: Boolean = false,
+    val appSettings: AppSettings? = null,
+    val audioList: List<AudioEntity> = listOf(),
+    val isLoadingSettings: Boolean = true,
+    val isLoadingAudioList: Boolean = true
 )
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val appPreferencesRepository: AppPreferencesRepository,
-    private val audioRepository: AudioRepository
+    audioRepository: AudioRepository
 ) : ViewModel(),
     ConfigurationController {
 
@@ -42,16 +45,33 @@ class ConfigurationViewModel @Inject constructor(
         initialValue = null
     )
 
-    override val uiState: StateFlow<ConfigurationsUiState> = combine(canCreate, appSettings) {
+    val audioList = audioRepository.getAllFlow().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
+
+    override val uiState: StateFlow<ConfigurationsUiState> = combine(
+        canCreate,
+        appSettings,
+        audioList
+    ) {
             canCreate,
-            appSettings
+            appSettings,
+            audioList
         ->
         val canCreate = canCreate.isEmpty() || canCreate.all { it.state.isFinished }
-        ConfigurationsUiState(canCreate, appSettings)
+        ConfigurationsUiState(
+            canCreate = canCreate,
+            appSettings = appSettings,
+            audioList = audioList ?: listOf(),
+            isLoadingSettings = appSettings == null,
+            isLoadingAudioList = audioList == null
+        )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
-        initialValue = ConfigurationsUiState(false, null)
+        initialValue = ConfigurationsUiState()
     )
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {

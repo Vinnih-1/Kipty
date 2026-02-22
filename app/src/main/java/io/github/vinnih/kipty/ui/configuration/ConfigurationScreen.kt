@@ -2,6 +2,7 @@ package io.github.vinnih.kipty.ui.configuration
 
 import android.content.res.Configuration
 import androidx.annotation.DrawableRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,17 +59,18 @@ import androidx.compose.ui.unit.dp
 import io.github.vinnih.kipty.BuildConfig
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
-import io.github.vinnih.kipty.data.settings.AppSettings
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.ProfilePicture
 import io.github.vinnih.kipty.ui.create.rememberAudioPicker
 import io.github.vinnih.kipty.ui.theme.AppTheme
+import io.github.vinnih.kipty.utils.formatListenedTime
 import io.github.vinnih.kipty.utils.processUriToFile
 import java.io.File
 
 @Composable
 fun ProfileSection(
-    appSettings: AppSettings,
+    uiState: ConfigurationsUiState,
     onPickPhoto: (File) -> Unit,
     onUsernameChange: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -93,12 +95,12 @@ fun ProfileSection(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ProfilePicture(
-                iconPath = appSettings.profileIconPath,
+                iconPath = uiState.appSettings!!.profileIconPath,
                 onClick = { rememberAudioPicker.invoke() },
-                updatedAt = appSettings.profileIconUpdatedAt
+                updatedAt = uiState.appSettings.profileIconUpdatedAt
             )
             UsernameSection(
-                username = appSettings.username,
+                username = uiState.appSettings.username,
                 onUsernameChange = { onUsernameChange(it) }
             )
             Text(
@@ -106,7 +108,7 @@ fun ProfileSection(
                 style = typography.bodyMedium,
                 color = colors.onBackground.copy(alpha = 0.7f)
             )
-            StatsRow()
+            StatsRow(audioList = uiState.audioList, isLoading = uiState.isLoadingAudioList)
         }
     }
 }
@@ -189,8 +191,11 @@ fun UsernameSection(
 }
 
 @Composable
-fun StatsRow(modifier: Modifier = Modifier) {
+fun StatsRow(audioList: List<AudioEntity>, isLoading: Boolean, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
+    val audios = audioList.size
+    val transcribed = audioList.filter { it.transcription != null }.size
+    val totalListened = audioList.sumOf { it.playTime }
 
     Box(
         modifier = modifier
@@ -202,23 +207,33 @@ fun StatsRow(modifier: Modifier = Modifier) {
                 shape = MaterialTheme.shapes.medium
             )
     ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            StatItem(count = "24", label = "Audios", modifier = Modifier.weight(1f))
-            VerticalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = 1.dp,
-                color = Color.Gray.copy(alpha = 0.5f)
-            )
-            StatItem(count = "18", label = "Transcribed", modifier = Modifier.weight(1f))
-            VerticalDivider(
-                modifier = Modifier.padding(vertical = 8.dp),
-                thickness = 1.dp,
-                color = Color.Gray.copy(alpha = 0.5f)
-            )
-            StatItem(count = "12h", label = "Listened", modifier = Modifier.weight(1f))
+        AnimatedVisibility(!isLoading) {
+            Row(
+                modifier = Modifier.padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                StatItem(count = "$audios", label = "Audios", modifier = Modifier.weight(1f))
+                VerticalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = 1.dp,
+                    color = Color.Gray.copy(alpha = 0.5f)
+                )
+                StatItem(
+                    count = "$transcribed",
+                    label = "Transcribed",
+                    modifier = Modifier.weight(1f)
+                )
+                VerticalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = 1.dp,
+                    color = Color.Gray.copy(alpha = 0.5f)
+                )
+                StatItem(
+                    count = totalListened.formatListenedTime(),
+                    label = "Listened",
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }
@@ -227,10 +242,10 @@ fun StatsRow(modifier: Modifier = Modifier) {
 fun StatItem(count: String, label: String, modifier: Modifier = Modifier) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = modifier.padding(horizontal = 4.dp)
     ) {
-        Text(text = count, style = MaterialTheme.typography.titleLarge)
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Text(text = count, style = MaterialTheme.typography.bodyLarge)
+        Text(text = label, style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -478,7 +493,7 @@ fun ConfigurationScreen(
 ) {
     val uiState by configurationController.uiState.collectAsState()
 
-    if (uiState.isLoading) return
+    if (uiState.isLoadingSettings) return
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -491,7 +506,7 @@ fun ConfigurationScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             ProfileSection(
-                appSettings = uiState.appSettings!!,
+                uiState = uiState,
                 onPickPhoto = {
                     configurationController.updateProfileIcon(it)
                 },

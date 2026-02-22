@@ -1,5 +1,7 @@
 package io.github.vinnih.kipty.ui.configuration
 
+import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
@@ -32,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -56,6 +57,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import io.github.vinnih.kipty.BuildConfig
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
@@ -422,7 +424,7 @@ fun ButtonSettingItem(
                 if (buttonText != null) {
                     Text(
                         text = buttonText,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = colors.onSecondaryContainer.copy(
                             alpha = if (enabled) 1f else .5f
                         ),
@@ -484,6 +486,7 @@ fun ConfigurationScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by configurationController.uiState.collectAsState()
+    val context = LocalContext.current
 
     if (uiState.isLoadingSettings) return
 
@@ -564,6 +567,43 @@ fun ConfigurationScreen(
                     }
                 )
             )
+            ConfigurationSection(
+                title = "ABOUT",
+                items = listOf(
+                    {
+                        ButtonSettingItem(
+                            title = "Send feedback",
+                            description = "Help us improve Kipty",
+                            iconRes = R.drawable.chat,
+                            onClick = {
+                                openUrl(context, "https://github.com/Vinnih-1/Kipty/issues")
+                            },
+                            enabled = true
+                        )
+                    },
+                    {
+                        ButtonSettingItem(
+                            title = "Rate the app",
+                            description = "Leave a star on GitHub",
+                            iconRes = R.drawable.star,
+                            onClick = { openUrl(context, "https://github.com/Vinnih-1/Kipty") },
+                            enabled = true
+                        )
+                    },
+                    {
+                        ButtonSettingItem(
+                            title = "App version",
+                            description = "Check for updates",
+                            iconRes = R.drawable.info,
+                            buttonText = "v${BuildConfig.VERSION_NAME}",
+                            onClick = {
+                                openUrl(context, "https://github.com/Vinnih-1/Kipty/releases")
+                            },
+                            enabled = true
+                        )
+                    }
+                )
+            )
             Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "Kipty v${BuildConfig.VERSION_NAME} · Made with care",
@@ -607,6 +647,11 @@ private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifie
         modifier = modifier
     )
     HorizontalDivider()
+}
+
+private fun openUrl(context: Context, url: String) {
+    val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+    context.startActivity(intent)
 }
 
 @Preview(

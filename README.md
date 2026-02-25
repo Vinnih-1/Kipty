@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/platform-Android-green" />
-  <img src="https://img.shields.io/badge/language-Kotlin-blue" />
-  <img src="https://img.shields.io/github/license/Vinnih-1/Kipty" />
+  <img alt="GitHub Downloads (all assets, all releases)" src="https://img.shields.io/github/downloads/Vinnih-1/Kipty/total?style=for-the-badge">
+  <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/Vinnih-1/Kipty?style=for-the-badge&color=green">
+  <img alt="GitHub License" src="https://img.shields.io/github/license/Vinnih-1/Kipty?style=for-the-badge">
 </p>
 
 <h3 align="center">

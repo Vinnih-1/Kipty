@@ -1,19 +1,16 @@
 package io.github.vinnih.kipty.ui.player
 
-import android.content.Context
-import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
-import androidx.media3.common.Player
-import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.data.workers.PopulateWorker
+import io.github.vinnih.kipty.data.service.player.PlayerService
+import io.github.vinnih.kipty.domain.repository.AudioRepository
+import io.github.vinnih.kipty.domain.usecase.player.ChangePlaybackSpeedUseCase
+import io.github.vinnih.kipty.domain.usecase.player.LoadAudiosUseCase
+import io.github.vinnih.kipty.domain.usecase.player.SeekToUseCase
+import io.github.vinnih.kipty.domain.usecase.player.StopAudioUseCase
+import io.github.vinnih.kipty.domain.usecase.player.TrackPlayTimeUseCase
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -22,8 +19,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.dropWhile
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
@@ -49,15 +44,17 @@ data class PlayerUiState(
 @HiltViewModel
 class PlayerViewModel
 @Inject constructor(
-    @ApplicationContext private val context: Context,
-    override val player: Player,
-    private val audioRepository: AudioRepository
+    override val playerService: PlayerService,
+    private val audioRepository: AudioRepository,
+    private val loadAudiosUseCase: LoadAudiosUseCase,
+    private val trackPlayTimeUseCase: TrackPlayTimeUseCase,
+    private val stopAudioUseCase: StopAudioUseCase,
+    private val seekToUseCase: SeekToUseCase,
+    private val changePlaybackSpeedUseCase: ChangePlaybackSpeedUseCase
 ) : ViewModel(),
     PlayerController {
 
     private val currentAudio = MutableStateFlow<AudioEntity?>(null)
-
-    private val section = MutableStateFlow<AudioTranscription?>(null)
 
     private val progress: StateFlow<Pair<Float, Long>> = createProgressFlow()
 
@@ -72,152 +69,72 @@ class PlayerViewModel
             currentAudio = audio,
             progress = progress.first,
             currentPosition = progress.second,
-            duration = player.duration,
+            duration = playerService.duration,
             playbackSpeed = speed
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), PlayerUiState())
 
     init {
-        listener()
+        observeSectionBoundary()
 
-        viewModelScope.launch {
-            while (isActive) {
-                if (player.isPlaying) {
-                    viewModelScope.launch(Dispatchers.IO) {
-                        audioRepository.incrementPlayTime(currentAudio.value!!.uid)
-                    }
-                }
-                delay(1000)
+        playerService.onMediaItemTransition { mediaId ->
+            viewModelScope.launch(Dispatchers.IO) {
+                val audio = audioRepository.getById(mediaId.toInt()) ?: return@launch
+                currentAudio.value = audio
             }
         }
 
         viewModelScope.launch {
-            val workManager = WorkManager.getInstance(context)
+            trackPlayTimeUseCase { currentAudio.value }
+        }
 
-            workManager.getWorkInfosByTagFlow(PopulateWorker.TAG)
-                .first { workInfos ->
-                    workInfos.isNotEmpty() && workInfos.all { it.state.isFinished }
-                }
-            player.clearMediaItems()
-            audioRepository.getAllFlow()
-                .dropWhile { it.isEmpty() }
-                .first()
-                .filter { !it.transcription.isNullOrEmpty() }
-                .forEachIndexed { index, it ->
-                    if (index == 0) currentAudio.value = it
-                    preparePlayer(it)
-                }
+        viewModelScope.launch {
+            loadAudiosUseCase { audio -> currentAudio.value = audio }
         }
     }
 
-    override fun stopAudio() {
-        if (player.hasNextMediaItem()) {
-            player.seekToNextMediaItem()
-        } else {
-            currentAudio.value = null
-            player.stop()
-            player.clearMediaItems()
-        }
-    }
+    override fun stopAudio(): Unit = stopAudioUseCase { currentAudio.value = null }
 
     override fun seekTo(audioEntity: AudioEntity, start: Long, end: Long) {
-        val index = findMediaItemIndexById(audioEntity.uid)
-
-        if (index == -1) {
-            preparePlayer(audioEntity)
+        viewModelScope.launch {
+            seekToUseCase(
+                audioEntity,
+                start,
+                end
+            ) { playerService.section = it }
         }
-        section.value = AudioTranscription(start, end, "")
-        player.seekTo(index, start)
-        player.play()
     }
 
-    override fun seekTo(audioEntity: AudioEntity) {
-        currentAudio.value = audioEntity
-
-        val index = findMediaItemIndexById(audioEntity.uid)
-
-        if (index == -1) {
-            preparePlayer(audioEntity)
-            player.seekToDefaultPosition(player.mediaItemCount - 1)
-        } else {
-            player.seekToDefaultPosition(index)
-        }
-        player.play()
+    override fun seekTo(audioEntity: AudioEntity): Unit = seekToUseCase(audioEntity) {
+        currentAudio.value = it
     }
 
-    override fun seekTo(position: Long) {
-        player.seekTo(position)
-    }
+    override fun seekTo(position: Long): Unit = seekToUseCase(position)
 
     override fun changePlaybackSpeed() {
-        val allSpeeds = PlaybackSpeed.entries
-        val currentIndex = allSpeeds.indexOf(playbackSpeed.value)
-        val nextSpeed = allSpeeds[(currentIndex + 1) % allSpeeds.size]
-        playbackSpeed.value = nextSpeed
-        player.setPlaybackSpeed(nextSpeed.value)
+        playbackSpeed.value = changePlaybackSpeedUseCase(playbackSpeed.value)
     }
 
-    private fun listener() {
-        player.addListener(object : Player.Listener {
-            override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                if (mediaItem == null) return
-
-                viewModelScope.launch(Dispatchers.IO) {
-                    val audioEntity =
-                        audioRepository.getById(mediaItem.mediaId.toInt()) ?: return@launch
-                    currentAudio.value = audioEntity
-                }
+    private fun observeSectionBoundary() {
+        viewModelScope.launch {
+            while (isActive) {
+                playerService.checkSectionBoundary()
+                delay(10)
             }
-        })
-    }
-
-    private fun preparePlayer(audioEntity: AudioEntity) {
-        val metadata = MediaMetadata.Builder().apply {
-            setTitle(audioEntity.name)
-            setDescription(audioEntity.description)
-        }.build()
-        val mediaItem = MediaItem.Builder().apply {
-            setMediaMetadata(metadata)
-            setMediaId("${audioEntity.uid}")
-            setUri(
-                Uri.Builder()
-                    .scheme(if (audioEntity.isDefault) "asset" else "file")
-                    .path(audioEntity.audioPath)
-                    .build()
-            )
-        }.build()
-
-        player.addMediaItem(mediaItem)
-        player.prepare()
+        }
     }
 
     private fun createProgressFlow(): StateFlow<Pair<Float, Long>> = flow {
         while (currentCoroutineContext().isActive) {
-            if (player.isPlaying) {
-                if (section.value != null) {
-                    val end = section.value!!.end
-                    if (end != 0L && player.currentPosition >= end) {
-                        player.pause()
-                        section.value = null
-                    }
-                }
+            if (playerService.isPlaying) {
                 emit(
                     Pair(
-                        player.currentPosition.toFloat() / player.duration.toFloat(),
-                        player.currentPosition
+                        playerService.currentPosition.toFloat() / playerService.duration.toFloat(),
+                        playerService.currentPosition
                     )
                 )
             }
             delay(10)
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), Pair(0f, 0L))
-
-    private fun findMediaItemIndexById(mediaId: Int): Int {
-        for (i in 0 until player.mediaItemCount) {
-            if (player.getMediaItemAt(i).mediaId == mediaId.toString()) {
-                return i
-            }
-        }
-        return -1
-    }
 }

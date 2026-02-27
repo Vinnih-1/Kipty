@@ -11,11 +11,11 @@ import androidx.work.workDataOf
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.service.notification.NotificationChannels
 import io.github.vinnih.kipty.data.service.notification.NotificationService
 import io.github.vinnih.kipty.data.service.transcriptor.TranscriptorService
 import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
+import io.github.vinnih.kipty.domain.repository.AudioRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext

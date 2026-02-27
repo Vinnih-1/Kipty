@@ -12,8 +12,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
+import io.github.vinnih.kipty.domain.repository.AudioRepository
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers

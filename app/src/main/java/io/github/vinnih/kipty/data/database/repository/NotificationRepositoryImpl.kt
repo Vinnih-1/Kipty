@@ -1,8 +1,8 @@
-package io.github.vinnih.kipty.data.database.repository.notification.impl
+package io.github.vinnih.kipty.data.database.repository
 
 import io.github.vinnih.kipty.data.database.dao.NotificationDao
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
-import io.github.vinnih.kipty.data.database.repository.notification.NotificationRepository
+import io.github.vinnih.kipty.domain.repository.NotificationRepository
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

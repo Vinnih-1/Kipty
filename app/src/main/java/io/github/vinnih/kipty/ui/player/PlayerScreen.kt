@@ -115,7 +115,7 @@ fun PlayerScreen(
                 onExpand = {
                     scope.launch { scaffoldState.bottomSheetState.expand() }
                 },
-                player = playerController.player,
+                player = playerController.playerService.player,
                 playerUiState = playerUiState,
                 peekHeight = peekHeight
             )
@@ -125,7 +125,7 @@ fun PlayerScreen(
                 onCollapse = {
                     scope.launch { scaffoldState.bottomSheetState.partialExpand() }
                 },
-                player = playerController.player,
+                player = playerController.playerService.player,
                 playerController = playerController,
                 audioController = audioController,
                 notificationController = notificationController,
@@ -542,7 +542,7 @@ private fun PlayerPreview() {
     AppTheme {
         Player(
             onCollapse = {},
-            player = playerController.player,
+            player = playerController.playerService.player,
             playerController = FakePlayerViewModel(),
             audioController = FakeAudioViewModel(),
             notificationController = FakeNotificationViewModel(),
@@ -562,7 +562,7 @@ private fun MiniPlayerPreview() {
     AppTheme {
         MiniPlayer(
             onExpand = {},
-            player = playerController.player,
+            player = playerController.playerService.player,
             playerUiState = uiState,
             peekHeight = 100.dp
         )

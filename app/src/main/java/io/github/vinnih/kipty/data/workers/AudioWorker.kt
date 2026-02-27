@@ -11,12 +11,11 @@ import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.data.service.AudioResampler
-import io.github.vinnih.kipty.data.service.AudioResampler.getAudioDuration
-import io.github.vinnih.kipty.data.service.AudioResampler.resample
+import io.github.vinnih.kipty.data.service.audio.AudioService
+import io.github.vinnih.kipty.data.service.audio.OutputFormat
 import io.github.vinnih.kipty.data.service.notification.NotificationChannels
 import io.github.vinnih.kipty.data.service.notification.NotificationService
+import io.github.vinnih.kipty.domain.repository.AudioRepository
 import io.github.vinnih.kipty.utils.createFolder
 import io.github.vinnih.kipty.utils.processUriToFile
 import java.io.File
@@ -27,7 +26,8 @@ class AudioWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val audioRepository: AudioRepository,
-    private val notificationService: NotificationService
+    private val notificationService: NotificationService,
+    private val audioService: AudioService
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -64,7 +64,8 @@ class AudioWorker @AssistedInject constructor(
 
         audio.copyTo(destination, overwrite = true)
 
-        val duration = getAudioDuration(destination.absolutePath) ?: return Result.failure()
+        val duration =
+            audioService.getAudioDuration(destination.absolutePath) ?: return Result.failure()
 
         updateEntity(
             audioEntity,
@@ -86,8 +87,9 @@ class AudioWorker @AssistedInject constructor(
         return Result.success()
     }
 
-    fun convertAudioFile(file: File): File = file.resample(
-        format = AudioResampler.OutputFormat.OPUS,
+    fun convertAudioFile(file: File): File = audioService.resample(
+        file = file,
+        format = OutputFormat.OPUS,
         context = appContext
     )
 

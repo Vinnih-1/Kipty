@@ -5,8 +5,8 @@ import com.whispercpp.whisper.WhisperContext
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import io.github.vinnih.kipty.data.service.AudioResampler
-import io.github.vinnih.kipty.data.service.AudioResampler.resample
+import io.github.vinnih.kipty.data.service.audio.AudioService
+import io.github.vinnih.kipty.data.service.audio.OutputFormat
 import io.github.vinnih.kipty.utils.convertTranscription
 import io.github.vinnih.kipty.utils.moveTo
 import java.io.File
@@ -19,7 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Singleton
-class TranscriptorService @Inject constructor(@ApplicationContext private val context: Context) {
+class TranscriptorService @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val audioService: AudioService
+) {
 
     private var _whisperContext: WhisperContext? = null
 
@@ -93,7 +96,11 @@ class TranscriptorService @Inject constructor(@ApplicationContext private val co
             startTimeSeconds: Long
         ) -> Unit
     ) {
-        val wavFile = this.resample(format = AudioResampler.OutputFormat.WAV, context = context)
+        val wavFile = audioService.resample(
+            file = this,
+            format = OutputFormat.WAV,
+            context = context
+        )
         val bytesPerSecond = 16000 * 2
         val inputStream = wavFile.inputStream()
 
@@ -110,7 +117,7 @@ class TranscriptorService @Inject constructor(@ApplicationContext private val co
                 onSegmentProcessed(floatArray, progress, startTimeSeconds)
             }
         )
-        this.resample(format = AudioResampler.OutputFormat.MP3, context = context)
+        audioService.resample(file = this, format = OutputFormat.MP3, context = context)
             .moveTo(this.absoluteFile)
 
         wavFile.delete()

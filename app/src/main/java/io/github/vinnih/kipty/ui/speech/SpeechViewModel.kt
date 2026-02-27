@@ -13,11 +13,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
-import io.github.vinnih.kipty.data.database.repository.speech.SpeechRepository
-import io.github.vinnih.kipty.data.service.AudioResampler
-import io.github.vinnih.kipty.data.service.AudioResampler.resample
+import io.github.vinnih.kipty.data.service.audio.AudioService
+import io.github.vinnih.kipty.data.service.audio.OutputFormat
 import io.github.vinnih.kipty.data.service.recording.RecorderService
 import io.github.vinnih.kipty.data.service.recording.SpeechResult
+import io.github.vinnih.kipty.domain.repository.SpeechRepository
 import io.github.vinnih.kipty.utils.createFolder
 import java.io.File
 import java.time.LocalDateTime
@@ -46,6 +46,7 @@ class SpeechViewModel @Inject constructor(
     private val recorderService: RecorderService,
     private val speechResult: SpeechResult,
     private val speechRepository: SpeechRepository,
+    private val audioService: AudioService,
     private val player: Player
 ) : ViewModel(),
     SpeechController {
@@ -117,8 +118,9 @@ class SpeechViewModel @Inject constructor(
     override suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long =
         withContext(Dispatchers.IO) {
             val speechPath = filesPath.value.first
-            val resampledFile = File(speechPath).resample(
-                format = AudioResampler.OutputFormat.WAV,
+            val resampledFile = audioService.resample(
+                file = File(speechPath),
+                format = OutputFormat.WAV,
                 context = context
             )
             val audioBytes = resampledFile.readBytes()
@@ -171,10 +173,11 @@ class SpeechViewModel @Inject constructor(
             "speeches${File.separator}$parentFolderName"
         ).createFolder()
         val speechFile = File(speechPath)
-        val resampledFile = speechFile.resample(
+        val resampledFile = audioService.resample(
+            file = speechFile,
             bitrate = 192,
             context = context,
-            format = AudioResampler.OutputFormat.OPUS
+            format = OutputFormat.OPUS
         )
         val destination = File(path, resampledFile.name)
 

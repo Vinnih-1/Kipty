@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data.database.repository.notification
+package io.github.vinnih.kipty.domain.repository
 
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import kotlinx.coroutines.flow.Flow

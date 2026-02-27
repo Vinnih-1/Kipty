@@ -6,7 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
-import io.github.vinnih.kipty.data.database.repository.notification.NotificationRepository
+import io.github.vinnih.kipty.domain.repository.NotificationRepository
 import java.time.LocalDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted

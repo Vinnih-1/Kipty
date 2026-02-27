@@ -8,9 +8,9 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.data.service.AudioResampler.getAudioDuration
+import io.github.vinnih.kipty.data.service.audio.AudioService
 import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
+import io.github.vinnih.kipty.domain.repository.AudioRepository
 import io.github.vinnih.kipty.utils.convertTranscription
 import io.github.vinnih.kipty.utils.copyTo
 import io.github.vinnih.kipty.utils.createFile
@@ -24,7 +24,8 @@ class PopulateWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted private val workerParams: WorkerParameters,
     private val repository: AudioRepository,
-    private val appPreferencesRepository: AppPreferencesRepository
+    private val appPreferencesRepository: AppPreferencesRepository,
+    private val audioService: AudioService
 ) : CoroutineWorker(appContext, workerParams) {
 
     companion object {
@@ -34,7 +35,8 @@ class PopulateWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         appPreferencesRepository.runOnlyOnFirstSync {
             createDefault { audio, transcription, image, description, tempFile ->
-                val duration = getAudioDuration(tempFile.absolutePath) ?: return@createDefault
+                val duration =
+                    audioService.getAudioDuration(tempFile.absolutePath) ?: return@createDefault
                 val transcriptionData = transcription.convertTranscription()
                 val audioEntity = AudioEntity(
                     name = audio.substringAfterLast("/"),

@@ -4,12 +4,12 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.github.vinnih.kipty.data.database.repository.audio.AudioRepository
-import io.github.vinnih.kipty.data.database.repository.audio.impl.AudioRepositoryImpl
-import io.github.vinnih.kipty.data.database.repository.notification.NotificationRepository
-import io.github.vinnih.kipty.data.database.repository.notification.impl.NotificationRepositoryImpl
-import io.github.vinnih.kipty.data.database.repository.speech.SpeechRepository
-import io.github.vinnih.kipty.data.database.repository.speech.impl.SpeechRepositoryImpl
+import io.github.vinnih.kipty.data.database.repository.AudioRepositoryImpl
+import io.github.vinnih.kipty.data.database.repository.NotificationRepositoryImpl
+import io.github.vinnih.kipty.data.database.repository.SpeechRepositoryImpl
+import io.github.vinnih.kipty.domain.repository.AudioRepository
+import io.github.vinnih.kipty.domain.repository.NotificationRepository
+import io.github.vinnih.kipty.domain.repository.SpeechRepository
 import javax.inject.Singleton
 
 @Module

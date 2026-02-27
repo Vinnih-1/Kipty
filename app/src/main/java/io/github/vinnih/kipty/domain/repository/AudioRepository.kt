@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data.database.repository.audio
+package io.github.vinnih.kipty.domain.repository
 
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState

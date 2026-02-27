@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data.database.repository.speech
+package io.github.vinnih.kipty.domain.repository
 
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
 

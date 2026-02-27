@@ -1,12 +1,12 @@
 package io.github.vinnih.kipty.ui.player
 
-import androidx.media3.common.Player
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.service.player.PlayerService
 import kotlinx.coroutines.flow.StateFlow
 
 interface PlayerController {
 
-    val player: Player
+    val playerService: PlayerService
 
     val uiState: StateFlow<PlayerUiState>
 

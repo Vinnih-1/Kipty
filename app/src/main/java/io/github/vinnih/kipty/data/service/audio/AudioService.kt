@@ -1,21 +1,21 @@
-package io.github.vinnih.kipty.data.service
+package io.github.vinnih.kipty.data.service.audio
 
 import android.content.Context
 import com.arthenica.ffmpegkit.FFmpegKit
 import com.arthenica.ffmpegkit.FFprobeKit
 import com.arthenica.ffmpegkit.ReturnCode
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlin.io.nameWithoutExtension
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-object AudioResampler {
-    enum class OutputFormat(val extension: String) {
-        MP3("mp3"),
-        WAV("wav"),
-        OPUS("opus")
-    }
+@Singleton
+class AudioService @Inject constructor() {
 
-    fun File.resample(
+    fun resample(
+        file: File,
         sampleRate: Int = 16000,
         channels: Int = 1,
         bitrate: Int = 16,
@@ -24,11 +24,11 @@ object AudioResampler {
     ): File {
         val outputFile = File(
             context.cacheDir,
-            "$nameWithoutExtension.${format.extension}"
+            "${file.nameWithoutExtension}.${format.extension}"
         )
 
         val command = buildString {
-            append("-i \"$absolutePath\" ")
+            append("-i \"${file.absolutePath}\" ")
             append("-ar $sampleRate ")
             append("-ac $channels ")
 

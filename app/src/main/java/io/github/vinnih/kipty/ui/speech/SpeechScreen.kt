@@ -124,7 +124,7 @@ fun SpeechScreen(
                         onPlay.invoke()
                     },
                     onToggle = {
-                        recordController.toggleRecording(selectedAudio.audioPath)
+                        recordController.startRecord(selectedAudio.audioPath)
                         scene = Scene.RECORDING
                     }
                 )
@@ -135,11 +135,11 @@ fun SpeechScreen(
                     amplitudes = uiState.amplitudes,
                     recordingTime = uiState.recordingTime,
                     onRecord = {
-                        recordController.toggleRecording(selectedAudio.audioPath)
+                        recordController.stopRecord()
                         scope.launch {
                             scene = Scene.PROCESSING
                             speechEntity = recordController.getById(
-                                recordController.calculatePronunciationScore(phrase).toInt()
+                                recordController.pronunciationScore(phrase).toInt()
                             )
                         }
                     }
@@ -155,6 +155,7 @@ fun SpeechScreen(
                     uiState = uiState,
                     onRetry = {
                         recordController.clearAll()
+                        recordController.stopTempAudio()
                         scene = Scene.TOGGLE
                     },
                     onPlay = {

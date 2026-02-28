@@ -37,8 +37,6 @@ class PlayerService @Inject constructor(val player: Player) {
 
     fun getMediaItemAt(index: Int): MediaItem = player.getMediaItemAt(index)
 
-    fun addListener(listener: Player.Listener) = player.addListener(listener)
-
     fun findMediaItemIndexById(mediaId: Int): Int {
         for (i in 0 until player.mediaItemCount) {
             if (player.getMediaItemAt(i).mediaId == mediaId.toString()) {

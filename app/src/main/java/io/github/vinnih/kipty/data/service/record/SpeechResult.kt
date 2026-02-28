@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.data.service.recording
+package io.github.vinnih.kipty.data.service.record
 
 import io.github.vinnih.kipty.data.service.transcriptor.TranscriptorService
 import javax.inject.Inject

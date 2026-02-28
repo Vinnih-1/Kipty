@@ -1,37 +1,29 @@
 package io.github.vinnih.kipty.ui.speech
 
-import android.content.Context
-import android.os.Looper
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
-import io.github.vinnih.kipty.data.service.audio.AudioService
 import io.github.vinnih.kipty.data.service.audio.OutputFormat
-import io.github.vinnih.kipty.data.service.recording.RecorderService
-import io.github.vinnih.kipty.data.service.recording.SpeechResult
-import io.github.vinnih.kipty.domain.repository.SpeechRepository
-import io.github.vinnih.kipty.utils.createFolder
+import io.github.vinnih.kipty.data.service.record.RecorderService
+import io.github.vinnih.kipty.domain.usecase.audio.ResampleAudioUseCase
+import io.github.vinnih.kipty.domain.usecase.player.PauseAudioUseCase
+import io.github.vinnih.kipty.domain.usecase.player.TempPlayerPlayUseCase
+import io.github.vinnih.kipty.domain.usecase.player.TempPlayerStopUseCase
+import io.github.vinnih.kipty.domain.usecase.record.CalculatePronunciationScoreUseCase
+import io.github.vinnih.kipty.domain.usecase.record.GetRecordByIdUseCase
+import io.github.vinnih.kipty.domain.usecase.record.SaveRecordUseCase
+import io.github.vinnih.kipty.domain.usecase.record.StartRecordUseCase
+import io.github.vinnih.kipty.domain.usecase.record.StopRecordUseCase
+import io.github.vinnih.kipty.domain.usecase.record.TransferAudioUseCase
 import java.io.File
-import java.time.LocalDateTime
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 data class SpeechUiState(
     val isRecording: Boolean = false,
@@ -42,40 +34,28 @@ data class SpeechUiState(
 
 @HiltViewModel
 class SpeechViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val recorderService: RecorderService,
-    private val speechResult: SpeechResult,
-    private val speechRepository: SpeechRepository,
-    private val audioService: AudioService,
-    private val player: Player
+    recorderService: RecorderService,
+    private val startRecordUseCase: StartRecordUseCase,
+    private val stopRecordUseCase: StopRecordUseCase,
+    private val pauseAudioUseCase: PauseAudioUseCase,
+    private val saveSpeechUseCase: SaveRecordUseCase,
+    private val resampleAudioUseCase: ResampleAudioUseCase,
+    private val transferAudioUseCase: TransferAudioUseCase,
+    private val getRecordByIdUseCase: GetRecordByIdUseCase,
+    private val tempPlayerPlayUseCase: TempPlayerPlayUseCase,
+    private val tempPlayerStopUseCase: TempPlayerStopUseCase,
+    private val calculateScoreUseCase: CalculatePronunciationScoreUseCase
 ) : ViewModel(),
     SpeechController {
 
-    @delegate:UnstableApi
-    private val tempPlayer: ExoPlayer by lazy {
-        ExoPlayer.Builder(context)
-            .setLooper(Looper.getMainLooper())
-            .build()
-    }
-
-    private val isTempAudioPlaying = MutableStateFlow(false)
-
-    private val isRecording = MutableStateFlow(false)
-
-    private val amplitudes = MutableStateFlow<List<Float>>(emptyList())
-
-    private val recordingTime = MutableStateFlow(0L)
-
-    private val filesPath = MutableStateFlow(Pair("", ""))
-
+    private val recordPath = MutableStateFlow("")
+    private val audioPath = MutableStateFlow("")
     private val result = MutableStateFlow(Pair("", 0))
 
-    private var timerJob: Job? = null
-
     override val uiState: StateFlow<SpeechUiState> = combine(
-        isRecording,
-        amplitudes,
-        recordingTime,
+        recorderService.isRecording,
+        recorderService.amplitudes,
+        recorderService.recordTime,
         result
     ) { recording, amps, time, result ->
         SpeechUiState(
@@ -86,158 +66,64 @@ class SpeechViewModel @Inject constructor(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SpeechUiState())
 
-    override suspend fun getById(id: Int): SpeechEntity? = speechRepository.getById(id)
+    suspend fun getById(id: Int): SpeechEntity? = getRecordByIdUseCase(id)
 
-    init {
-        viewModelScope.launch {
-            recorderService.amplitudeFlow.collect { amps ->
-                amplitudes.value = amps
-            }
+    fun startRecord(audioPath: String) {
+        pauseAudioUseCase()
+        startRecordUseCase { output ->
+            recordPath.value = output.absolutePath
+            this.audioPath.value = audioPath
         }
     }
 
-    override fun toggleRecording(audioPath: String) {
-        if (isRecording.value) {
-            stopRecording()
-        } else {
-            startRecording(audioPath)
+    fun stopRecord() = stopRecordUseCase()
+
+    fun abortRecording() {
+        val recordPath = recordPath.value
+
+        if (recordPath.isNotEmpty()) {
+            File(recordPath).delete()
         }
-    }
+        stopRecordUseCase()
 
-    override fun abortRecording() {
-        val speechPath = filesPath.value.first
-
-        if (speechPath.isNotEmpty()) {
-            File(speechPath).delete()
-        }
-
-        stopRecording()
         clearAll()
     }
 
-    override suspend fun calculatePronunciationScore(phrase: AudioTranscription): Long =
-        withContext(Dispatchers.IO) {
-            val speechPath = filesPath.value.first
-            val resampledFile = audioService.resample(
-                file = File(speechPath),
-                format = OutputFormat.WAV,
-                context = context
-            )
-            val audioBytes = resampledFile.readBytes()
-
-            result.value = speechResult.calculatePronunciationScore(
-                expected = phrase.text,
-                byteArray = audioBytes
-            )
-            resampledFile.delete()
-            transferTo()
-
-            return@withContext saveSpeech(phrase)
-        }
-
-    private fun startRecording(audioPath: String) {
-        if (player.isPlaying) player.pause()
-
-        val outputFile = File(
-            context.cacheDir,
-            "recording_${System.currentTimeMillis()}.m4a"
+    suspend fun pronunciationScore(phrase: AudioTranscription): Long {
+        val resampledFile = resampleAudioUseCase(
+            file = File(recordPath.value),
+            format = OutputFormat.WAV
         )
 
-        filesPath.value = Pair(outputFile.absolutePath, audioPath)
-        recorderService.startRecording(outputFile)
-        isRecording.value = true
-        recordingTime.value = 0
-
-        timerJob = viewModelScope.launch {
-            while (isRecording.value) {
-                delay(1000)
-                recordingTime.value += 1
-            }
-        }
-    }
-
-    private fun stopRecording() {
-        recorderService.stopRecording()
-        timerJob?.cancel()
-    }
-
-    private fun transferTo() {
-        val speechPath = filesPath.value.first
-        val audioPath = filesPath.value.second
-
-        val audioFile = File(audioPath)
-        val parentFolderName = audioFile.parentFile?.name ?: "unknown"
-
-        val path = File(
-            context.filesDir,
-            "speeches${File.separator}$parentFolderName"
-        ).createFolder()
-        val speechFile = File(speechPath)
-        val resampledFile = audioService.resample(
-            file = speechFile,
-            bitrate = 192,
-            context = context,
-            format = OutputFormat.OPUS
-        )
-        val destination = File(path, resampledFile.name)
-
-        filesPath.value = Pair(destination.absolutePath, audioPath)
-        resampledFile.copyTo(destination, true)
-        speechFile.delete()
-        resampledFile.delete()
-    }
-
-    private suspend fun saveSpeech(phrase: AudioTranscription): Long = withContext(Dispatchers.IO) {
-        val speechEntity = SpeechEntity(
-            audioPath = filesPath.value.second,
-            speechPath = filesPath.value.first,
+        calculateScoreUseCase(
             phrase = phrase,
-            result = result.value.first,
-            createdAt = LocalDateTime.now().toString()
+            byteArray = resampledFile.readBytes(),
+            onSuccess = { result.value = it }
+        )
+        resampledFile.delete()
+
+        transferAudioUseCase(
+            recordPath = recordPath.value,
+            path = "speeches${File.separator}${audioPath.value.substringBeforeLast("/")}",
+            outputFile = {
+                recordPath.value = it.absolutePath
+            }
         )
 
-        return@withContext speechRepository.save(speechEntity)
+        return saveSpeechUseCase(
+            audioPath = audioPath.value,
+            recordPath = recordPath.value,
+            result = result.value.first,
+            phrase = phrase
+        )
     }
-
-    override fun clearAll() {
-        isRecording.value = false
-        amplitudes.value = emptyList()
-        recordingTime.value = 0
-        filesPath.value = Pair("", "")
+    fun clearAll() {
+        audioPath.value = ""
+        recordPath.value = ""
         result.value = Pair("", 0)
-        timerJob?.cancel()
-        tempPlayer.stop()
     }
 
-    override fun playTempAudio(audioFilePath: String) {
-        viewModelScope.launch(Dispatchers.Main) {
-            if (player.isPlaying) player.pause()
+    fun playTempAudio(audioFilePath: String) = tempPlayerPlayUseCase(audioFilePath)
 
-            val mediaItem = MediaItem.fromUri(audioFilePath.toUri())
-
-            tempPlayer.setMediaItem(mediaItem)
-            tempPlayer.prepare()
-            tempPlayer.play()
-            isTempAudioPlaying.value = true
-
-            tempPlayer.addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_ENDED) {
-                        isTempAudioPlaying.value = false
-                        tempPlayer.removeListener(this)
-                    }
-                }
-            })
-        }
-    }
-
-    override fun stopTempAudio() {
-        tempPlayer.stop()
-        isTempAudioPlaying.value = false
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        tempPlayer.release()
-    }
+    fun stopTempAudio() = tempPlayerStopUseCase()
 }

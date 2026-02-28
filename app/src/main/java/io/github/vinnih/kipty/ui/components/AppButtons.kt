@@ -20,11 +20,13 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 fun BaseButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable () -> Unit
 ) {
     IconButton(
         onClick = onClick,
-        modifier = modifier.size(48.dp)
+        modifier = modifier.size(48.dp),
+        enabled = enabled
     ) {
         content.invoke()
     }

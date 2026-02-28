@@ -349,11 +349,17 @@ private fun MiniPlayer(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
-                    BaseButton(onClick = { previous.onClick() }, modifier = Modifier.size(32.dp)) {
+                    BaseButton(
+                        onClick = { previous.onClick() },
+                        enabled = previous.isEnabled,
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.skip_previous),
                             contentDescription = null,
-                            tint = colors.onBackground.copy(alpha = .6f),
+                            tint = colors.onBackground.copy(
+                                alpha = if (previous.isEnabled) .6f else .2f
+                            ),
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -374,11 +380,17 @@ private fun MiniPlayer(
                             modifier = Modifier.size(38.dp)
                         )
                     }
-                    BaseButton(onClick = { next.onClick() }, modifier = Modifier.size(32.dp)) {
+                    BaseButton(
+                        onClick = { next.onClick() },
+                        enabled = next.isEnabled,
+                        modifier = Modifier.size(32.dp)
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.skip_next),
                             contentDescription = null,
-                            tint = colors.onBackground.copy(alpha = .6f),
+                            tint = colors.onBackground.copy(
+                                alpha = if (next.isEnabled) .6f else .2f
+                            ),
                             modifier = Modifier.size(32.dp)
                         )
                     }
@@ -476,11 +488,16 @@ private fun PlayerBottom(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 12.dp)
             ) {
-                BaseButton(onClick = skipPrevious::onClick) {
+                BaseButton(
+                    onClick = skipPrevious::onClick,
+                    enabled = skipPrevious.isEnabled
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.skip_previous),
                         contentDescription = null,
-                        tint = colors.secondary,
+                        tint = colors.secondary.copy(
+                            alpha = if (skipPrevious.isEnabled) 1f else .3f
+                        ),
                         modifier = Modifier.size(42.dp)
                     )
                 }
@@ -500,11 +517,14 @@ private fun PlayerBottom(
                         modifier = Modifier.size(36.dp)
                     )
                 }
-                BaseButton(onClick = skipNext::onClick) {
+                BaseButton(
+                    onClick = skipNext::onClick,
+                    enabled = skipNext.isEnabled
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.skip_next),
                         contentDescription = null,
-                        tint = colors.secondary,
+                        tint = colors.secondary.copy(alpha = if (skipNext.isEnabled) 1f else .3f),
                         modifier = Modifier.size(42.dp)
                     )
                 }

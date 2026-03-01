@@ -6,8 +6,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
-import io.github.vinnih.kipty.domain.repository.NotificationRepository
-import java.time.LocalDateTime
+import io.github.vinnih.kipty.domain.usecase.notification.DeleteNotificationUseCase
+import io.github.vinnih.kipty.domain.usecase.notification.GetEarlierNotificationsUseCase
+import io.github.vinnih.kipty.domain.usecase.notification.GetTodayNotificationsUseCase
+import io.github.vinnih.kipty.domain.usecase.notification.GetUnreadNotificationsUseCase
+import io.github.vinnih.kipty.domain.usecase.notification.GetYesterdayNotificationsUseCase
+import io.github.vinnih.kipty.domain.usecase.notification.ReadNotificationUseCase
+import io.github.vinnih.kipty.domain.usecase.notification.SaveNotificationUseCase
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,46 +28,33 @@ data class NotificationUiState(
 )
 
 @HiltViewModel
-class NotificationViewModel @Inject constructor(private val repository: NotificationRepository) :
-    ViewModel(),
+class NotificationViewModel @Inject constructor(
+    getTodayNotificationsUseCase: GetTodayNotificationsUseCase,
+    getYesterdayNotificationsUseCase: GetYesterdayNotificationsUseCase,
+    getEarlierNotificationsUseCase: GetEarlierNotificationsUseCase,
+    getUnreadNotificationsUseCase: GetUnreadNotificationsUseCase,
+    private val saveNotificationUseCase: SaveNotificationUseCase,
+    private val readNotificationUseCase: ReadNotificationUseCase,
+    private val deleteNotificationUseCase: DeleteNotificationUseCase
+) : ViewModel(),
     NotificationController {
 
-    override val uiState: StateFlow<NotificationUiState>
-        get() = combine(today, yesterday, earlier, unread) { today, yesterday, earlier, unread ->
+    override val today: StateFlow<List<NotificationEntity>> = getTodayNotificationsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    override val yesterday: StateFlow<List<NotificationEntity>> = getYesterdayNotificationsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    override val earlier: StateFlow<List<NotificationEntity>> = getEarlierNotificationsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    override val unread: StateFlow<List<NotificationEntity>> = getUnreadNotificationsUseCase()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    override val uiState: StateFlow<NotificationUiState> =
+        combine(today, yesterday, earlier, unread) { today, yesterday, earlier, unread ->
             NotificationUiState(today, yesterday, earlier, unread)
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = NotificationUiState()
-        )
-
-    override val today: StateFlow<List<NotificationEntity>> = repository.getToday()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    override val yesterday: StateFlow<List<NotificationEntity>> = repository.getYesterday()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    override val earlier: StateFlow<List<NotificationEntity>> = repository.getEarlier()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    override val unread: StateFlow<List<NotificationEntity>> = repository.getAllUnread()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), NotificationUiState())
 
     override fun notify(
         audioEntity: AudioEntity,
@@ -70,29 +62,20 @@ class NotificationViewModel @Inject constructor(private val repository: Notifica
         content: String,
         channel: NotificationCategory
     ) {
-        val notificationEntity = NotificationEntity(
-            title = title,
-            content = content,
-            audioId = audioEntity.uid,
-            audioName = audioEntity.name,
-            channel = channel,
-            createdAt = LocalDateTime.now().toString()
-        )
-
         viewModelScope.launch {
-            repository.save(notificationEntity)
+            saveNotificationUseCase(audioEntity, title, content, channel)
         }
     }
 
     override fun read(notificationEntity: NotificationEntity) {
         viewModelScope.launch {
-            repository.read(notificationEntity)
+            readNotificationUseCase(notificationEntity)
         }
     }
 
     override fun delete(notificationEntity: NotificationEntity) {
         viewModelScope.launch {
-            repository.delete(notificationEntity)
+            deleteNotificationUseCase(notificationEntity)
         }
     }
 }

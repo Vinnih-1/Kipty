@@ -1,12 +1,11 @@
 package io.github.vinnih.kipty.ui.edit
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.domain.repository.AudioRepository
+import io.github.vinnih.kipty.domain.usecase.audio.CompleteEditUseCase
+import io.github.vinnih.kipty.domain.usecase.audio.GetAudioFlowByIdUseCase
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,8 +24,8 @@ data class EditUiState(
 
 @HiltViewModel
 class EditViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val audioRepository: AudioRepository
+    private val getAudioFlowByIdUseCase: GetAudioFlowByIdUseCase,
+    private val completeEditUseCase: CompleteEditUseCase
 ) : ViewModel(),
     EditController {
 
@@ -36,8 +35,7 @@ class EditViewModel @Inject constructor(
 
     override fun retrieveData(id: Int) {
         viewModelScope.launch {
-            val audioEntity = audioRepository.getFlowById(id).firstOrNull() ?: return@launch
-
+            val audioEntity = getAudioFlowByIdUseCase(id).firstOrNull() ?: return@launch
             _uiState.update { currentState ->
                 currentState.copy(
                     title = audioEntity.name,
@@ -50,51 +48,27 @@ class EditViewModel @Inject constructor(
     }
 
     override fun editTitle(title: String) {
-        _uiState.update { currentState ->
-            currentState.copy(title = title)
-        }
+        _uiState.update { it.copy(title = title) }
     }
 
     override fun editDescription(description: String) {
-        _uiState.update { currentState ->
-            currentState.copy(description = description)
-        }
+        _uiState.update { it.copy(description = description) }
     }
 
     override fun editImage(image: File?) {
-        _uiState.update { currentState ->
-            currentState.copy(imageFile = image)
-        }
+        _uiState.update { it.copy(imageFile = image) }
     }
 
     override fun completeEdit(onSuccess: () -> Unit) {
         viewModelScope.launch {
-            val audioEntity = _uiState.value.audioEntity ?: return@launch
-            val imageFile = _uiState.value.imageFile ?: File(context.filesDir, "default-icon.png")
-            val transcriptionFolder = File(audioEntity.audioPath).parentFile!!
-            val destinationImage = File(transcriptionFolder, imageFile.name)
-
-            val newImagePath = if (imageFile.absolutePath != destinationImage.absolutePath) {
-                imageFile.copyTo(destinationImage, overwrite = true)
-                destinationImage.absolutePath
-            } else {
-                imageFile.absolutePath
-            }
-
-            audioRepository.save(
-                _uiState.value.audioEntity!!.copy(
-                    name = _uiState.value.title,
-                    description = _uiState.value.description,
-                    imagePath = newImagePath
-                )
-            )
+            val state = _uiState.value
+            val audioEntity = state.audioEntity ?: return@launch
+            completeEditUseCase(audioEntity, state.title, state.description, state.imageFile)
             onSuccess.invoke()
         }
     }
 
     override fun clearUiState() {
-        _uiState.update {
-            EditUiState()
-        }
+        _uiState.update { EditUiState() }
     }
 }

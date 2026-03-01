@@ -3,9 +3,6 @@ package io.github.vinnih.kipty.ui.audio
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.Data
-import androidx.work.ExistingWorkPolicy
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,8 +10,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.workers.TranscriptionWorker
-import io.github.vinnih.kipty.domain.repository.AudioRepository
-import java.io.File
+import io.github.vinnih.kipty.domain.usecase.audio.CancelTranscriptionUseCase
+import io.github.vinnih.kipty.domain.usecase.audio.DeleteAudioUseCase
+import io.github.vinnih.kipty.domain.usecase.audio.GetAudioByIdUseCase
+import io.github.vinnih.kipty.domain.usecase.audio.GetAudioFlowByIdUseCase
+import io.github.vinnih.kipty.domain.usecase.audio.SaveAudioUseCase
+import io.github.vinnih.kipty.domain.usecase.audio.TranscribeAudioUseCase
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -30,13 +31,17 @@ data class AudioUiState(val canTranscribe: Boolean = false, val currentUid: Int?
 @HiltViewModel
 class AudioViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val repository: AudioRepository
+    private val transcribeAudioUseCase: TranscribeAudioUseCase,
+    private val cancelTranscriptionUseCase: CancelTranscriptionUseCase,
+    private val getAudioFlowByIdUseCase: GetAudioFlowByIdUseCase,
+    private val getAudioByIdUseCase: GetAudioByIdUseCase,
+    private val saveAudioUseCase: SaveAudioUseCase,
+    private val deleteAudioUseCase: DeleteAudioUseCase
 ) : ViewModel(),
     AudioController {
 
-    private val workManager = WorkManager.getInstance(context)
-
-    private val canTranscribe = workManager.getWorkInfosByTagFlow(TranscriptionWorker.TAG)
+    private val canTranscribe =
+        WorkManager.getInstance(context).getWorkInfosByTagFlow(TranscriptionWorker.TAG)
 
     override val uiState: StateFlow<AudioUiState> = combine(canTranscribe) { workInfoArray ->
         val workInfoList = workInfoArray[0]
@@ -46,26 +51,11 @@ class AudioViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AudioUiState())
 
     override fun transcribeAudio(audioEntity: AudioEntity) {
-        val request = OneTimeWorkRequestBuilder<TranscriptionWorker>()
-            .setInputData(Data.Builder().putInt("AUDIO_ID", audioEntity.uid).build())
-            .addTag(TranscriptionWorker.TAG)
-            .build()
-
-        workManager.enqueueUniqueWork(
-            "transcript_audio_process",
-            ExistingWorkPolicy.KEEP,
-            request
-        )
-
         viewModelScope.launch {
-            workManager.getWorkInfoByIdFlow(request.id).collect { workInfo ->
-                when (workInfo?.state) {
-                    WorkInfo.State.CANCELLED -> {
-                        repository.updateAudioState(audioEntity.uid, TranscriptionState.NONE)
-                    }
-
-                    WorkInfo.State.FAILED -> {
-                        repository.updateAudioState(audioEntity.uid, TranscriptionState.NONE)
+            transcribeAudioUseCase(audioEntity).collect { state ->
+                when (state) {
+                    WorkInfo.State.CANCELLED, WorkInfo.State.FAILED -> {
+                        saveAudioUseCase(audioEntity.copy(state = TranscriptionState.NONE))
                     }
 
                     else -> {}
@@ -74,26 +64,19 @@ class AudioViewModel @Inject constructor(
         }
     }
 
-    override fun getFlowById(id: Int): Flow<AudioEntity?> = repository.getFlowById(id)
+    override fun getFlowById(id: Int): Flow<AudioEntity?> = getAudioFlowByIdUseCase(id)
 
-    override suspend fun saveAudio(audioEntity: AudioEntity): Long = withContext(Dispatchers.IO) {
-        return@withContext repository.save(audioEntity)
-    }
+    override suspend fun saveAudio(audioEntity: AudioEntity): Long =
+        withContext(Dispatchers.IO) { saveAudioUseCase(audioEntity) }
 
-    override suspend fun getById(id: Int): AudioEntity? = withContext(Dispatchers.IO) {
-        return@withContext repository.getById(id)
-    }
+    override suspend fun getById(id: Int): AudioEntity? =
+        withContext(Dispatchers.IO) { getAudioByIdUseCase(id) }
 
     override fun deleteAudio(audioEntity: AudioEntity) {
-        viewModelScope.launch(Dispatchers.IO) {
-            repository.delete(audioEntity)
-            if (!audioEntity.isDefault) {
-                File(audioEntity.audioPath).parentFile!!.deleteRecursively()
-            }
-        }
+        viewModelScope.launch(Dispatchers.IO) { deleteAudioUseCase(audioEntity) }
     }
 
     override fun cancelTranscriptionWork(audioEntity: AudioEntity) {
-        workManager.cancelAllWorkByTag(TranscriptionWorker.TAG)
+        cancelTranscriptionUseCase()
     }
 }

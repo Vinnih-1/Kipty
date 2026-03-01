@@ -7,10 +7,15 @@ import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
 import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.data.workers.AudioWorker
-import io.github.vinnih.kipty.domain.repository.AudioRepository
+import io.github.vinnih.kipty.domain.usecase.audio.GetAudiosUseCase
+import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
+import io.github.vinnih.kipty.domain.usecase.settings.UpdateMinimumThreadsUseCase
+import io.github.vinnih.kipty.domain.usecase.settings.UpdateProfileIconUseCase
+import io.github.vinnih.kipty.domain.usecase.settings.UpdateReceiveAlertUseCase
+import io.github.vinnih.kipty.domain.usecase.settings.UpdateShowTimestampUseCase
+import io.github.vinnih.kipty.domain.usecase.settings.UpdateUsernameUseCase
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
@@ -30,22 +35,26 @@ data class ConfigurationsUiState(
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val appPreferencesRepository: AppPreferencesRepository,
-    audioRepository: AudioRepository
+    getAppSettingsUseCase: GetAppSettingsUseCase,
+    getAudiosUseCase: GetAudiosUseCase,
+    private val updateShowTimestampUseCase: UpdateShowTimestampUseCase,
+    private val updateMinimumThreadsUseCase: UpdateMinimumThreadsUseCase,
+    private val updateReceiveAlertUseCase: UpdateReceiveAlertUseCase,
+    private val updateProfileIconUseCase: UpdateProfileIconUseCase,
+    private val updateUsernameUseCase: UpdateUsernameUseCase
 ) : ViewModel(),
     ConfigurationController {
 
-    private val canCreate = WorkManager.getInstance(
-        context
-    ).getWorkInfosByTagFlow(AudioWorker.TAG)
+    private val canCreate =
+        WorkManager.getInstance(context).getWorkInfosByTagFlow(AudioWorker.TAG)
 
-    private val appSettings = appPreferencesRepository.appSettingsFlow.stateIn(
+    private val appSettings = getAppSettingsUseCase().stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = null
     )
 
-    val audioList = audioRepository.getAllFlow().stateIn(
+    private val audioList = getAudiosUseCase().stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
         initialValue = null
@@ -55,14 +64,9 @@ class ConfigurationViewModel @Inject constructor(
         canCreate,
         appSettings,
         audioList
-    ) {
-            canCreate,
-            appSettings,
-            audioList
-        ->
-        val canCreate = canCreate.isEmpty() || canCreate.all { it.state.isFinished }
+    ) { canCreate, appSettings, audioList ->
         ConfigurationsUiState(
-            canCreate = canCreate,
+            canCreate = canCreate.isEmpty() || canCreate.all { it.state.isFinished },
             appSettings = appSettings,
             audioList = audioList ?: listOf(),
             isLoadingSettings = appSettings == null,
@@ -75,35 +79,22 @@ class ConfigurationViewModel @Inject constructor(
     )
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {
-        viewModelScope.launch {
-            appPreferencesRepository.updateShowTimestamp(showTimestamp)
-        }
+        viewModelScope.launch { updateShowTimestampUseCase(showTimestamp) }
     }
 
     override fun updateMinimumThreads(minimumThreads: Int) {
-        viewModelScope.launch {
-            appPreferencesRepository.updateMinimumThreads(minimumThreads)
-        }
+        viewModelScope.launch { updateMinimumThreadsUseCase(minimumThreads) }
     }
 
     override fun updateReceiveAlert(receiveAlert: Boolean) {
-        viewModelScope.launch {
-            appPreferencesRepository.updateReceiveAlert(receiveAlert)
-        }
+        viewModelScope.launch { updateReceiveAlertUseCase(receiveAlert) }
     }
 
     override fun updateProfileIcon(file: File) {
-        viewModelScope.launch {
-            val destination = File(context.filesDir, "profile_icon.png")
-            file.copyTo(destination, overwrite = true)
-
-            appPreferencesRepository.updateProfileIconPath(destination.absolutePath)
-        }
+        viewModelScope.launch { updateProfileIconUseCase(file) }
     }
 
     override fun updateUsername(username: String) {
-        viewModelScope.launch {
-            appPreferencesRepository.updateUsername(username)
-        }
+        viewModelScope.launch { updateUsernameUseCase(username) }
     }
 }

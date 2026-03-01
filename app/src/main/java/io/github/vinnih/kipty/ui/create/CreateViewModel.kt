@@ -1,15 +1,9 @@
 package io.github.vinnih.kipty.ui.create
 
-import android.content.Context
 import android.net.Uri
 import androidx.lifecycle.ViewModel
-import androidx.work.Data
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.vinnih.kipty.data.workers.AudioWorker
-import io.github.vinnih.kipty.utils.getFileName
+import io.github.vinnih.kipty.domain.usecase.audio.CreateAudioUseCase
 import java.io.File
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,8 +28,9 @@ enum class Step {
 }
 
 @HiltViewModel
-class CreateViewModel @Inject constructor(@ApplicationContext private val context: Context) :
-    ViewModel(),
+class CreateViewModel @Inject constructor(
+    private val createAudioUseCase: CreateAudioUseCase
+) : ViewModel(),
     CreateController {
 
     private val _uiState = MutableStateFlow(CreateUiState())
@@ -57,93 +52,28 @@ class CreateViewModel @Inject constructor(@ApplicationContext private val contex
     }
 
     override fun selectAudio(file: Uri?) {
-        _uiState.update { currentState ->
-            currentState.copy(data = currentState.data.copy(audioUri = file))
-        }
+        _uiState.update { it.copy(data = it.data.copy(audioUri = file)) }
     }
 
     override fun selectImage(file: File?) {
-        _uiState.update { currentState ->
-            currentState.copy(data = currentState.data.copy(imageFile = file))
-        }
+        _uiState.update { it.copy(data = it.data.copy(imageFile = file)) }
     }
 
     override fun insertTitle(title: String) {
-        _uiState.update { currentState ->
-            currentState.copy(data = currentState.data.copy(title = title))
-        }
+        _uiState.update { it.copy(data = it.data.copy(title = title)) }
     }
 
     override fun insertDescription(description: String) {
-        _uiState.update { currentState ->
-            currentState.copy(data = currentState.data.copy(description = description))
-        }
+        _uiState.update { it.copy(data = it.data.copy(description = description)) }
     }
 
     override fun createAudio() {
-        validateAudioName()
-
-        val uniqueName = getUniqueAudioName(_uiState.value.data.title)
-        val description = _uiState.value.data.description
-        val image = if (_uiState.value.data.imageFile != null) {
-            _uiState.value.data.imageFile!!.absolutePath
-        } else {
-            File(context.filesDir, "default-icon.png").absolutePath
-        }
-        val data = Data.Builder()
-            .putString("name", uniqueName)
-            .putString("description", description)
-            .putString("imagePath", image)
-            .putString("audioUri", _uiState.value.data.audioUri.toString())
-            .build()
-        val request = OneTimeWorkRequestBuilder<AudioWorker>()
-            .addTag(AudioWorker.TAG)
-            .setInputData(data)
-            .build()
-
-        WorkManager.getInstance(context)
-            .enqueueUniqueWork(
-                "process_new_audio",
-                androidx.work.ExistingWorkPolicy.KEEP,
-                request
-            )
-    }
-
-    private fun getUniqueAudioName(baseName: String): String {
-        val transcriptionsDir = File(context.filesDir, "transcriptions")
-
-        if (!transcriptionsDir.exists() || !File(transcriptionsDir, baseName).exists()) {
-            return baseName
-        }
-
-        var counter = 1
-        var uniqueName: String
-
-        do {
-            uniqueName = "${baseName}_$counter"
-            counter++
-        } while (File(transcriptionsDir, uniqueName).exists())
-
-        return uniqueName
-    }
-
-    private fun validateAudioName() {
-        _uiState.value.data.title.ifEmpty {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    data = currentState.data.copy(
-                        title = currentState.data.audioUri!!.getFileName(
-                            context
-                        ).substringBeforeLast(".")
-                    )
-                )
-            }
-        }
+        val data = _uiState.value.data
+        val audioUri = data.audioUri ?: return
+        createAudioUseCase(audioUri, data.title, data.description, data.imageFile)
     }
 
     override fun clearUiState() {
-        _uiState.update {
-            CreateUiState()
-        }
+        _uiState.update { CreateUiState() }
     }
 }

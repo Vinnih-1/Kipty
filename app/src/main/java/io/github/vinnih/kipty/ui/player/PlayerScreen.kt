@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberNextButtonState
@@ -61,12 +62,11 @@ import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
-import io.github.vinnih.kipty.ui.audio.AudioController
-import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
 import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
 import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
@@ -81,14 +81,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlayerScreen(
     playerController: PlayerController,
-    audioController: AudioController,
     notificationController: NotificationController,
-    configurationController: ConfigurationController,
     onNavigate: (Screen) -> Unit,
     scaffoldState: BottomSheetScaffoldState,
     modifier: Modifier = Modifier,
     peekHeight: Dp = 100.dp
 ) {
+    val configurationController = hiltViewModel<ConfigurationViewModel>()
+
     val colors = MaterialTheme.colorScheme
     val playerUiState by playerController.uiState.collectAsState()
     var visible by remember { mutableStateOf(true) }
@@ -127,7 +127,6 @@ fun PlayerScreen(
                 },
                 player = playerController.playerService.player,
                 playerController = playerController,
-                audioController = audioController,
                 notificationController = notificationController,
                 configurationController = configurationController,
                 onNavigate = {
@@ -146,7 +145,6 @@ private fun Player(
     onCollapse: () -> Unit,
     player: Player,
     playerController: PlayerController,
-    audioController: AudioController,
     notificationController: NotificationController,
     configurationController: ConfigurationController,
     onNavigate: (Screen) -> Unit,
@@ -252,7 +250,6 @@ private fun Player(
         )
 
         AudioConfigSheet(
-            audioController = audioController,
             playerController = playerController,
             notificationController = notificationController,
             audioEntity = selectedAudio,
@@ -365,7 +362,8 @@ private fun MiniPlayer(
                     }
 
                     BaseButton(
-                        onClick = { playPause.onClick() },
+                        onClick = playPause::onClick,
+                        enabled = playPause.isEnabled,
                         modifier = Modifier
                             .clip(CircleShape)
                             .size(48.dp)
@@ -503,6 +501,7 @@ private fun PlayerBottom(
                 }
                 BaseButton(
                     onClick = playPause::onClick,
+                    enabled = playPause.isEnabled,
                     modifier = Modifier
                         .clip(CircleShape)
                         .size(72.dp)
@@ -564,7 +563,6 @@ private fun PlayerPreview() {
             onCollapse = {},
             player = playerController.playerService.player,
             playerController = FakePlayerViewModel(),
-            audioController = FakeAudioViewModel(),
             notificationController = FakeNotificationViewModel(),
             configurationController = FakeConfigurationViewModel(),
             onNavigate = {},

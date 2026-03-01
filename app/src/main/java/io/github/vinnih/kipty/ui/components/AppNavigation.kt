@@ -1,17 +1,18 @@
 package io.github.vinnih.kipty.ui.components
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.Screen
-import io.github.vinnih.kipty.ui.audio.AudioController
 import io.github.vinnih.kipty.ui.audio.AudioScreen
-import io.github.vinnih.kipty.ui.configuration.ConfigurationController
+import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.configuration.ConfigurationScreen
-import io.github.vinnih.kipty.ui.create.CreateController
+import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
 import io.github.vinnih.kipty.ui.create.CreateScreen
-import io.github.vinnih.kipty.ui.edit.EditController
+import io.github.vinnih.kipty.ui.create.CreateViewModel
 import io.github.vinnih.kipty.ui.edit.EditScreen
-import io.github.vinnih.kipty.ui.home.HomeController
+import io.github.vinnih.kipty.ui.edit.EditViewModel
 import io.github.vinnih.kipty.ui.home.HomeScreen
+import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.notification.NotificationScreen
 import io.github.vinnih.kipty.ui.player.PlayerController
@@ -19,33 +20,30 @@ import io.github.vinnih.kipty.ui.player.PlayerController
 @Composable
 fun AppNavigation(
     currentScreen: Screen,
-    homeController: HomeController,
-    audioController: AudioController,
     playerController: PlayerController,
     notificationController: NotificationController,
-    configurationController: ConfigurationController,
-    createController: CreateController,
-    editController: EditController,
     onNavigate: (Screen) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onDatabasePopulated: () -> Unit
 ) {
     when (currentScreen) {
         is Screen.Home -> {
+            val viewModel = hiltViewModel<HomeViewModel>()
             HomeScreen(
-                homeController = homeController,
-                audioController = audioController,
+                homeController = viewModel,
                 playerController = playerController,
                 notificationController = notificationController,
-                onNavigate = onNavigate
+                onNavigate = onNavigate,
+                onDatabasePopulated = onDatabasePopulated
             )
         }
 
         is Screen.Audio -> {
+            val viewModel = hiltViewModel<AudioViewModel>()
             AudioScreen(
-                audioController = audioController,
+                audioController = viewModel,
                 playerController = playerController,
                 notificationController = notificationController,
-                configurationController = configurationController,
                 onNavigate = onNavigate,
                 onBack = onBack,
                 id = currentScreen.id
@@ -53,8 +51,9 @@ fun AppNavigation(
         }
 
         is Screen.Create -> {
+            val viewModel = hiltViewModel<CreateViewModel>()
             CreateScreen(
-                createController = createController,
+                createController = viewModel,
                 onBack = onBack
             )
         }
@@ -68,16 +67,18 @@ fun AppNavigation(
         }
 
         is Screen.Configuration -> {
+            val viewModel = hiltViewModel<ConfigurationViewModel>()
             ConfigurationScreen(
-                configurationController = configurationController,
+                configurationController = viewModel,
                 onNavigate = onNavigate,
                 onBack = onBack
             )
         }
 
         is Screen.Edit -> {
+            val viewModel = hiltViewModel<EditViewModel>()
             EditScreen(
-                editController = editController,
+                editController = viewModel,
                 id = currentScreen.id,
                 step = currentScreen.step,
                 onBack = onBack

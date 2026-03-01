@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
@@ -45,8 +46,7 @@ import io.github.vinnih.kipty.preview.FakeAudioData
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
 import io.github.vinnih.kipty.ui.components.BaseButton
 import io.github.vinnih.kipty.ui.components.TextViewer
-import io.github.vinnih.kipty.ui.configuration.ConfigurationController
-import io.github.vinnih.kipty.ui.configuration.FakeConfigurationViewModel
+import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
 import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
@@ -59,12 +59,12 @@ fun AudioScreen(
     audioController: AudioController,
     playerController: PlayerController,
     notificationController: NotificationController,
-    configurationController: ConfigurationController,
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
     id: Int,
     modifier: Modifier = Modifier
 ) {
+    val configurationController = hiltViewModel<ConfigurationViewModel>()
     val loadedAudio by audioController.getFlowById(id).collectAsState(null)
     val configurationUiState by configurationController.uiState.collectAsState()
 
@@ -129,7 +129,6 @@ fun AudioScreen(
             }
         }
         AudioConfigSheet(
-            audioController = audioController,
             playerController = playerController,
             notificationController = notificationController,
             audioEntity = selectedAudio,
@@ -341,7 +340,6 @@ private fun AudioScreenPreview() {
             audioController = FakeAudioViewModel(),
             playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
-            configurationController = FakeConfigurationViewModel(),
             onNavigate = {},
             onBack = {},
             id = audioEntity.uid

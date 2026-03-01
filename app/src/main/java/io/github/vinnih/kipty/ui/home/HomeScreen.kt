@@ -51,8 +51,6 @@ import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationEntity
 import io.github.vinnih.kipty.data.settings.AppSettings
-import io.github.vinnih.kipty.ui.audio.AudioController
-import io.github.vinnih.kipty.ui.audio.FakeAudioViewModel
 import io.github.vinnih.kipty.ui.components.AppWarn
 import io.github.vinnih.kipty.ui.components.AudioCard
 import io.github.vinnih.kipty.ui.components.AudioConfigSheet
@@ -68,13 +66,19 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 @Composable
 fun HomeScreen(
     homeController: HomeController,
-    audioController: AudioController,
     playerController: PlayerController,
     notificationController: NotificationController,
     onNavigate: (Screen) -> Unit,
+    onDatabasePopulated: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val homeUiState by homeController.homeUiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        homeController.populateDatabase {
+            onDatabasePopulated()
+        }
+    }
 
     if (homeUiState.appSettings == null) return
 
@@ -88,7 +92,6 @@ fun HomeScreen(
 
     Column(modifier = modifier) {
         AudioConfigSheet(
-            audioController = audioController,
             playerController = playerController,
             notificationController = notificationController,
             audioEntity = selectedAudio,
@@ -506,10 +509,10 @@ private fun HomeScreenPreview() {
     AppTheme {
         HomeScreen(
             homeController = FakeHomeViewModel(),
-            audioController = FakeAudioViewModel(),
             playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
             onNavigate = {},
+            onDatabasePopulated = {},
             modifier = Modifier
         )
     }

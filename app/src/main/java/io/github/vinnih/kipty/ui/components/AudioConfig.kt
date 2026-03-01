@@ -40,11 +40,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.database.entity.NotificationCategory
-import io.github.vinnih.kipty.ui.audio.AudioController
+import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.create.Step
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.player.PlayerController
@@ -56,7 +57,6 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AudioConfigSheet(
-    audioController: AudioController,
     playerController: PlayerController,
     notificationController: NotificationController,
     audioEntity: AudioEntity?,
@@ -66,10 +66,12 @@ fun AudioConfigSheet(
 ) {
     if (audioEntity == null) return
 
+    val audioController = hiltViewModel<AudioViewModel>()
+    val uiState by audioController.uiState.collectAsStateWithLifecycle()
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val context = LocalContext.current
-    val uiState by audioController.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
@@ -107,9 +109,7 @@ fun AudioConfigSheet(
                         content = "Your transcript for this episode is being prepared.",
                         channel = NotificationCategory.TRANSCRIPTION_INIT
                     )
-                    audioController.transcribeAudio(
-                        audioEntity = audioEntity
-                    )
+                    audioController.transcribeAudio(audioEntity)
                     onDismiss()
                 },
                 canTranscribe = uiState.canTranscribe,

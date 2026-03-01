@@ -12,7 +12,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -26,18 +25,8 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import dagger.hilt.android.AndroidEntryPoint
-import io.github.vinnih.kipty.ui.audio.AudioController
-import io.github.vinnih.kipty.ui.audio.AudioViewModel
 import io.github.vinnih.kipty.ui.components.AppNavigation
-import io.github.vinnih.kipty.ui.configuration.ConfigurationController
-import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
-import io.github.vinnih.kipty.ui.create.CreateController
-import io.github.vinnih.kipty.ui.create.CreateViewModel
 import io.github.vinnih.kipty.ui.create.Step
-import io.github.vinnih.kipty.ui.edit.EditController
-import io.github.vinnih.kipty.ui.edit.EditViewModel
-import io.github.vinnih.kipty.ui.home.HomeController
-import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.notification.NotificationViewModel
 import io.github.vinnih.kipty.ui.player.PlayerController
@@ -71,13 +60,8 @@ val json = Json {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private val homeViewModel: HomeViewModel by viewModels()
     private val playerViewModel: PlayerViewModel by viewModels()
-    private val audioViewModel: AudioViewModel by viewModels()
     private val notificationViewModel: NotificationViewModel by viewModels()
-    private val configurationViewModel: ConfigurationViewModel by viewModels()
-    private val createViewModel: CreateViewModel by viewModels()
-    private val editViewModel: EditViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -90,13 +74,8 @@ class MainActivity : ComponentActivity() {
             AppTheme {
                 AppScaffold(
                     splashScreen = splashScreen,
-                    homeController = homeViewModel,
-                    audioController = audioViewModel,
                     playerController = playerViewModel,
-                    notificationController = notificationViewModel,
-                    configurationController = configurationViewModel,
-                    createController = createViewModel,
-                    editController = editViewModel
+                    notificationController = notificationViewModel
                 )
             }
         }
@@ -106,24 +85,13 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun AppScaffold(
         splashScreen: SplashScreen,
-        homeController: HomeController,
-        audioController: AudioController,
         playerController: PlayerController,
         notificationController: NotificationController,
-        configurationController: ConfigurationController,
-        createController: CreateController,
-        editController: EditController,
         modifier: Modifier = Modifier
     ) {
         val backstack = remember { mutableStateListOf<Screen>(Screen.Home) }
         val scaffoldState = rememberBottomSheetScaffoldState()
         var loading by remember { mutableStateOf(true) }
-
-        LaunchedEffect(Unit) {
-            homeController.populateDatabase {
-                loading = false
-            }
-        }
 
         splashScreen.setKeepOnScreenCondition { loading }
 
@@ -153,8 +121,6 @@ class MainActivity : ComponentActivity() {
             sheetContent = {
                 PlayerScreen(
                     playerController = playerController,
-                    configurationController = configurationController,
-                    audioController = audioController,
                     notificationController = notificationController,
                     onNavigate = { screen -> backstack.add(screen) },
                     scaffoldState = scaffoldState
@@ -168,9 +134,7 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.padding(paddingValues),
                 backStack = backstack,
                 onBack = {
-                    if (scaffoldState.bottomSheetState.currentValue !=
-                        SheetValue.Expanded
-                    ) {
+                    if (scaffoldState.bottomSheetState.currentValue != SheetValue.Expanded) {
                         backstack.removeLastOrNull()
                     }
                 },
@@ -179,15 +143,11 @@ class MainActivity : ComponentActivity() {
                         is Screen -> NavEntry(key) {
                             AppNavigation(
                                 currentScreen = key,
-                                homeController = homeController,
-                                audioController = audioController,
                                 playerController = playerController,
                                 notificationController = notificationController,
-                                configurationController = configurationController,
-                                createController = createController,
-                                editController = editController,
                                 onNavigate = { screen -> backstack.add(screen) },
-                                onBack = safeOnBack
+                                onBack = safeOnBack,
+                                onDatabasePopulated = { loading = false }
                             )
                         }
                     }

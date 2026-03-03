@@ -24,7 +24,7 @@ class AudioService @Inject constructor() {
     ): File {
         val outputFile = File(
             context.cacheDir,
-            "${file.nameWithoutExtension}.${format.extension}"
+            "${file.nameWithoutExtension}_resampled.${format.extension}"
         )
 
         val command = buildString {

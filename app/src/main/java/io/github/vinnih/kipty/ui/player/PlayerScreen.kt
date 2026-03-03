@@ -233,8 +233,7 @@ private fun Player(
                     }
                     phrase = it
                 },
-                showTimestamp = configurationUiState.appSettings!!.showTimestamp,
-                modifier = Modifier.padding(bottom = 48.dp)
+                showTimestamp = configurationUiState.appSettings!!.showTimestamp
             )
         }
 

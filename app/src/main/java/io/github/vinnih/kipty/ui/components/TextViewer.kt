@@ -117,7 +117,7 @@ private fun TextViewerBase(
             audioEntity!!.transcription!!.indexOfLast {
                 it.start <=
                     playerController.uiState.value.currentPosition
-            }
+            }.coerceAtLeast(0)
         }
     }
 

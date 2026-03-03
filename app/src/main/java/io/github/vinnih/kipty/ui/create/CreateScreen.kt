@@ -389,6 +389,8 @@ private fun AudioStepScreen(uri: Uri?, onUriSelect: (Uri?) -> Unit, modifier: Mo
         extra = arrayOf(
             "audio/mpeg",
             "audio/wav",
+            "audio/opus",
+            "audio/ogg",
             "audio/x-wav",
             "audio/wave"
         )

@@ -69,3 +69,13 @@
 -keepclassmembers public class **$$serializer {
     private ** descriptor;
 }
+
+# JNA
+-keep class com.sun.jna.** { *; }
+-keepclassmembers class com.sun.jna.** { *; }
+-dontwarn com.sun.jna.**
+
+# Vosk
+-keep class org.vosk.** { *; }
+-keepclassmembers class org.vosk.** { *; }
+-dontwarn org.vosk.**

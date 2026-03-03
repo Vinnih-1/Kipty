@@ -58,7 +58,7 @@ ktlint {
 }
 
 dependencies {
-    implementation(project(":lib"))
+    implementation(project(":vosk"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -81,6 +81,8 @@ dependencies {
     implementation(libs.google.accompanist.permission)
     implementation(libs.coil.compose)
     implementation(libs.ffmpeg.kit)
+    implementation(libs.vosk.android)
+
     ksp(libs.androidx.hilt.compiler)
     ksp(libs.androidx.compiler)
     ksp(libs.hilt.compiler)

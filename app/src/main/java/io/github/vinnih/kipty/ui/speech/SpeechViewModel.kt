@@ -97,7 +97,7 @@ class SpeechViewModel @Inject constructor(
 
         calculateScoreUseCase(
             phrase = phrase,
-            byteArray = resampledFile.readBytes(),
+            audioFile = resampledFile,
             onSuccess = { result.value = it }
         )
         resampledFile.delete()

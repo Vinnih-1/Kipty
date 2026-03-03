@@ -13,18 +13,17 @@ import dagger.assisted.AssistedInject
 import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.service.notification.NotificationChannels
 import io.github.vinnih.kipty.data.service.notification.NotificationService
-import io.github.vinnih.kipty.data.service.transcriptor.TranscriptorService
-import io.github.vinnih.kipty.data.settings.AppPreferencesRepository
+import io.github.vinnih.kipty.data.service.transcript.TranscriptorService
 import io.github.vinnih.kipty.domain.repository.AudioRepository
+import io.github.vinnih.kipty.utils.convertTranscription
+import java.io.File
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @HiltWorker
 class TranscriptionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted workerParams: WorkerParameters,
-    private val appPreferencesRepository: AppPreferencesRepository,
     private val audioRepository: AudioRepository,
     private val transcriptor: TranscriptorService,
     private val notificationService: NotificationService
@@ -38,7 +37,6 @@ class TranscriptionWorker @AssistedInject constructor(
         val audioId = inputData.getInt("AUDIO_ID", -1)
 
         if (audioId == -1) return@withContext Result.failure()
-        transcriptor.initialize()
 
         this@TranscriptionWorker.setProgress(workDataOf("AUDIO_ID" to audioId))
         audioRepository.updateAudioState(audioId, TranscriptionState.TRANSCRIBING)
@@ -47,22 +45,24 @@ class TranscriptionWorker @AssistedInject constructor(
         val notificationProgress = NotificationService.NotificationObject(
             channel = channel,
             title = "Creating Transcription",
-            content = "Your transcription is 0%, please wait.",
-            progress = 0
+            content = "Your transcription is being processed. Please wait."
         )
 
         setForegroundAsync(createForegroundInfo(notificationProgress))
 
-        val audioEntity = transcriptor.transcribe(
-            audioEntity = audioRepository.getFlowById(audioId).first()!!,
-            numThreads = appPreferencesRepository.appSettingsFlow.first().minimumThreads,
-            onProgress = {
-                notificationProgress.progress = it
-                notificationProgress.content = "Your transcription is $it%, please wait."
-                setForegroundAsync(createForegroundInfo(notificationProgress))
-            }
+        val audioEntity = audioRepository.getById(audioId)!!
+
+        val rawJson = transcriptor.recognizeFile(
+            audioFile = File(audioEntity.audioPath),
+            onFailure = { e -> println("Transcription error: ${e.message}") }
         )
-        audioRepository.save(audioEntity.copy(state = TranscriptionState.TRANSCRIBED))
+
+        audioRepository.save(
+            audioEntity.copy(
+                state = TranscriptionState.TRANSCRIBED,
+                transcription = rawJson.convertTranscription()
+            )
+        )
         notificationService.notify(
             notificationObject = NotificationService.NotificationObject(
                 channel = NotificationChannels.TRANSCRIPTION_CREATED,
@@ -78,7 +78,7 @@ class TranscriptionWorker @AssistedInject constructor(
     private fun createForegroundInfo(
         notificationObject: NotificationService.NotificationObject
     ): ForegroundInfo {
-        val notification = notificationService.progressNotification(notificationObject)
+        val notification = notificationService.defaultNotification(notificationObject)
 
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ForegroundInfo(

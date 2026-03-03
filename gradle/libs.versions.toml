@@ -24,6 +24,7 @@ permission = "0.37.3"
 coil = "3.3.0"
 ffmpeg = "6.0.1"
 preferences = "1.2.0"
+vosk = "0.3.75"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ worker-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", versi
 google-accompanist-permission = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "permission" }
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coil" }
 ffmpeg-kit = { group = "io.github.maxrave-dev", name = "ffmpeg-kit-audio", version.ref = "ffmpeg" }
+vosk-android = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -1,13 +1,12 @@
 package io.github.vinnih.kipty.utils
 
-import android.content.Context
-import android.media.MediaMetadataRetriever
 import android.text.format.DateUtils
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import org.json.JSONObject
 
 private enum class Timestamp(val multiplier: Long) {
     HOUR(1000 * 60 * 60),
@@ -107,31 +106,56 @@ fun Long.timestamp(): String {
     return timestamp
 }
 
-fun String.convertTranscription(): List<AudioTranscription> =
-    this.trimIndent().split("\n").map { line ->
-        val timestamp = line.take(31).timestamp()
-        val text = line.drop(31)
+fun String.convertTranscription(): List<AudioTranscription> {
+    val result = mutableListOf<AudioTranscription>()
+    val lines = this.trimIndent().split("\n")
 
-        AudioTranscription(timestamp.first, timestamp.second, text)
-    }.toList()
+    // Vosk emits multi-line JSON — accumulate lines until braces balance
+    val jsonBuffer = StringBuilder()
+    var braceDepth = 0
 
-fun String.getAssetAudioInfo(context: Context): Pair<Long, Long> {
-    val retriever = MediaMetadataRetriever()
+    for (line in lines) {
+        val trimmed = line.trim()
+        if (trimmed.isEmpty()) continue
 
-    try {
-        val afd = context.assets.openFd(this)
-        retriever.setDataSource(afd.fileDescriptor, afd.startOffset, afd.length)
-        afd.close()
+        if (trimmed.startsWith("[")) {
+            // Legacy Whisper SRT format: [00:00:00.000 --> 00:00:02.500] text
+            val timestamp = trimmed.take(31).timestamp()
+            val text = trimmed.drop(31)
+            if (text.isNotBlank()) result.add(AudioTranscription(timestamp.first, timestamp.second, text))
+            continue
+        }
 
-        val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            ?.toLongOrNull() ?: 0L
+        for (ch in trimmed) {
+            when (ch) {
+                '{' -> braceDepth++
+                '}' -> braceDepth--
+            }
+        }
+        jsonBuffer.appendLine(trimmed)
 
-        val size = context.assets.openFd(this).use { it.length }
-
-        return Pair(duration, size)
-    } finally {
-        retriever.release()
+        if (braceDepth == 0 && jsonBuffer.isNotBlank()) {
+            try {
+                val json = JSONObject(jsonBuffer.toString().trim())
+                val text = json.optString("text").trim()
+                if (text.isNotEmpty()) {
+                    val words = json.optJSONArray("result")
+                    val startMs = if (words != null && words.length() > 0)
+                        (words.getJSONObject(0).getDouble("start") * 1000).toLong()
+                    else 0L
+                    val endMs = if (words != null && words.length() > 0)
+                        (words.getJSONObject(words.length() - 1).getDouble("end") * 1000).toLong()
+                    else 0L
+                    result.add(AudioTranscription(startMs, endMs, text))
+                }
+            } catch (_: Exception) {
+            } finally {
+                jsonBuffer.clear()
+            }
+        }
     }
+
+    return result
 }
 
 fun String.formatDate(): String {

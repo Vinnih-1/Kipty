@@ -1,6 +1,8 @@
 package io.github.vinnih.kipty.data.service.record
 
-import io.github.vinnih.kipty.data.service.transcriptor.TranscriptorService
+import io.github.vinnih.kipty.data.service.transcript.TranscriptorService
+import io.github.vinnih.kipty.utils.convertTranscription
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,8 +18,6 @@ data class DetailedPronunciationResult(
 
 @Singleton
 class SpeechResult @Inject constructor(private val transcriptor: TranscriptorService) {
-
-    private suspend fun transcript(floatArray: FloatArray) = transcriptor.transcribe(floatArray)
 
     private fun normalizeText(text: String): String = text.lowercase()
         .replace(Regex("[,.:;!?\"'-]"), "")
@@ -130,13 +130,15 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
 
     suspend fun calculatePronunciationScore(
         expected: String,
-        byteArray: ByteArray
-    ): Pair<String, Int> {
-        transcriptor.initialize()
+        audioFile: File,
+        onScore: (Pair<String, Int>) -> Unit
+    ) {
+        val rawJson = transcriptor.recognizeFile(
+            audioFile = audioFile,
+            onFailure = { it.printStackTrace() }
+        )
+        val text = rawJson.convertTranscription().joinToString { it.text }
 
-        val transcription = transcript(transcriptor.normalizeAudio(byteArray))
-        val result = evaluateDetailed(expected, transcription)
-
-        return transcription to result.overallScore
+        onScore(text to evaluateDetailed(expected, text).overallScore)
     }
 }

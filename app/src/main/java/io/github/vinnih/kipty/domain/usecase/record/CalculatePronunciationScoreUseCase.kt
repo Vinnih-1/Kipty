@@ -2,9 +2,8 @@ package io.github.vinnih.kipty.domain.usecase.record
 
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.service.record.SpeechResult
+import java.io.File
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class CalculatePronunciationScoreUseCase @Inject constructor(
     private val speechResult: SpeechResult
@@ -12,15 +11,13 @@ class CalculatePronunciationScoreUseCase @Inject constructor(
 
     suspend operator fun invoke(
         phrase: AudioTranscription,
-        byteArray: ByteArray,
+        audioFile: File,
         onSuccess: (Pair<String, Int>) -> Unit
     ) {
-        withContext(Dispatchers.IO) {
-            val result = speechResult.calculatePronunciationScore(
-                expected = phrase.text,
-                byteArray = byteArray
-            )
-            onSuccess(result)
-        }
+        speechResult.calculatePronunciationScore(
+            expected = phrase.text,
+            audioFile = audioFile,
+            onScore = onSuccess
+        )
     }
 }

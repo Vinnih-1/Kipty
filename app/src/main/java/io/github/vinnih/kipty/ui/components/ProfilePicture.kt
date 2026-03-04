@@ -1,6 +1,7 @@
 package io.github.vinnih.kipty.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -86,8 +87,8 @@ fun ProfilePicture(
             Box(
                 modifier = Modifier
                     .size(28.dp)
-                    .clip(CircleShape)
-                    .background(colors.secondaryContainer)
+                    .border(1.dp, colors.onSecondaryContainer.copy(.4f), CircleShape)
+                    .background(colors.secondaryContainer, CircleShape)
                     .clickable(onClick = onClick),
                 contentAlignment = Alignment.Center
             ) {

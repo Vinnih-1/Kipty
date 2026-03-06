@@ -69,16 +69,9 @@ fun HomeScreen(
     playerController: PlayerController,
     notificationController: NotificationController,
     onNavigate: (Screen) -> Unit,
-    onDatabasePopulated: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val homeUiState by homeController.homeUiState.collectAsState()
-
-    LaunchedEffect(Unit) {
-        homeController.populateDatabase {
-            onDatabasePopulated()
-        }
-    }
 
     if (homeUiState.appSettings == null) return
 
@@ -512,7 +505,6 @@ private fun HomeScreenPreview() {
             playerController = FakePlayerViewModel(),
             notificationController = FakeNotificationViewModel(),
             onNavigate = {},
-            onDatabasePopulated = {},
             modifier = Modifier
         )
     }

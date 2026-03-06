@@ -16,6 +16,8 @@ import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.notification.NotificationScreen
 import io.github.vinnih.kipty.ui.player.PlayerController
+import io.github.vinnih.kipty.ui.welcome.WelcomeScreen
+import io.github.vinnih.kipty.ui.welcome.WelcomeViewModel
 
 @Composable
 fun AppNavigation(
@@ -24,17 +26,26 @@ fun AppNavigation(
     notificationController: NotificationController,
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
-    onDatabasePopulated: () -> Unit
+    onDatabasePopulated: () -> Unit,
+    onGetStarted: () -> Unit
 ) {
     when (currentScreen) {
+        is Screen.Welcome -> {
+            val viewModel = hiltViewModel<WelcomeViewModel>()
+            WelcomeScreen(
+                onGetStarted = onGetStarted,
+                welcomeController = viewModel,
+                onDatabasePopulated = onDatabasePopulated
+            )
+        }
+
         is Screen.Home -> {
             val viewModel = hiltViewModel<HomeViewModel>()
             HomeScreen(
                 homeController = viewModel,
                 playerController = playerController,
                 notificationController = notificationController,
-                onNavigate = onNavigate,
-                onDatabasePopulated = onDatabasePopulated
+                onNavigate = onNavigate
             )
         }
 

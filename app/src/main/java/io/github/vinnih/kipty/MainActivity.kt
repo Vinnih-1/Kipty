@@ -38,6 +38,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 
 sealed interface Screen {
+    data object Welcome : Screen
+
     data object Home : Screen
 
     data class Audio(val id: Int) : Screen
@@ -89,13 +91,14 @@ class MainActivity : ComponentActivity() {
         notificationController: NotificationController,
         modifier: Modifier = Modifier
     ) {
-        val backstack = remember { mutableStateListOf<Screen>(Screen.Home) }
+        val backstack = remember { mutableStateListOf<Screen>(Screen.Welcome) }
         val scaffoldState = rememberBottomSheetScaffoldState()
         var loading by remember { mutableStateOf(true) }
 
         splashScreen.setKeepOnScreenCondition { loading }
 
         val shouldShowBottomSheet = when (backstack.lastOrNull()) {
+            is Screen.Welcome -> false
             is Screen.Create -> false
             is Screen.Edit -> false
             else -> true
@@ -147,7 +150,11 @@ class MainActivity : ComponentActivity() {
                                 notificationController = notificationController,
                                 onNavigate = { screen -> backstack.add(screen) },
                                 onBack = safeOnBack,
-                                onDatabasePopulated = { loading = false }
+                                onDatabasePopulated = { loading = false },
+                                onGetStarted = {
+                                    backstack.clear()
+                                    backstack.add(Screen.Home)
+                                }
                             )
                         }
                     }

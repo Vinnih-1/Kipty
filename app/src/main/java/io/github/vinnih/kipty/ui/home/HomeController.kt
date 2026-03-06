@@ -10,6 +10,4 @@ interface HomeController {
     fun openNotificationSettings()
 
     fun getPlayTimeById(id: Int): Flow<Long>
-
-    suspend fun populateDatabase(onSuccess: () -> Unit)
 }

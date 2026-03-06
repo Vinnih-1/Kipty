@@ -9,7 +9,6 @@ import io.github.vinnih.kipty.domain.usecase.audio.GetAudiosUseCase
 import io.github.vinnih.kipty.domain.usecase.audio.GetPlayTimeUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.OpenNotificationSettingsUseCase
-import io.github.vinnih.kipty.domain.usecase.worker.PopulateDatabaseUseCase
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +28,6 @@ class HomeViewModel @Inject constructor(
     getAudiosUseCase: GetAudiosUseCase,
     getAppSettingsUseCase: GetAppSettingsUseCase,
     private val getPlayTimeUseCase: GetPlayTimeUseCase,
-    private val populateDatabaseUseCase: PopulateDatabaseUseCase,
     private val openNotificationSettingsUseCase: OpenNotificationSettingsUseCase
 ) : ViewModel(),
     HomeController {
@@ -65,8 +63,4 @@ class HomeViewModel @Inject constructor(
     override fun getPlayTimeById(id: Int): Flow<Long> = getPlayTimeUseCase(id)
 
     override fun openNotificationSettings(): Unit = openNotificationSettingsUseCase()
-
-    override suspend fun populateDatabase(onSuccess: () -> Unit) {
-        populateDatabaseUseCase(onSuccess)
-    }
 }

@@ -27,6 +27,4 @@ class FakeHomeViewModel : HomeController {
     )
 
     override fun openNotificationSettings() {}
-
-    override suspend fun populateDatabase(onSuccess: () -> Unit) {}
 }

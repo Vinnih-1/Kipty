@@ -69,6 +69,7 @@ fun WelcomeScreen(
 
     LaunchedEffect(Unit) {
         welcomeController.populateDatabase { onDatabasePopulated() }
+        if (!uiState.username.isBlank()) onGetStarted()
     }
 
     BackHandler(uiState.step.ordinal > 0) {
@@ -356,25 +357,27 @@ private fun AllSetStepScreen(
                     color = colors.onBackground,
                     textAlign = TextAlign.Center
                 )
-                Row(
-                    horizontalArrangement = Arrangement.Center
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Row {
+                        Text(
+                            text = "Welcome, ",
+                            style = typography.bodyLarge,
+                            fontWeight = FontWeight.Light,
+                            color = colors.onBackground.copy(alpha = 0.7f),
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = username,
+                            style = typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onBackground,
+                            textAlign = TextAlign.Center
+                        )
+                    }
                     Text(
-                        text = "Welcome, ",
-                        style = typography.bodyLarge,
-                        fontWeight = FontWeight.Light,
-                        color = colors.onBackground.copy(alpha = 0.7f),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = username,
-                        style = typography.bodyLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onBackground,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = ". Start exploring podcasts and improve your English.",
+                        text = "Start exploring podcasts and improve your English.",
                         style = typography.bodyLarge,
                         fontWeight = FontWeight.Light,
                         color = colors.onBackground.copy(alpha = 0.7f),

@@ -103,7 +103,7 @@ fun WelcomeScreen(
                 )
 
                 WelcomeStep.ALL_SET -> AllSetStepScreen(
-                    username = uiState.username,
+                    username = uiState.username.ifBlank { "Account User" },
                     profileIconPath = uiState.profileIconPath,
                     profileIconUpdatedAt = uiState.profileIconUpdatedAt,
                     onGoToHome = {
@@ -280,7 +280,7 @@ private fun ProfileSetupStepScreen(
                 onValueChange = onUsernameChange,
                 placeholder = {
                     Text(
-                        text = "Enter your name",
+                        text = "Account User",
                         style = typography.bodyLarge,
                         color = colors.onBackground.copy(alpha = 0.4f)
                     )
@@ -300,7 +300,7 @@ private fun ProfileSetupStepScreen(
         WelcomeButton(
             text = "Continue",
             onClick = onContinue,
-            enabled = username.isNotBlank(),
+            enabled = true,
             showArrow = true
         )
     }

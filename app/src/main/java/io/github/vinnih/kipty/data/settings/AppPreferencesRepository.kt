@@ -35,7 +35,7 @@ class AppPreferencesRepository @Inject constructor(private val dataStore: DataSt
     }
 
     private val usernameFlow: Flow<String> = dataStore.data.map { preferences ->
-        preferences[Keys.USERNAME] ?: "Account User"
+        preferences[Keys.USERNAME] ?: ""
     }
 
     private val profileIconPathFlow: Flow<String> = dataStore.data.map { preferences ->

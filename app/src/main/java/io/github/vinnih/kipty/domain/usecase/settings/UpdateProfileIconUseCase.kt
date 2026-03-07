@@ -11,8 +11,12 @@ class UpdateProfileIconUseCase @Inject constructor(
     private val repository: AppPreferencesRepository
 ) {
     suspend operator fun invoke(file: File) {
+        if (!file.exists()) return
+
         val destination = File(context.filesDir, "profile_icon.png")
-        file.copyTo(destination, overwrite = true)
-        repository.updateProfileIconPath(destination.absolutePath)
+        if (file.canonicalPath.startsWith(context.cacheDir.canonicalPath)) {
+            file.copyTo(destination, overwrite = true)
+            repository.updateProfileIconPath(destination.absolutePath)
+        }
     }
 }

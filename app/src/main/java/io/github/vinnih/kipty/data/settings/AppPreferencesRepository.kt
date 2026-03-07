@@ -32,6 +32,7 @@ class AppPreferencesRepository @Inject constructor(private val dataStore: DataSt
         val USERNAME = stringPreferencesKey("username")
         val PROFILE_ICON_PATH = stringPreferencesKey("profile_icon_path")
         val PROFILE_ICON_UPDATED_AT = longPreferencesKey("profile_icon_updated_at")
+        val HAS_POPULATED_DATABASE = booleanPreferencesKey("has_populated_database")
     }
 
     private val usernameFlow: Flow<String> = dataStore.data.map { preferences ->
@@ -55,6 +56,10 @@ class AppPreferencesRepository @Inject constructor(private val dataStore: DataSt
 
     private val profileIconUpdatedAtFlow: Flow<Long> = dataStore.data.map { preferences ->
         preferences[Keys.PROFILE_ICON_UPDATED_AT] ?: 0L
+    }
+
+    val hasDatabasePopulatedFlow: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[Keys.HAS_POPULATED_DATABASE] ?: false
     }
 
     val appSettingsFlow: Flow<AppSettings> = combine(
@@ -112,6 +117,12 @@ class AppPreferencesRepository @Inject constructor(private val dataStore: DataSt
     suspend fun updateUsername(username: String) {
         dataStore.edit { preferences ->
             preferences[Keys.USERNAME] = username
+        }
+    }
+
+    suspend fun markDatabaseAsPopulated() {
+        dataStore.edit { preferences ->
+            preferences[Keys.HAS_POPULATED_DATABASE] = true
         }
     }
 

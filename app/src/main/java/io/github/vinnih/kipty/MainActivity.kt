@@ -12,15 +12,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
-import androidx.core.splashscreen.SplashScreen
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
@@ -64,6 +62,7 @@ class MainActivity : ComponentActivity() {
 
     private val playerViewModel: PlayerViewModel by viewModels()
     private val notificationViewModel: NotificationViewModel by viewModels()
+    private val mainViewModel: MainViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,12 +72,19 @@ class MainActivity : ComponentActivity() {
         setContent {
             this.EnableEdgeToEdge()
 
+            val initialScreen by mainViewModel.initialScreen.collectAsState()
+            val keepSplash by mainViewModel.keepSplash.collectAsState()
+
+            splashScreen.setKeepOnScreenCondition { keepSplash }
+
             AppTheme {
-                AppScaffold(
-                    splashScreen = splashScreen,
-                    playerController = playerViewModel,
-                    notificationController = notificationViewModel
-                )
+                initialScreen?.let {
+                    AppScaffold(
+                        initialScreen = it,
+                        playerController = playerViewModel,
+                        notificationController = notificationViewModel
+                    )
+                }
             }
         }
     }
@@ -86,16 +92,13 @@ class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun AppScaffold(
-        splashScreen: SplashScreen,
+        initialScreen: Screen,
         playerController: PlayerController,
         notificationController: NotificationController,
         modifier: Modifier = Modifier
     ) {
-        val backstack = remember { mutableStateListOf<Screen>(Screen.Welcome) }
+        val backstack = remember { mutableStateListOf<Screen>(initialScreen) }
         val scaffoldState = rememberBottomSheetScaffoldState()
-        var loading by remember { mutableStateOf(true) }
-
-        splashScreen.setKeepOnScreenCondition { loading }
 
         val shouldShowBottomSheet = when (backstack.lastOrNull()) {
             is Screen.Welcome -> false
@@ -150,7 +153,7 @@ class MainActivity : ComponentActivity() {
                                 notificationController = notificationController,
                                 onNavigate = { screen -> backstack.add(screen) },
                                 onBack = safeOnBack,
-                                onDatabasePopulated = { loading = false },
+                                onDatabasePopulated = {},
                                 onGetStarted = {
                                     backstack.clear()
                                     backstack.add(Screen.Home)

@@ -56,6 +56,7 @@ class PopulateWorker @AssistedInject constructor(
             }
         }
 
+        appPreferencesRepository.markDatabaseAsPopulated()
         return Result.success()
     }
 

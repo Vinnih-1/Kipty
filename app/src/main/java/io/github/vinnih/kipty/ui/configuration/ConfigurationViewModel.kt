@@ -1,11 +1,9 @@
 package io.github.vinnih.kipty.ui.configuration
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.vinnih.kipty.data.database.entity.AudioEntity
 import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.data.workers.AudioWorker
@@ -34,7 +32,7 @@ data class ConfigurationsUiState(
 
 @HiltViewModel
 class ConfigurationViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    private val workManager: WorkManager,
     getAppSettingsUseCase: GetAppSettingsUseCase,
     getAudiosUseCase: GetAudiosUseCase,
     private val updateShowTimestampUseCase: UpdateShowTimestampUseCase,
@@ -46,7 +44,7 @@ class ConfigurationViewModel @Inject constructor(
     ConfigurationController {
 
     private val canCreate =
-        WorkManager.getInstance(context).getWorkInfosByTagFlow(AudioWorker.TAG)
+        workManager.getWorkInfosByTagFlow(AudioWorker.TAG)
 
     private val appSettings = getAppSettingsUseCase().stateIn(
         scope = viewModelScope,

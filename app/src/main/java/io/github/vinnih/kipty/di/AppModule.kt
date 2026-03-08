@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.room.Room
+import androidx.work.WorkManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,4 +50,9 @@ class AppModule {
     @Singleton
     fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences> =
         context.dataStore
+
+    @Provides
+    @Singleton
+    fun provideWorkManager(@ApplicationContext context: Context): WorkManager =
+        WorkManager.getInstance(context)
 }

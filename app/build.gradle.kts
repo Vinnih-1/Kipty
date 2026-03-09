@@ -5,6 +5,12 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ktlint.gradle)
     alias(libs.plugins.serialization.plugin)
+    alias(libs.plugins.room)
+}
+
+room {
+    schemaDirectory("debug", "$projectDir/schemas/debug")
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {

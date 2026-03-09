@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.devtools.ksp) apply false
     alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.ktlint.gradle) apply false
+    alias(libs.plugins.room) apply false
 }

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "includePaths": [
+    "app/build.gradle.kts",
+    "gradle/libs.versions.toml"
+  ],
+  "ignorePaths": [
+    "whisper_cpp/**",
+    "models/**"
+  ]
+}

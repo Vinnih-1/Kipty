@@ -10,5 +10,15 @@
   "ignorePaths": [
     "whisper_cpp/**",
     "models/**"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["gradle"],
+      "registryUrls": [
+        "https://repo.maven.apache.org/maven2",
+        "https://maven.google.com",
+        "https://plugins.gradle.org/m2"
+      ]
+    }
   ]
 }

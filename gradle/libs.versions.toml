@@ -26,7 +26,7 @@ ffmpeg = "6.0.1"
 preferences = "1.2.0"
 vosk = "0.3.75"
 mockk = "1.14.9"
-turbine = "1.1.0"
+turbine = "1.2.1"
 coroutines-test = "1.10.2"
 
 [libraries]

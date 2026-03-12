@@ -25,9 +25,9 @@ coil = "3.3.0"
 ffmpeg = "6.0.1"
 preferences = "1.2.0"
 vosk = "0.3.75"
-mockk = "1.13.10"
+mockk = "1.14.9"
 turbine = "1.2.1"
-coroutines-test = "1.8.0"
+coroutines-test = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

@@ -27,7 +27,7 @@ preferences = "1.2.0"
 vosk = "0.3.75"
 mockk = "1.13.10"
 turbine = "1.1.0"
-coroutines-test = "1.8.0"
+coroutines-test = "1.10.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

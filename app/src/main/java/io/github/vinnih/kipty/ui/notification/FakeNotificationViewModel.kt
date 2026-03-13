@@ -7,32 +7,22 @@ import io.github.vinnih.kipty.preview.FakeNotificationData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeNotificationViewModel : NotificationController {
-    override val uiState: StateFlow<NotificationUiState>
-        get() = MutableStateFlow(NotificationUiState(FakeNotificationData.notifications))
-    override val today: StateFlow<List<NotificationEntity>>
-        get() = TODO("Not yet implemented")
-    override val yesterday: StateFlow<List<NotificationEntity>>
-        get() = TODO("Not yet implemented")
-    override val earlier: StateFlow<List<NotificationEntity>>
-        get() = TODO("Not yet implemented")
-    override val unread: StateFlow<List<NotificationEntity>>
-        get() = TODO("Not yet implemented")
+class FakeNotificationViewModel(
+    notificationUiState: NotificationUiState = NotificationUiState(
+        FakeNotificationData.notifications
+    )
+) : NotificationController {
+
+    override val uiState: StateFlow<NotificationUiState> = MutableStateFlow(notificationUiState)
 
     override fun notify(
         audioEntity: AudioEntity,
         title: String,
         content: String,
         channel: NotificationCategory
-    ) {
-        TODO("Not yet implemented")
-    }
+    ) {}
 
-    override fun read(notificationEntity: NotificationEntity) {
-        TODO("Not yet implemented")
-    }
+    override fun read(notificationEntity: NotificationEntity) {}
 
-    override fun delete(notificationEntity: NotificationEntity) {
-        TODO("Not yet implemented")
-    }
+    override fun delete(notificationEntity: NotificationEntity) {}
 }

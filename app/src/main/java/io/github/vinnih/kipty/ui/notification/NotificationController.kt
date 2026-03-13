@@ -8,10 +8,6 @@ import kotlinx.coroutines.flow.StateFlow
 interface NotificationController {
 
     val uiState: StateFlow<NotificationUiState>
-    val today: StateFlow<List<NotificationEntity>>
-    val yesterday: StateFlow<List<NotificationEntity>>
-    val earlier: StateFlow<List<NotificationEntity>>
-    val unread: StateFlow<List<NotificationEntity>>
 
     fun notify(
         audioEntity: AudioEntity,

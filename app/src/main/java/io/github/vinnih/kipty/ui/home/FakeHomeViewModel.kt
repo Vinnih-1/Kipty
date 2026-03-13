@@ -8,17 +8,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.serialization.json.Json
 
-class FakeHomeViewModel : HomeController {
+private val json = Json { ignoreUnknownKeys = true }
 
-    private val json = Json { ignoreUnknownKeys = true }
+private val fakeAudioList: List<AudioEntity> = listOf(
+    json.decodeFromString(FakeAudioData.audio_1865_02_01),
+    json.decodeFromString(FakeAudioData.audio_1888_11_13)
+)
 
-    private val fakeAudioList: List<AudioEntity> = listOf(
-        json.decodeFromString(FakeAudioData.audio_1865_02_01),
-        json.decodeFromString(FakeAudioData.audio_1888_11_13)
-    )
+class FakeHomeViewModel(homeUiState: HomeUiState = HomeUiState(fakeAudioList)) : HomeController {
 
-    override val homeUiState: StateFlow<HomeUiState> =
-        MutableStateFlow(HomeUiState(audioList = fakeAudioList))
+    override val homeUiState: StateFlow<HomeUiState> = MutableStateFlow(homeUiState)
 
     override fun getPlayTimeById(id: Int): Flow<Long> = flowOf(
         fakeAudioList.find {

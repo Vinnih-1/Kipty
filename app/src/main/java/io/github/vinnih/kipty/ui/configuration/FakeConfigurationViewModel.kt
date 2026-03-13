@@ -4,11 +4,10 @@ import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class FakeConfigurationViewModel : ConfigurationController {
-    override val uiState: StateFlow<ConfigurationsUiState>
-        get() = MutableStateFlow(
-            ConfigurationsUiState(canCreate = true, appSettings = null)
-        )
+class FakeConfigurationViewModel(
+    configurationUiState: ConfigurationsUiState = ConfigurationsUiState()
+) : ConfigurationController {
+    override val uiState: StateFlow<ConfigurationsUiState> = MutableStateFlow(configurationUiState)
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {}
 

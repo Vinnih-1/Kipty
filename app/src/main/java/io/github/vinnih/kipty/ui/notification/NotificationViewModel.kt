@@ -39,16 +39,16 @@ class NotificationViewModel @Inject constructor(
 ) : ViewModel(),
     NotificationController {
 
-    override val today: StateFlow<List<NotificationEntity>> = getTodayNotificationsUseCase()
+    val today: StateFlow<List<NotificationEntity>> = getTodayNotificationsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    override val yesterday: StateFlow<List<NotificationEntity>> = getYesterdayNotificationsUseCase()
+    val yesterday: StateFlow<List<NotificationEntity>> = getYesterdayNotificationsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    override val earlier: StateFlow<List<NotificationEntity>> = getEarlierNotificationsUseCase()
+    val earlier: StateFlow<List<NotificationEntity>> = getEarlierNotificationsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    override val unread: StateFlow<List<NotificationEntity>> = getUnreadNotificationsUseCase()
+    val unread: StateFlow<List<NotificationEntity>> = getUnreadNotificationsUseCase()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     override val uiState: StateFlow<NotificationUiState> =

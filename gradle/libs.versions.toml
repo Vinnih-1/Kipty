@@ -28,6 +28,7 @@ vosk = "0.3.75"
 mockk = "1.14.9"
 turbine = "1.2.1"
 coroutines-test = "1.10.2"
+androidxTestRunner = "1.6.2"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +39,9 @@ androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", versi
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 androidx-room = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
 androidx-hilt-worker = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltWorker" }
@@ -61,6 +65,7 @@ ffmpeg-kit = { group = "io.github.maxrave-dev", name = "ffmpeg-kit-audio", versi
 vosk-android = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
 junit = { group = "junit", name = "junit", version = "4.13.2" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines-test" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version = "2.2.0" }

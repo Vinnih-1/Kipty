@@ -639,7 +639,7 @@ private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifie
             BaseButton(onClick = onBack, content = {
                 Icon(
                     painter = painterResource(R.drawable.arrow_back),
-                    contentDescription = null,
+                    contentDescription = "back button",
                     modifier = Modifier.size(36.dp)
                 )
             })

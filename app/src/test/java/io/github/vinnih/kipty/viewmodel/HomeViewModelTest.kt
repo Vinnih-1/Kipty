@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.ui.home
+package io.github.vinnih.kipty.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import app.cash.turbine.test
@@ -9,6 +9,7 @@ import io.github.vinnih.kipty.domain.usecase.audio.GetAudiosUseCase
 import io.github.vinnih.kipty.domain.usecase.audio.GetPlayTimeUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.OpenNotificationSettingsUseCase
+import io.github.vinnih.kipty.ui.home.HomeViewModel
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -36,7 +37,8 @@ class HomeViewModelTest {
     private val getAudiosUseCase = mockk<GetAudiosUseCase>()
     private val getAppSettingsUseCase = mockk<GetAppSettingsUseCase>()
     private val getPlayTimeUseCase = mockk<GetPlayTimeUseCase>()
-    private val openNotificationSettingsUseCase = mockk<OpenNotificationSettingsUseCase>(relaxed = true)
+    private val openNotificationSettingsUseCase =
+        mockk<OpenNotificationSettingsUseCase>(relaxed = true)
 
     private val fakeSettings = AppSettings(
         showTimestamp = true,

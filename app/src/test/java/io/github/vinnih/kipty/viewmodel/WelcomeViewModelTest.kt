@@ -1,4 +1,4 @@
-package io.github.vinnih.kipty.ui.welcome
+package io.github.vinnih.kipty.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import io.github.vinnih.kipty.data.settings.AppSettings
@@ -6,6 +6,8 @@ import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateProfileIconUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateUsernameUseCase
 import io.github.vinnih.kipty.domain.usecase.worker.PopulateDatabaseUseCase
+import io.github.vinnih.kipty.ui.welcome.WelcomeStep
+import io.github.vinnih.kipty.ui.welcome.WelcomeViewModel
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk

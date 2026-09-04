@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -202,13 +201,18 @@ fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
     val colors = MaterialTheme.colorScheme
     val isSelectedItem: (Step) -> Boolean = { currentStep == it }
 
-    @Composable
-    fun IconIndicator(@DrawableRes id: Int, step: Step, selected: Boolean, divider: Boolean) {
-        val done = currentStep.ordinal > step.ordinal
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.Top,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 12.dp)
+    ) {
+        Step.entries.forEachIndexed { index, step ->
+            val done = currentStep.ordinal > step.ordinal
+            val selected = isSelectedItem(step)
+            val isLast = index == Step.entries.size - 1
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -216,7 +220,7 @@ fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
                 Box(
                     modifier = Modifier
                         .clip(CircleShape)
-                        .size(64.dp)
+                        .size(56.dp)
                         .border(
                             border = if (selected && !done) {
                                 BorderStroke(2.dp, colors.primaryContainer)
@@ -233,27 +237,33 @@ fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
                             }
                         )
                 ) {
-                    if (done) {
-                        Icon(
-                            painter = painterResource(R.drawable.check),
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp).align(Alignment.Center),
-                            tint = colors.onPrimaryContainer
-                        )
-                    } else {
-                        Icon(
-                            painter = painterResource(id),
-                            contentDescription = null,
-                            modifier = Modifier.size(32.dp).align(Alignment.Center),
-                            tint = if (selected) {
+                    Icon(
+                        painter = painterResource(
+                            if (done) {
+                                R.drawable.check
+                            } else {
+                                when (step) {
+                                    Step.FILE -> R.drawable.music
+                                    Step.DETAILS -> R.drawable.file_text
+                                    Step.IMAGE -> R.drawable.image
+                                    Step.REVIEW -> R.drawable.check
+                                }
+                            }
+                        ),
+                        contentDescription = null,
+                        modifier = Modifier.size(28.dp).align(Alignment.Center),
+                        tint = if (done) {
+                            colors.onPrimaryContainer
+                        } else {
+                            if (selected) {
                                 colors.primary
                             } else {
                                 colors.onBackground.copy(
                                     alpha = .5f
                                 )
                             }
-                        )
-                    }
+                        }
+                    )
                 }
                 Text(
                     text = step.name.lowercase().replaceFirstChar { it.uppercase() },
@@ -267,50 +277,26 @@ fun ProgressStepSection(currentStep: Step, modifier: Modifier = Modifier) {
                     }
                 )
             }
-            if (divider) {
-                HorizontalDivider(
-                    modifier = Modifier.width(36.dp),
-                    thickness = 2.dp,
-                    color = if (done) {
-                        colors.primaryContainer
-                    } else {
-                        colors.onBackground
-                    }
-                )
+            if (!isLast) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp)
+                ) {
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(horizontal = 4.dp),
+                        thickness = 2.dp,
+                        color = if (done) {
+                            colors.primaryContainer
+                        } else {
+                            colors.onBackground
+                        }
+                    )
+                }
             }
         }
-    }
-
-    Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 24.dp, bottom = 12.dp)
-    ) {
-        IconIndicator(
-            id = R.drawable.music,
-            step = Step.FILE,
-            selected = isSelectedItem(Step.FILE),
-            divider = true
-        )
-        IconIndicator(
-            id = R.drawable.file_text,
-            step = Step.DETAILS,
-            selected = isSelectedItem(Step.DETAILS),
-            divider = true
-        )
-        IconIndicator(
-            id = R.drawable.image,
-            step = Step.IMAGE,
-            selected = isSelectedItem(Step.IMAGE),
-            divider = true
-        )
-        IconIndicator(
-            id = R.drawable.check,
-            step = Step.REVIEW,
-            selected = isSelectedItem(Step.REVIEW),
-            divider = false
-        )
     }
 }
 

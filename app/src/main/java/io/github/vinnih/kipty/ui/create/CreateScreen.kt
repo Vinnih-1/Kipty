@@ -373,7 +373,7 @@ private fun ProcessingInformationNote(modifier: Modifier = Modifier) {
                     )
                 },
                 dismiss = {},
-                modifier = Modifier.height(84.dp).padding(top = 16.dp)
+                modifier = Modifier.padding(top = 16.dp)
             )
         }
     }

@@ -5,9 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
@@ -50,13 +49,13 @@ fun AppWarn(
         modifier = modifier.fillMaxWidth()
     ) {
         Card(
-            modifier = Modifier.fillMaxWidth().height(86.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
             colors = CardDefaults.cardColors(
                 containerColor = color.copy(alpha = 0.3f),
                 contentColor = color
             )
         ) {
-            Box(modifier = Modifier.fillMaxSize().padding(8.dp)) {
+            Box(modifier = Modifier.padding(8.dp)) {
                 Column(modifier = Modifier.align(Alignment.TopStart)) {
                     icon.invoke()
                 }

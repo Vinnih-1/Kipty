@@ -1,0 +1,1 @@
+Kipty is an Android app that transcribes audio to help English learners follow podcasts, improve listening comprehension, and study spoken content.

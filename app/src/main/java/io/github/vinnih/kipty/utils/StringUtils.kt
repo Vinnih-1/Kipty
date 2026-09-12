@@ -106,11 +106,17 @@ fun Long.timestamp(): String {
     return timestamp
 }
 
+@Suppress("ktlint:standard:property-naming")
 fun String.convertTranscription(): List<AudioTranscription> {
     val result = mutableListOf<AudioTranscription>()
     val lines = this.trimIndent().split("\n")
 
-    // Vosk emits multi-line JSON — accumulate lines until braces balance
+    val BREAK_GAP_MS = 600L // Gaps larger than this trigger a new bubble (natural pause)
+    val MAX_WORDS_PER_BUBBLE = 18
+
+    data class RawWord(val start: Long, val end: Long, val text: String)
+
+    val allRawWords = mutableListOf<RawWord>()
     val jsonBuffer = StringBuilder()
     var braceDepth = 0
 
@@ -119,10 +125,13 @@ fun String.convertTranscription(): List<AudioTranscription> {
         if (trimmed.isEmpty()) continue
 
         if (trimmed.startsWith("[")) {
-            // Legacy Whisper SRT format: [00:00:00.000 --> 00:00:02.500] text
             val timestamp = trimmed.take(31).timestamp()
             val text = trimmed.drop(31)
-            if (text.isNotBlank()) result.add(AudioTranscription(timestamp.first, timestamp.second, text))
+            if (text.isNotBlank()) {
+                result.add(
+                    AudioTranscription(timestamp.first, timestamp.second, text)
+                )
+            }
             continue
         }
 
@@ -137,16 +146,18 @@ fun String.convertTranscription(): List<AudioTranscription> {
         if (braceDepth == 0 && jsonBuffer.isNotBlank()) {
             try {
                 val json = JSONObject(jsonBuffer.toString().trim())
-                val text = json.optString("text").trim()
-                if (text.isNotEmpty()) {
-                    val words = json.optJSONArray("result")
-                    val startMs = if (words != null && words.length() > 0)
-                        (words.getJSONObject(0).getDouble("start") * 1000).toLong()
-                    else 0L
-                    val endMs = if (words != null && words.length() > 0)
-                        (words.getJSONObject(words.length() - 1).getDouble("end") * 1000).toLong()
-                    else 0L
-                    result.add(AudioTranscription(startMs, endMs, text))
+                val wordsArray = json.optJSONArray("result")
+                if (wordsArray != null) {
+                    for (i in 0 until wordsArray.length()) {
+                        val wordObj = wordsArray.getJSONObject(i)
+                        allRawWords.add(
+                            RawWord(
+                                start = (wordObj.getDouble("start") * 1000).toLong(),
+                                end = (wordObj.getDouble("end") * 1000).toLong(),
+                                text = wordObj.getString("word")
+                            )
+                        )
+                    }
                 }
             } catch (_: Exception) {
             } finally {
@@ -155,6 +166,40 @@ fun String.convertTranscription(): List<AudioTranscription> {
         }
     }
 
+    if (allRawWords.isEmpty()) return result
+
+    val currentBubbleWords = mutableListOf<RawWord>()
+
+    fun flushBubble() {
+        if (currentBubbleWords.isEmpty()) return
+        val bubbleText = currentBubbleWords.joinToString(" ") { it.text }
+        val startTime = currentBubbleWords.first().start
+        val endTime = currentBubbleWords.last().end
+        result.add(AudioTranscription(startTime, endTime, bubbleText))
+        currentBubbleWords.clear()
+    }
+
+    for (i in allRawWords.indices) {
+        val currentWord = allRawWords[i]
+        val prevWord = currentBubbleWords.lastOrNull()
+
+        if (prevWord != null) {
+            val gap = currentWord.start - prevWord.end
+
+            val reachedLimit = currentBubbleWords.size >= MAX_WORDS_PER_BUBBLE
+            val naturalPause = gap > BREAK_GAP_MS
+
+            // Break if we simply hit the word limit OR if there is a natural pause.
+            // Priortizing the limit ensures bubbles don't grow indefinitely during rapid speech.
+            if (reachedLimit || naturalPause) {
+                flushBubble()
+            }
+        }
+
+        currentBubbleWords.add(currentWord)
+    }
+
+    flushBubble()
     return result
 }
 

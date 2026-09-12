@@ -39,7 +39,7 @@ class PopulateWorker @AssistedInject constructor(
                     audioService.getAudioDuration(tempFile.absolutePath) ?: return@createDefault
                 val transcriptionData = transcription.convertTranscription()
                 val audioEntity = AudioEntity(
-                    name = audio.substringAfterLast("/"),
+                    name = audio.substringAfterLast("/").substringBeforeLast("."),
                     description = description,
                     audioPath = audio,
                     imagePath = image,

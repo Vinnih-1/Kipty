@@ -58,7 +58,8 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
     private fun findBestMatch(
         expectedWord: String,
         transcribedWords: List<String>,
-        usedIndices: MutableSet<Int>
+        usedIndices: MutableSet<Int>,
+        lastMatchIndex: Int
     ): Pair<Int, Float> {
         var bestIndex = -1
         var bestSimilarity = 0f
@@ -66,14 +67,27 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
         transcribedWords.forEachIndexed { index, transcribedWord ->
             if (index !in usedIndices) {
                 val similarity = wordSimilarity(expectedWord, transcribedWord)
-                if (similarity > bestSimilarity) {
-                    bestSimilarity = similarity
-                    bestIndex = index
+
+                val proximityBonus = if (index > lastMatchIndex) 0.05f else 0f
+                val effectiveSimilarity = similarity + proximityBonus
+
+                if (effectiveSimilarity > bestSimilarity) {
+                    bestSimilarity = effectiveSimilarity
+
+                    if (similarity > 0.7f) {
+                        bestIndex = index
+                    }
                 }
             }
         }
 
-        return bestIndex to bestSimilarity
+        val finalSimilarity = if (bestIndex != -1) {
+            wordSimilarity(expectedWord, transcribedWords[bestIndex])
+        } else {
+            0f
+        }
+
+        return bestIndex to finalSimilarity
     }
 
     private fun evaluateDetailed(
@@ -89,16 +103,19 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
         val wordScores = mutableListOf<WordScore>()
         val usedIndices = mutableSetOf<Int>()
         var totalSimilarity = 0f
+        var lastMatchIndex = -1
 
         expectedWords.forEach { expectedWord ->
             val (bestIndex, similarity) = findBestMatch(
                 expectedWord,
                 transcribedWords,
-                usedIndices
+                usedIndices,
+                lastMatchIndex
             )
 
             if (bestIndex != -1) {
                 usedIndices.add(bestIndex)
+                lastMatchIndex = bestIndex
             }
 
             val isCorrect = similarity >= 0.8f
@@ -131,7 +148,7 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
     suspend fun calculatePronunciationScore(
         expected: String,
         audioFile: File,
-        onScore: (Pair<String, Int>) -> Unit
+        onScore: (DetailedPronunciationResult) -> Unit
     ) {
         val rawJson = transcriptor.recognizeFile(
             audioFile = audioFile,
@@ -139,6 +156,6 @@ class SpeechResult @Inject constructor(private val transcriptor: TranscriptorSer
         )
         val text = rawJson.convertTranscription().joinToString { it.text }
 
-        onScore(text to evaluateDetailed(expected, text).overallScore)
+        onScore(evaluateDetailed(expected, text))
     }
 }

@@ -377,7 +377,7 @@ private fun ResultScene(
 
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
-    val score = uiState.result.second
+    val score = uiState.result?.overallScore ?: 0
 
     val scoreColor = when {
         score >= 90 -> Color(0xFF2E7D32)
@@ -397,44 +397,71 @@ private fun ResultScene(
         else -> "Try again! Practice makes perfect"
     }
 
-    val expectedWords = phrase.text
-        .lowercase()
-        .replace(Regex("[,.:;!?\"'-]"), "")
-        .split(Regex("\\s+"))
-
-    val userWords = uiState.result.first
-        .lowercase()
-        .replace(Regex("[,.:;!?\"'-]"), "")
-        .split(Regex("\\s+"))
-
     val annotatedString = buildAnnotatedString {
-        expectedWords.forEachIndexed { index, expectedWord ->
-            val userWord = userWords.getOrNull(index) ?: ""
+        val wordScores = uiState.result?.wordScores
 
-            val similarity = if (expectedWord == userWord) {
-                1f
-            } else {
-                calculateSimilarity(expectedWord, userWord)
+        if (wordScores != null) {
+            wordScores.forEachIndexed { index, wordScore ->
+                val wordColor = when {
+                    wordScore.similarity >= 0.95f -> Color(0xFF2E7D32)
+                    wordScore.similarity >= 0.80f -> Color(0xFF66BB6A)
+                    wordScore.similarity >= 0.60f -> Color(0xFFFFA726)
+                    else -> Color(0xFFEF5350)
+                }
+
+                withStyle(
+                    style = SpanStyle(
+                        color = wordColor,
+                        fontWeight = if (!wordScore.isCorrect) FontWeight.Bold else FontWeight.Normal
+                    )
+                ) {
+                    append(wordScore.word)
+                }
+
+                if (index < wordScores.size - 1) {
+                    append(" ")
+                }
             }
+        } else {
+            val expectedWords = phrase.text
+                .lowercase()
+                .replace(Regex("[,.:;!?\"'-]"), "")
+                .split(Regex("\\s+"))
 
-            val wordColor = when {
-                similarity >= 0.95f -> Color(0xFF2E7D32)
-                similarity >= 0.80f -> Color(0xFF66BB6A)
-                similarity >= 0.60f -> Color(0xFFFFA726)
-                else -> Color(0xFFEF5350)
-            }
+            val userWords = (uiState.result?.transcription ?: "")
+                .lowercase()
+                .replace(Regex("[,.:;!?\"'-]"), "")
+                .split(Regex("\\s+"))
 
-            withStyle(
-                style = SpanStyle(
-                    color = wordColor,
-                    fontWeight = if (similarity < 0.8f) FontWeight.Bold else FontWeight.Normal
-                )
-            ) {
-                append(expectedWord)
-            }
+            expectedWords.forEachIndexed { index, expectedWord ->
+                val userWord = userWords.getOrNull(index) ?: ""
+                val similarity = if (expectedWord ==
+                    userWord
+                ) {
+                    1f
+                } else {
+                    calculateSimilarity(expectedWord, userWord)
+                }
 
-            if (index < expectedWords.size - 1) {
-                append(" ")
+                val wordColor = when {
+                    similarity >= 0.95f -> Color(0xFF2E7D32)
+                    similarity >= 0.80f -> Color(0xFF66BB6A)
+                    similarity >= 0.60f -> Color(0xFFFFA726)
+                    else -> Color(0xFFEF5350)
+                }
+
+                withStyle(
+                    style = SpanStyle(
+                        color = wordColor,
+                        fontWeight = if (similarity < 0.8f) FontWeight.Bold else FontWeight.Normal
+                    )
+                ) {
+                    append(expectedWord)
+                }
+
+                if (index < expectedWords.size - 1) {
+                    append(" ")
+                }
             }
         }
     }

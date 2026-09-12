@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
 import io.github.vinnih.kipty.data.service.audio.OutputFormat
+import io.github.vinnih.kipty.data.service.record.DetailedPronunciationResult
 import io.github.vinnih.kipty.data.service.record.RecorderService
 import io.github.vinnih.kipty.domain.usecase.audio.ResampleAudioUseCase
 import io.github.vinnih.kipty.domain.usecase.player.PauseAudioUseCase
@@ -29,7 +30,7 @@ data class SpeechUiState(
     val isRecording: Boolean = false,
     val amplitudes: List<Float> = emptyList(),
     val recordingTime: Long = 0L,
-    val result: Pair<String, Int> = Pair("", 0)
+    val result: DetailedPronunciationResult? = null
 )
 
 @HiltViewModel
@@ -50,7 +51,7 @@ class SpeechViewModel @Inject constructor(
 
     private val recordPath = MutableStateFlow("")
     private val audioPath = MutableStateFlow("")
-    private val result = MutableStateFlow(Pair("", 0))
+    private val result = MutableStateFlow<DetailedPronunciationResult?>(null)
 
     override val uiState: StateFlow<SpeechUiState> = combine(
         recorderService.isRecording,
@@ -113,14 +114,15 @@ class SpeechViewModel @Inject constructor(
         return saveSpeechUseCase(
             audioPath = audioPath.value,
             recordPath = recordPath.value,
-            result = result.value.first,
+            result = result.value?.transcription ?: "",
             phrase = phrase
         )
     }
+
     fun clearAll() {
         audioPath.value = ""
         recordPath.value = ""
-        result.value = Pair("", 0)
+        result.value = null
     }
 
     fun playTempAudio(audioFilePath: String) = tempPlayerPlayUseCase(audioFilePath)

@@ -34,7 +34,6 @@ class TranscriptorService @Inject constructor(
             "model-en-us",
             "model",
             { model ->
-                println("loaded model: $model")
                 modelDeferred.complete(model)
             },
             { error ->

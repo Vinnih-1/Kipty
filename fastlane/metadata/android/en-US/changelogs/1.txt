@@ -1,0 +1,10 @@
+This release focuses on FOSS compliance ahead of the F-Droid submission, alongside speech recognition improvements and several UI fixes.
+
+- Improved speech recognition by using detailed pronunciation results and better word matching
+- Fixed transcription splitting to use word limits and time gaps
+- Fixed double-click issue when starting a recording by adding a minimum recording duration
+- Replaced Google Fonts with locally bundled font resources
+- Replaced the "Speak Easy" sample audio with the public domain "Historical Newspaper Articles, Volume 1" collection from LibriVox
+- Removed the unused whisper.cpp module
+- Fixed comprehensive UI issues on small screen widths
+- Fixed file extension incorrectly included in audio names in PopulateWorker

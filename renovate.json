@@ -15,6 +15,10 @@
   "prHourlyLimit": 2,
   "packageRules": [
     {
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
+    },
+    {
       "matchManagers": ["gradle"],
       "registryUrls": [
         "https://repo.maven.apache.org/maven2",

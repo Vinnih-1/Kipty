@@ -305,12 +305,14 @@ private fun RecordingScene(
             fontWeight = FontWeight.Bold
         )
 
+        val canStop = recordingTime >= 3 // TODO: make this configurable
+
         Box(
             modifier = Modifier
                 .size(80.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFB71C1C))
-                .clickable { onRecord.invoke() },
+                .background(if (canStop) Color(0xFFB71C1C) else Color.Gray.copy(alpha = 0.5f))
+                .clickable(enabled = canStop) { onRecord.invoke() },
             contentAlignment = Alignment.Center
         ) {
             Box(
@@ -322,7 +324,7 @@ private fun RecordingScene(
         }
 
         Text(
-            text = "Tap to stop recording",
+            text = if (canStop) "Tap to stop recording" else "Wait a moment...",
             style = typography.bodyMedium,
             color = colors.onSecondaryContainer,
             fontWeight = FontWeight.Light

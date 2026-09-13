@@ -69,6 +69,7 @@ class CompleteEditUseCaseTest {
     fun `given null image file, should use default icon from filesDir`() = runTest {
         val audioDir = tmpFolder.newFolder("transcription_folder2")
         val audioFile = File(audioDir, "audio.opus").apply { createNewFile() }
+        val defaultIcon = File(filesDir, "default-icon.png").apply { createNewFile() }
         val audio = buildAudio(audioFile.absolutePath)
 
         useCase(audio, "Title", "Desc", null)

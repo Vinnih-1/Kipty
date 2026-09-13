@@ -12,7 +12,6 @@ hiltWorker = "1.3.0"
 hiltNavigationCompose = "1.3.0"
 media3 = "1.9.2"
 ktlint = "14.2.0"
-ktlint-compose = "0.6.6"
 serialization = "2.3.10"
 json = "1.10.0"
 room = "2.8.4"
@@ -54,7 +53,6 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose"}
 media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", version.ref = "media3" }
 media3-uicompose = { group = "androidx.media3", name = "media3-ui-compose", version.ref = "media3" }
-ktlint-compose = { group = "io.nlopez.compose.rules", name = "ktlint", version.ref = "ktlint-compose" }
 serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "json" }
 worker-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "worker" }
 google-accompanist-permission = { group = "com.google.accompanist", name = "accompanist-permissions", version.ref = "permission" }

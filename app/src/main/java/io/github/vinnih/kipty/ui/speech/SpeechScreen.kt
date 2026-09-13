@@ -412,7 +412,11 @@ private fun ResultScene(
                 withStyle(
                     style = SpanStyle(
                         color = wordColor,
-                        fontWeight = if (!wordScore.isCorrect) FontWeight.Bold else FontWeight.Normal
+                        fontWeight = if (!wordScore.isCorrect) {
+                            FontWeight.Bold
+                        } else {
+                            FontWeight.Normal
+                        }
                     )
                 ) {
                     append(wordScore.word)

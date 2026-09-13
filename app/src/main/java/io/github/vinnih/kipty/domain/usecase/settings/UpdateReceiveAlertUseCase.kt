@@ -6,6 +6,5 @@ import jakarta.inject.Inject
 class UpdateReceiveAlertUseCase @Inject constructor(
     private val repository: AppPreferencesRepository
 ) {
-    suspend operator fun invoke(receiveAlert: Boolean) =
-        repository.updateReceiveAlert(receiveAlert)
+    suspend operator fun invoke(receiveAlert: Boolean) = repository.updateReceiveAlert(receiveAlert)
 }

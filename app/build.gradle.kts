@@ -106,6 +106,4 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-
-    ktlintRuleset(libs.ktlint.compose)
 }

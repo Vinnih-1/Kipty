@@ -4,6 +4,8 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import app.cash.turbine.test
+import io.github.vinnih.kipty.data.database.entity.AudioEntity
+import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.domain.usecase.audio.GetAudiosUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
@@ -12,13 +14,11 @@ import io.github.vinnih.kipty.domain.usecase.settings.UpdateProfileIconUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateReceiveAlertUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateShowTimestampUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateUsernameUseCase
-import io.github.vinnih.kipty.data.database.entity.AudioEntity
-import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.ui.configuration.ConfigurationViewModel
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -28,13 +28,10 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.io.File
 
 class ConfigurationViewModelTest {
 

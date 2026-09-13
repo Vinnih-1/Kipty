@@ -12,15 +12,14 @@ import io.github.vinnih.kipty.utils.getFileName
 import jakarta.inject.Inject
 import java.io.File
 
-class CreateAudioUseCase @Inject constructor(
-    @ApplicationContext private val context: Context
-) {
+class CreateAudioUseCase @Inject constructor(@ApplicationContext private val context: Context) {
     operator fun invoke(audioUri: Uri, title: String, description: String, imageFile: File?) {
         val validatedTitle = title.ifEmpty {
             audioUri.getFileName(context).substringBeforeLast(".")
         }
         val uniqueName = getUniqueAudioName(validatedTitle)
-        val image = imageFile?.absolutePath ?: File(context.filesDir, "default-icon.png").absolutePath
+        val image =
+            imageFile?.absolutePath ?: File(context.filesDir, "default-icon.png").absolutePath
 
         val data = Data.Builder()
             .putString("name", uniqueName)

@@ -28,9 +28,8 @@ enum class Step {
 }
 
 @HiltViewModel
-class CreateViewModel @Inject constructor(
-    private val createAudioUseCase: CreateAudioUseCase
-) : ViewModel(),
+class CreateViewModel @Inject constructor(private val createAudioUseCase: CreateAudioUseCase) :
+    ViewModel(),
     CreateController {
 
     private val _uiState = MutableStateFlow(CreateUiState())

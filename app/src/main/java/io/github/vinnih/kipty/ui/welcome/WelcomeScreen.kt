@@ -171,7 +171,8 @@ private fun IntroStepScreen(onNext: () -> Unit, modifier: Modifier = Modifier) {
                     textAlign = TextAlign.Center
                 )
                 Text(
-                    text = "Improve your English by listening to\npodcasts with real-time transcription.",
+                    text = "Improve your English by listening to\n" +
+                        "podcasts with real-time transcription.",
                     style = typography.bodyLarge,
                     fontWeight = FontWeight.Light,
                     color = colors.onBackground.copy(alpha = 0.7f),

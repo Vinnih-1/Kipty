@@ -9,7 +9,6 @@ import io.mockk.every
 import io.mockk.mockk
 import java.io.File
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -70,7 +69,6 @@ class CompleteEditUseCaseTest {
     fun `given null image file, should use default icon from filesDir`() = runTest {
         val audioDir = tmpFolder.newFolder("transcription_folder2")
         val audioFile = File(audioDir, "audio.opus").apply { createNewFile() }
-        val defaultIcon = File(filesDir, "default-icon.png").apply { createNewFile() }
         val audio = buildAudio(audioFile.absolutePath)
 
         useCase(audio, "Title", "Desc", null)
@@ -83,18 +81,19 @@ class CompleteEditUseCaseTest {
     }
 
     @Test
-    fun `given image already in transcription folder, should not copy and use same path`() = runTest {
-        val audioDir = tmpFolder.newFolder("transcription_folder3")
-        val audioFile = File(audioDir, "audio.opus").apply { createNewFile() }
-        val imageAlreadyThere = File(audioDir, "cover.jpg").apply { createNewFile() }
-        val audio = buildAudio(audioFile.absolutePath)
+    fun `given image already in transcription folder, should not copy and use same path`() =
+        runTest {
+            val audioDir = tmpFolder.newFolder("transcription_folder3")
+            val audioFile = File(audioDir, "audio.opus").apply { createNewFile() }
+            val imageAlreadyThere = File(audioDir, "cover.jpg").apply { createNewFile() }
+            val audio = buildAudio(audioFile.absolutePath)
 
-        useCase(audio, "Title", "Desc", imageAlreadyThere)
+            useCase(audio, "Title", "Desc", imageAlreadyThere)
 
-        coVerify {
-            repository.save(
-                match { it.imagePath == imageAlreadyThere.absolutePath }
-            )
+            coVerify {
+                repository.save(
+                    match { it.imagePath == imageAlreadyThere.absolutePath }
+                )
+            }
         }
-    }
 }

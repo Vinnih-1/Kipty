@@ -12,7 +12,7 @@
   Mobile app for audio transcription focused on English learning
 </h3>
 
-> **Note:** Audio transcriptions in Kipty are generated using the *base* and *tiny* Whisper.cpp models. As these are lightweight models, transcription errors may occur, especially with noisy audio or fast speech.
+> **Note:** Audio transcriptions in Kipty are generated using the vosk-model-small-en-us-0.15 model. As these are lightweight models, transcription errors may occur, especially with noisy audio or fast speech.
 
 Kipty is a mobile application designed to create **audio transcriptions** to help with learning English.  
 It allows you to follow along with what is being said in an audio while reading its transcription, which is especially useful for improving listening and vocabulary.

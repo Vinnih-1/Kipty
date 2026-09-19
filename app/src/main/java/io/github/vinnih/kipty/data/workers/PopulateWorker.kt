@@ -65,16 +65,15 @@ class PopulateWorker @AssistedInject constructor(
             appContext.assets.open("icons/default-icon.png")
                 .copyTo(File(appContext.filesDir, "default-icon.png"))
 
-            appContext.assets.list("samples/")!!.map { folder ->
-                appContext.assets.list("samples/$folder")!!
-                    .map { sampleFolder ->
-                        val sample = appContext.assets.list("samples/$folder/$sampleFolder")!!
-                            .filter { it.endsWith(".opus") }
-                            .map { File(it) }
-                            .first()
-                        val tempFile = File(appContext.filesDir, "temp_${sample.name}").createFile()
+            appContext.assets.list("samples/")?.forEach { folder ->
+                appContext.assets.list("samples/$folder")?.forEach { sampleFolder ->
+                    val sampleName = appContext.assets.list("samples/$folder/$sampleFolder")
+                        ?.find { it.endsWith(".opus") }
 
-                        appContext.assets.open("samples/$folder/$sampleFolder/${sample.name}")
+                    if (sampleName != null) {
+                        val tempFile = File(appContext.filesDir, "temp_$sampleName").createFile()
+
+                        appContext.assets.open("samples/$folder/$sampleFolder/$sampleName")
                             .copyTo(tempFile)
 
                         val transcription = appContext.assets.open(
@@ -84,13 +83,14 @@ class PopulateWorker @AssistedInject constructor(
                             "samples/$folder/$sampleFolder/description.txt"
                         )
                         data.invoke(
-                            "samples/$folder/$sampleFolder/${sample.name}",
+                            "samples/$folder/$sampleFolder/$sampleName",
                             transcription.bufferedReader().readText(),
                             "samples/$folder/$sampleFolder/image.jpg",
                             description.bufferedReader().readText(),
                             tempFile
                         )
                     }
+                }
             }
         }
     }

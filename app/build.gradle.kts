@@ -13,6 +13,8 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+val buildUniversal = project.findProperty("buildUniversal") == "true"
+
 android {
     namespace = "io.github.vinnih.kipty"
     compileSdk = 36
@@ -22,7 +24,7 @@ android {
         minSdk = 26
         targetSdk = 36
         versionCode = 1
-        versionName = "2.3.1"
+        versionName = "2.3.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -54,7 +56,26 @@ android {
             isEnable = true
             reset()
             include("armeabi-v7a", "arm64-v8a")
-            isUniversalApk = true
+            isUniversalApk = buildUniversal
+        }
+    }
+}
+
+val abiVersionCodes = mapOf(
+    "armeabi-v7a" to 1,
+    "arm64-v8a" to 2
+)
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.outputs.forEach { output ->
+            val abiFilter = output.filters.find {
+                it.filterType == com.android.build.api.variant.FilterConfiguration.FilterType.ABI
+            }?.identifier
+            val abiCode = abiVersionCodes[abiFilter]
+            if (abiCode != null) {
+                output.versionCode.set(abiCode * 1000 + (android.defaultConfig.versionCode ?: 1))
+            }
         }
     }
 }

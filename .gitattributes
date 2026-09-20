@@ -19,3 +19,7 @@ whisper_cpp/** linguist-vendored
 # Ensure Kotlin is detected
 *.kt linguist-detectable=true
 *.kts linguist-detectable=true
+
+*.txt text eol=lf
+*.conf text eol=lf
+*.int text eol=lf

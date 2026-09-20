@@ -29,11 +29,37 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KIPTY_KEYSTORE_PATH") ?: "release.keystore")
+
+            if (storeFile != null) {
+                storePassword = System.getenv("KIPTY_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KIPTY_KEY_ALIAS")
+                keyPassword = System.getenv("KIPTY_KEY_PASSWORD")
+
+                require(!storePassword.isNullOrBlank()) {
+                    "KIPTY_KEYSTORE_PASSWORD is required when KIPTY_KEYSTORE_PATH is set"
+                }
+                require(!keyAlias.isNullOrBlank()) {
+                    "KIPTY_KEY_ALIAS is required when KIPTY_KEYSTORE_PATH is set"
+                }
+                require(!keyPassword.isNullOrBlank()) {
+                    "KIPTY_KEY_PASSWORD or KIPTY_KEYSTORE_PASSWORD is required when KIPTY_KEYSTORE_PATH is set"
+                }
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
         }
         release {
+            val releaseSigning = signingConfigs.findByName("release")
+            if (releaseSigning?.storeFile != null) {
+                signingConfig = releaseSigning
+            }
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles(
@@ -42,10 +68,12 @@ android {
             )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
         buildConfig = true

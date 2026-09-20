@@ -29,6 +29,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
+
     signingConfigs {
         create("release") {
             storeFile = file(System.getenv("KIPTY_KEYSTORE_PATH") ?: "release.keystore")

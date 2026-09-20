@@ -26,7 +26,7 @@ tasks.register('genUUID') {
     outputs.dir(outputDirProvider)
 
     doLast {
-        def uuid = UUID.randomUUID().toString()
+        def uuid = "7dd3a8c5-5389-4ba1-aae4-0de3b43c8aaa"
         def outputDir = outputDirProvider.get().asFile
         def outputFile = new File(outputDir, "uuid")
 

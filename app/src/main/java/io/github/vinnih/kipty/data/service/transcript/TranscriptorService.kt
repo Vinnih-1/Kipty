@@ -49,6 +49,8 @@ class TranscriptorService @Inject constructor(
     ): String = withContext(Dispatchers.IO) {
         val wavFile = audioService.resample(
             file = audioFile,
+            sampleRate = 16000,
+            channels = 1,
             format = OutputFormat.WAV,
             context = context
         )

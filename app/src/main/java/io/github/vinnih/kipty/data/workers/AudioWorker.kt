@@ -89,6 +89,8 @@ class AudioWorker @AssistedInject constructor(
 
     fun convertAudioFile(file: File): File = audioService.resample(
         file = file,
+        sampleRate = 48000,
+        bitrate = 128,
         format = OutputFormat.OPUS,
         context = appContext
     )

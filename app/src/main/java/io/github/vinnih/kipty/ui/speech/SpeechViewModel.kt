@@ -93,6 +93,8 @@ class SpeechViewModel @Inject constructor(
     suspend fun pronunciationScore(phrase: AudioTranscription): Long {
         val resampledFile = resampleAudioUseCase(
             file = File(recordPath.value),
+            sampleRate = 16000,
+            channels = 1,
             format = OutputFormat.WAV
         )
 

@@ -16,9 +16,9 @@ class ResampleAudioUseCase @Inject constructor(
 
     suspend operator fun invoke(
         file: File,
-        sampleRate: Int = 16000,
+        sampleRate: Int = 48000,
         channels: Int = 1,
-        bitrate: Int = 16,
+        bitrate: Int = 128,
         format: OutputFormat = OutputFormat.MP3
     ): File = withContext(Dispatchers.IO) {
         audioService.resample(

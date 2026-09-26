@@ -58,20 +58,30 @@ class RecorderService @Inject constructor(@ApplicationContext private val contex
     }
 
     private fun generateMediaRecorder(outputFile: File): MediaRecorder {
-        val mediaRecorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            MediaRecorder(context)
-        } else {
-            @Suppress("DEPRECATION")
-            (MediaRecorder())
-        }.apply {
-            setAudioSource(MediaRecorder.AudioSource.MIC)
-            setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            setOutputFile(outputFile.absolutePath)
-            prepare()
+        val createRecorder = { source: Int ->
+            val recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                MediaRecorder(context)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaRecorder()
+            }
+            recorder.apply {
+                setAudioSource(source)
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setAudioSamplingRate(48000)
+                setAudioEncodingBitRate(128000)
+                setAudioChannels(1)
+                setOutputFile(outputFile.absolutePath)
+                prepare()
+            }
         }
 
-        return mediaRecorder
+        return try {
+            createRecorder(MediaRecorder.AudioSource.VOICE_RECOGNITION)
+        } catch (_: Exception) {
+            createRecorder(MediaRecorder.AudioSource.MIC)
+        }
     }
 
     private fun listenAmplitudes(amplitudes: (Float) -> Unit): Job =

@@ -17,7 +17,8 @@ class TransferAudioUseCase @Inject constructor(
         val path = File(context.filesDir, path).createFolder()
         val recordFile = resampleAudioUseCase(
             file = File(recordPath),
-            bitrate = 192,
+            sampleRate = 48000,
+            bitrate = 128,
             format = OutputFormat.OPUS
         )
         val destination = File(path, recordFile.name)

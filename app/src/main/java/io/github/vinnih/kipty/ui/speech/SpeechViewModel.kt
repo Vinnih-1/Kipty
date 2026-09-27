@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.vinnih.kipty.data.database.entity.AudioTranscription
 import io.github.vinnih.kipty.data.database.entity.SpeechEntity
 import io.github.vinnih.kipty.data.service.audio.OutputFormat
+import io.github.vinnih.kipty.data.service.player.TempPlayerService
 import io.github.vinnih.kipty.data.service.record.DetailedPronunciationResult
 import io.github.vinnih.kipty.data.service.record.RecorderService
 import io.github.vinnih.kipty.domain.usecase.audio.ResampleAudioUseCase
@@ -30,12 +31,14 @@ data class SpeechUiState(
     val isRecording: Boolean = false,
     val amplitudes: List<Float> = emptyList(),
     val recordingTime: Long = 0L,
-    val result: DetailedPronunciationResult? = null
+    val result: DetailedPronunciationResult? = null,
+    val isPlayingTempAudio: Boolean = false
 )
 
 @HiltViewModel
 class SpeechViewModel @Inject constructor(
     recorderService: RecorderService,
+    tempPlayerService: TempPlayerService,
     private val startRecordUseCase: StartRecordUseCase,
     private val stopRecordUseCase: StopRecordUseCase,
     private val pauseAudioUseCase: PauseAudioUseCase,
@@ -57,13 +60,15 @@ class SpeechViewModel @Inject constructor(
         recorderService.isRecording,
         recorderService.amplitudes,
         recorderService.recordTime,
-        result
-    ) { recording, amps, time, result ->
+        result,
+        tempPlayerService.isPlaying
+    ) { recording, amps, time, result, isPlayingTemp ->
         SpeechUiState(
             isRecording = recording,
             amplitudes = amps,
             recordingTime = time,
-            result = result
+            result = result,
+            isPlayingTempAudio = isPlayingTemp
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SpeechUiState())
 

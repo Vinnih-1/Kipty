@@ -107,6 +107,7 @@ fun SpeechScreen(
     ModalBottomSheet(
         onDismissRequest = {
             onDismiss.invoke()
+            recordController.stopTempAudio()
             recordController.abortRecording()
         },
         sheetState = sheetState,
@@ -164,6 +165,9 @@ fun SpeechScreen(
                     },
                     onListen = {
                         recordController.playTempAudio(it)
+                    },
+                    onStopListen = {
+                        recordController.stopTempAudio()
                     }
                 )
             }
@@ -373,6 +377,7 @@ private fun ResultScene(
     onRetry: () -> Unit,
     onPlay: () -> Unit,
     onListen: (String) -> Unit,
+    onStopListen: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (speechEntity == null) return
@@ -380,6 +385,7 @@ private fun ResultScene(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val score = uiState.result?.overallScore ?: 0
+    val isPlaying = uiState.isPlayingTempAudio
 
     val scoreColor = when {
         score >= 90 -> Color(0xFF2E7D32)
@@ -555,9 +561,19 @@ private fun ResultScene(
             }
 
             Button(
-                onClick = { onListen(speechEntity.speechPath) },
+                onClick = {
+                    if (isPlaying) {
+                        onStopListen()
+                    } else {
+                        onListen(speechEntity.speechPath)
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = colors.primary
+                    containerColor = if (isPlaying) {
+                        colors.primary.copy(alpha = 0.7f)
+                    } else {
+                        colors.primary
+                    }
                 ),
                 modifier = Modifier
                     .weight(.5f)
@@ -569,13 +585,15 @@ private fun ResultScene(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.headphones),
+                        painter = painterResource(
+                            if (isPlaying) R.drawable.pause else R.drawable.headphones
+                        ),
                         contentDescription = null,
                         tint = colors.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                     Text(
-                        text = "Listen",
+                        text = if (isPlaying) "Stop" else "Listen",
                         style = typography.titleMedium,
                         color = colors.onPrimary
                     )
@@ -719,7 +737,8 @@ private fun SpeechPreview() {
             uiState = SpeechUiState(),
             onRetry = {},
             onPlay = {},
-            onListen = {}
+            onListen = {},
+            onStopListen = {}
         )
     }
 }

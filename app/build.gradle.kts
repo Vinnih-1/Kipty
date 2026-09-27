@@ -34,11 +34,12 @@ android {
         includeInBundle = false
     }
 
+    val keystorePathEnv = System.getenv("KIPTY_KEYSTORE_PATH")
+
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("KIPTY_KEYSTORE_PATH") ?: "release.keystore")
-
-            if (storeFile != null) {
+            if (keystorePathEnv != null) {
+                storeFile = file(keystorePathEnv)
                 storePassword = System.getenv("KIPTY_KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KIPTY_KEY_ALIAS")
                 keyPassword = System.getenv("KIPTY_KEY_PASSWORD")
@@ -50,7 +51,7 @@ android {
                     "KIPTY_KEY_ALIAS is required when KIPTY_KEYSTORE_PATH is set"
                 }
                 require(!keyPassword.isNullOrBlank()) {
-                    "KIPTY_KEY_PASSWORD or KIPTY_KEYSTORE_PASSWORD is required when KIPTY_KEYSTORE_PATH is set"
+                    "KIPTY_KEY_PASSWORD is required when KIPTY_KEYSTORE_PATH is set"
                 }
             }
         }

@@ -22,27 +22,34 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -70,6 +77,7 @@ import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatListenedTime
 import io.github.vinnih.kipty.utils.processUriToFile
 import java.io.File
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileSection(
@@ -488,8 +496,21 @@ fun ConfigurationScreen(
 ) {
     val uiState by configurationController.uiState.collectAsState()
     val context = LocalContext.current
+    var showNoticeSheet by remember { mutableStateOf(false) }
 
     if (uiState.isLoadingSettings) return
+
+    if (showNoticeSheet) {
+        NewTranscriptionNoticeSheet(
+            onContinue = {
+                showNoticeSheet = false
+                onNavigate(Screen.Create)
+            },
+            onDismiss = {
+                showNoticeSheet = false
+            }
+        )
+    }
 
     Column(
         modifier = modifier.fillMaxSize()
@@ -538,7 +559,7 @@ fun ConfigurationScreen(
                             title = "New transcription",
                             description = "Transcribe your favourite podcast",
                             iconRes = R.drawable.mic,
-                            onClick = { onNavigate(Screen.Create) },
+                            onClick = { showNoticeSheet = true },
                             enabled = uiState.canCreate
                         )
                     },
@@ -653,6 +674,237 @@ private fun ConfigurationTopBar(onBack: () -> Unit, modifier: Modifier = Modifie
 private fun openUrl(context: Context, url: String) {
     val intent = Intent(Intent.ACTION_VIEW, url.toUri())
     context.startActivity(intent)
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NewTranscriptionNoticeSheet(
+    onContinue: () -> Unit,
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    val scope = rememberCoroutineScope()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = colors.secondaryContainer,
+        modifier = modifier
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(colors.secondary.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.info),
+                        contentDescription = null,
+                        tint = colors.onSecondaryContainer,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(colors.onSecondaryContainer.copy(alpha = 0.1f))
+                        .clickable {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                onDismiss()
+                            }
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.close),
+                        contentDescription = null,
+                        tint = colors.onSecondaryContainer,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "A QUICK HEADS-UP",
+                    style = typography.labelMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = colors.primary
+                )
+                Text(
+                    text = "Before you continue",
+                    style = typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.onSecondaryContainer
+                )
+                Text(
+                    text = "Kipty uses a lightweight Vosk model to generate" +
+                        " English transcriptions, so mistakes can occur." +
+                        " If your audio is in another language, has background music," +
+                        " or has poor audio quality, the transcription may contain errors.",
+                    style = typography.bodyMedium,
+                    color = colors.onSecondaryContainer.copy(alpha = 0.8f)
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(colors.secondary.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.language),
+                            contentDescription = null,
+                            tint = colors.onSecondaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Text(
+                        text = "Non-English audio",
+                        style = typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onSecondaryContainer
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(colors.secondary.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.music),
+                            contentDescription = null,
+                            tint = colors.onSecondaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Text(
+                        text = "Background music or noise",
+                        style = typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onSecondaryContainer
+                    )
+                }
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(colors.secondary.copy(alpha = 0.2f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.mic),
+                            contentDescription = null,
+                            tint = colors.onSecondaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Text(
+                        text = "Low quality recordings",
+                        style = typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onSecondaryContainer
+                    )
+                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Button(
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            onContinue()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.primary
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = MaterialTheme.shapes.medium
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Got it, continue",
+                            style = typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onPrimary
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.chevron_right),
+                            contentDescription = null,
+                            tint = colors.onPrimary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+
+                TextButton(
+                    onClick = {
+                        scope.launch { sheetState.hide() }.invokeOnCompletion {
+                            onDismiss()
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Cancel",
+                        style = typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onSecondaryContainer
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Preview(

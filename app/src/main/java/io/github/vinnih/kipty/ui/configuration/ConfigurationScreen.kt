@@ -7,6 +7,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -612,6 +613,7 @@ private fun NewTranscriptionNoticeSheet(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val scope = rememberCoroutineScope()
+    val scroll = rememberScrollState()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -667,165 +669,167 @@ private fun NewTranscriptionNoticeSheet(
                 }
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "A QUICK HEADS-UP",
-                    style = typography.labelMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = colors.primary
-                )
-                Text(
-                    text = "Before you continue",
-                    style = typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.onSecondaryContainer
-                )
-                Text(
-                    text = "Kipty uses a lightweight Vosk model to generate" +
-                        " English transcriptions, so mistakes can occur." +
-                        " If your audio is in another language, has background music," +
-                        " or has poor audio quality, the transcription may contain errors.",
-                    style = typography.bodyMedium,
-                    color = colors.onSecondaryContainer.copy(alpha = 0.8f)
-                )
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Column(modifier = Modifier.fillMaxSize().verticalScroll(state = scroll)) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(colors.secondary.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.language),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                     Text(
-                        text = "Non-English audio",
-                        style = typography.bodyMedium,
+                        text = "A QUICK HEADS-UP",
+                        style = typography.labelMedium,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = colors.primary
+                    )
+                    Text(
+                        text = "Before you continue",
+                        style = typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                         color = colors.onSecondaryContainer
                     )
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(colors.secondary.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.music),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
                     Text(
-                        text = "Background music or noise",
+                        text = "Kipty uses a lightweight Vosk model to generate" +
+                            " English transcriptions, so mistakes can occur." +
+                            " If your audio is in another language, has background music," +
+                            " or has poor audio quality, the transcription may contain errors.",
                         style = typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onSecondaryContainer
+                        color = colors.onSecondaryContainer.copy(alpha = 0.8f)
                     )
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(colors.secondary.copy(alpha = 0.2f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.mic),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Text(
-                        text = "Low quality recordings",
-                        style = typography.bodyMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onSecondaryContainer
-                    )
-                }
-            }
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Button(
-                    onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            onContinue()
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.primary
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = MaterialTheme.shapes.medium
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(colors.secondary.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.language),
+                                contentDescription = null,
+                                tint = colors.onSecondaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                         Text(
-                            text = "Got it, continue",
-                            style = typography.titleMedium,
+                            text = "Non-English audio",
+                            style = typography.bodyMedium,
                             fontWeight = FontWeight.Bold,
-                            color = colors.onPrimary
+                            color = colors.onSecondaryContainer
                         )
-                        Icon(
-                            painter = painterResource(R.drawable.chevron_right),
-                            contentDescription = null,
-                            tint = colors.onPrimary,
-                            modifier = Modifier.size(20.dp)
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(colors.secondary.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.music),
+                                contentDescription = null,
+                                tint = colors.onSecondaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Text(
+                            text = "Background music or noise",
+                            style = typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onSecondaryContainer
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(colors.secondary.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.mic),
+                                contentDescription = null,
+                                tint = colors.onSecondaryContainer,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Text(
+                            text = "Low quality recordings",
+                            style = typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onSecondaryContainer
                         )
                     }
                 }
 
-                TextButton(
-                    onClick = {
-                        scope.launch { sheetState.hide() }.invokeOnCompletion {
-                            onDismiss()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    Text(
-                        text = "Cancel",
-                        style = typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onSecondaryContainer
-                    )
+                    Button(
+                        onClick = {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                onContinue()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.primary
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Got it, continue",
+                                style = typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = colors.onPrimary
+                            )
+                            Icon(
+                                painter = painterResource(R.drawable.chevron_right),
+                                contentDescription = null,
+                                tint = colors.onPrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        onClick = {
+                            scope.launch { sheetState.hide() }.invokeOnCompletion {
+                                onDismiss()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Cancel",
+                            style = typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onSecondaryContainer
+                        )
+                    }
                 }
             }
         }

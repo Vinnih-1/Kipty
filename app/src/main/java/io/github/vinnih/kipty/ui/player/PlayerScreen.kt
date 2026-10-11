@@ -39,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,7 +73,6 @@ import io.github.vinnih.kipty.ui.speech.SpeechScreen
 import io.github.vinnih.kipty.ui.theme.AppTheme
 import io.github.vinnih.kipty.utils.formatTime
 import java.io.File
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,10 +86,9 @@ fun PlayerScreen(
     peekHeight: Dp = 100.dp
 ) {
     val configurationController = hiltViewModel<ConfigurationViewModel>()
-
+    val sheetIsExpanded = scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded
     val colors = MaterialTheme.colorScheme
     val playerUiState by playerController.uiState.collectAsState()
-    var visible by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
 
     BackHandler(
@@ -100,17 +97,8 @@ fun PlayerScreen(
         scope.launch { scaffoldState.bottomSheetState.partialExpand() }
     }
 
-    LaunchedEffect(scaffoldState.bottomSheetState) {
-        snapshotFlow {
-            runCatching { scaffoldState.bottomSheetState.requireOffset() }.getOrNull()
-        }.filterNotNull()
-            .collect { offset ->
-                visible = offset > 1000f
-            }
-    }
-
     Column(modifier = modifier.fillMaxSize().background(color = colors.surfaceContainer)) {
-        AnimatedVisibility(visible) {
+        AnimatedVisibility(!sheetIsExpanded) {
             MiniPlayer(
                 onExpand = {
                     scope.launch { scaffoldState.bottomSheetState.expand() }
@@ -120,7 +108,7 @@ fun PlayerScreen(
                 peekHeight = peekHeight
             )
         }
-        AnimatedVisibility(!visible) {
+        AnimatedVisibility(sheetIsExpanded) {
             Player(
                 onCollapse = {
                     scope.launch { scaffoldState.bottomSheetState.partialExpand() }

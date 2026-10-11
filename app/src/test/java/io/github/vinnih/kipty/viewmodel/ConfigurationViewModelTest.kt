@@ -43,14 +43,12 @@ class ConfigurationViewModelTest {
     private val getAppSettingsUseCase = mockk<GetAppSettingsUseCase>()
     private val getAudiosUseCase = mockk<GetAudiosUseCase>()
     private val updateShowTimestampUseCase = mockk<UpdateShowTimestampUseCase>(relaxed = true)
-    private val updateMinimumThreadsUseCase = mockk<UpdateMinimumThreadsUseCase>(relaxed = true)
     private val updateReceiveAlertUseCase = mockk<UpdateReceiveAlertUseCase>(relaxed = true)
     private val updateProfileIconUseCase = mockk<UpdateProfileIconUseCase>(relaxed = true)
     private val updateUsernameUseCase = mockk<UpdateUsernameUseCase>(relaxed = true)
 
     private val fakeSettings = AppSettings(
         showTimestamp = false,
-        minimumThreads = 4,
         receiveAlert = true,
         username = "Vinicius",
         profileIconPath = "/files/profile.png",
@@ -88,7 +86,6 @@ class ConfigurationViewModelTest {
         getAppSettingsUseCase = getAppSettingsUseCase,
         getAudiosUseCase = getAudiosUseCase,
         updateShowTimestampUseCase = updateShowTimestampUseCase,
-        updateMinimumThreadsUseCase = updateMinimumThreadsUseCase,
         updateReceiveAlertUseCase = updateReceiveAlertUseCase,
         updateProfileIconUseCase = updateProfileIconUseCase,
         updateUsernameUseCase = updateUsernameUseCase
@@ -207,28 +204,6 @@ class ConfigurationViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle()
 
         coVerify { updateShowTimestampUseCase(false) }
-    }
-
-    // ── updateMinimumThreads ──────────────────────────────────────────────────
-
-    @Test
-    fun `updateMinimumThreads should invoke use case with the given value`() = runTest {
-        val vm = buildViewModel()
-
-        vm.updateMinimumThreads(8)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        coVerify { updateMinimumThreadsUseCase(8) }
-    }
-
-    @Test
-    fun `updateMinimumThreads with 1 should invoke use case with 1`() = runTest {
-        val vm = buildViewModel()
-
-        vm.updateMinimumThreads(1)
-        testDispatcher.scheduler.advanceUntilIdle()
-
-        coVerify { updateMinimumThreadsUseCase(1) }
     }
 
     // ── updateReceiveAlert ────────────────────────────────────────────────────

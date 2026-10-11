@@ -11,8 +11,6 @@ class FakeConfigurationViewModel(
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {}
 
-    override fun updateMinimumThreads(minimumThreads: Int) {}
-
     override fun updateReceiveAlert(receiveAlert: Boolean) {}
 
     override fun updateProfileIcon(file: File) {}

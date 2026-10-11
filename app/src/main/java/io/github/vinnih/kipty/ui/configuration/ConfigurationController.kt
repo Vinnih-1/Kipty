@@ -8,8 +8,6 @@ interface ConfigurationController {
 
     fun updateShowTimestamp(showTimestamp: Boolean)
 
-    fun updateMinimumThreads(minimumThreads: Int)
-
     fun updateReceiveAlert(receiveAlert: Boolean)
 
     fun updateProfileIcon(file: File)

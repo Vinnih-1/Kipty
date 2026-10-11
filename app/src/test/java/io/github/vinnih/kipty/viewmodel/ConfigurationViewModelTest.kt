@@ -9,7 +9,6 @@ import io.github.vinnih.kipty.data.database.entity.TranscriptionState
 import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.domain.usecase.audio.GetAudiosUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
-import io.github.vinnih.kipty.domain.usecase.settings.UpdateMinimumThreadsUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateProfileIconUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateReceiveAlertUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateShowTimestampUseCase

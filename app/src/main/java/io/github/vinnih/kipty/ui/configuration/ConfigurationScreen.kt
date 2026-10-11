@@ -347,70 +347,6 @@ fun SwitchSettingItem(
 }
 
 @Composable
-fun IncrementSettingItem(
-    title: String,
-    description: String,
-    @DrawableRes iconRes: Int,
-    value: Int,
-    onValueChange: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val colors = MaterialTheme.colorScheme
-
-    SettingItemLayout(
-        icon = { SettingIcon(iconRes, title) },
-        title = title,
-        description = description,
-        settingControl = {
-            Box(
-                modifier = Modifier.width(110.dp)
-            ) {
-                BaseButton(
-                    onClick = { onValueChange(value - 1) },
-                    content = {
-                        Icon(
-                            painter = painterResource(R.drawable.remove),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    },
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .clip(RoundedCornerShape(12.dp))
-                        .size(42.dp)
-                        .background(colors.secondaryContainer.copy(.3f))
-                )
-                Text(
-                    text = "$value",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = colors.onSecondaryContainer,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-                BaseButton(
-                    onClick = { onValueChange(value + 1) },
-                    content = {
-                        Icon(
-                            painter = painterResource(R.drawable.add),
-                            contentDescription = null,
-                            tint = colors.onSecondaryContainer,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    },
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .clip(RoundedCornerShape(12.dp))
-                        .size(42.dp)
-                        .background(colors.secondaryContainer.copy(.3f))
-                )
-            }
-        },
-        modifier = modifier
-    )
-}
-
-@Composable
 fun ButtonSettingItem(
     title: String,
     description: String,
@@ -541,17 +477,6 @@ fun ConfigurationScreen(
                             iconRes = R.drawable.schedule,
                             checked = uiState.appSettings!!.showTimestamp,
                             onCheckedChange = { configurationController.updateShowTimestamp(it) }
-                        )
-                    },
-                    {
-                        IncrementSettingItem(
-                            title = "Processing threads",
-                            description = "Number of threads (1-8)",
-                            iconRes = R.drawable.memory,
-                            value = uiState.appSettings!!.minimumThreads,
-                            onValueChange = {
-                                configurationController.updateMinimumThreads(it.coerceIn(1, 8))
-                            }
                         )
                     },
                     {

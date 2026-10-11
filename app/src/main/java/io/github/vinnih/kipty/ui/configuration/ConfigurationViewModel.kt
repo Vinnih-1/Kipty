@@ -9,7 +9,6 @@ import io.github.vinnih.kipty.data.settings.AppSettings
 import io.github.vinnih.kipty.data.workers.AudioWorker
 import io.github.vinnih.kipty.domain.usecase.audio.GetAudiosUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.GetAppSettingsUseCase
-import io.github.vinnih.kipty.domain.usecase.settings.UpdateMinimumThreadsUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateProfileIconUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateReceiveAlertUseCase
 import io.github.vinnih.kipty.domain.usecase.settings.UpdateShowTimestampUseCase
@@ -36,7 +35,6 @@ class ConfigurationViewModel @Inject constructor(
     getAppSettingsUseCase: GetAppSettingsUseCase,
     getAudiosUseCase: GetAudiosUseCase,
     private val updateShowTimestampUseCase: UpdateShowTimestampUseCase,
-    private val updateMinimumThreadsUseCase: UpdateMinimumThreadsUseCase,
     private val updateReceiveAlertUseCase: UpdateReceiveAlertUseCase,
     private val updateProfileIconUseCase: UpdateProfileIconUseCase,
     private val updateUsernameUseCase: UpdateUsernameUseCase
@@ -78,10 +76,6 @@ class ConfigurationViewModel @Inject constructor(
 
     override fun updateShowTimestamp(showTimestamp: Boolean) {
         viewModelScope.launch { updateShowTimestampUseCase(showTimestamp) }
-    }
-
-    override fun updateMinimumThreads(minimumThreads: Int) {
-        viewModelScope.launch { updateMinimumThreadsUseCase(minimumThreads) }
     }
 
     override fun updateReceiveAlert(receiveAlert: Boolean) {

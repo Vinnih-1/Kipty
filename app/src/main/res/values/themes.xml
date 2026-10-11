@@ -8,5 +8,9 @@
         <item name="windowSplashScreenIconBackgroundColor">?android:attr/colorBackground</item>
         <item name="android:statusBarColor">?android:attr/colorBackground</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="postSplashScreenTheme">@style/Theme.Kipty</item>
+    </style>
+    <style name="Theme.Kipty" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#FFF8F6</item>
     </style>
 </resources>

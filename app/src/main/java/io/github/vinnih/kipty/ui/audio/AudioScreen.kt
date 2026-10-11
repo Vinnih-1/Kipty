@@ -7,10 +7,12 @@ import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -19,6 +21,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
@@ -51,6 +55,7 @@ import io.github.vinnih.kipty.ui.notification.FakeNotificationViewModel
 import io.github.vinnih.kipty.ui.notification.NotificationController
 import io.github.vinnih.kipty.ui.player.FakePlayerViewModel
 import io.github.vinnih.kipty.ui.player.PlayerController
+import io.github.vinnih.kipty.ui.player.PlayerScreen
 import io.github.vinnih.kipty.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,6 +67,7 @@ fun AudioScreen(
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
     id: Int,
+    showPlayerInDetail: Boolean,
     modifier: Modifier = Modifier
 ) {
     val configurationController = hiltViewModel<ConfigurationViewModel>()
@@ -75,67 +81,92 @@ fun AudioScreen(
     val audioUiState by audioController.uiState.collectAsState()
     var selectedAudio by remember { mutableStateOf<AudioEntity?>(null) }
 
-    Box(modifier = modifier) {
-        Scaffold(
-            topBar = {
-                AudioTopBar(
-                    audioEntity = audioEntity,
-                    audioUiState = audioUiState,
-                    onTranscribe = {
-                        notificationController.notify(
-                            audioEntity = audioEntity,
-                            title = "Transcribing audio",
-                            content = "Your transcript for this episode is being prepared.",
-                            channel = NotificationCategory.TRANSCRIPTION_INIT
-                        )
-                        audioController.transcribeAudio(audioEntity = audioEntity)
-                    },
-                    onSettings = { selectedAudio = audioEntity },
-                    onCancel = {
-                        audioController.cancelTranscriptionWork(audioEntity)
-                    },
-                    onBack = onBack
-                )
-            },
-            floatingActionButton = {
-                AnimatedVisibility(
-                    !audioEntity.transcription.isNullOrEmpty() &&
-                        audioEntity.uid != playerUiState.currentAudio?.uid
-                ) {
-                    PlayPauseButton(
+    val audioContent: @Composable ((Modifier) -> Unit) = { audioModifier ->
+        Box(modifier = audioModifier) {
+            Scaffold(
+                topBar = {
+                    AudioTopBar(
                         audioEntity = audioEntity,
-                        playerController = playerController
-                    )
-                }
-            },
-            modifier = Modifier
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = paddingValues.calculateTopPadding())
-            ) {
-                if (!audioEntity.transcription.isNullOrEmpty()) {
-                    TextViewer(
-                        transcription = audioEntity.transcription,
-                        onClick = { start, end ->
-                            playerController.seekTo(audioEntity, start, end)
+                        audioUiState = audioUiState,
+                        onTranscribe = {
+                            notificationController.notify(
+                                audioEntity = audioEntity,
+                                title = "Transcribing audio",
+                                content = "Your transcript for this episode is being prepared.",
+                                channel = NotificationCategory.TRANSCRIPTION_INIT
+                            )
+                            audioController.transcribeAudio(audioEntity = audioEntity)
                         },
-                        showTimestamp = configurationUiState.appSettings!!.showTimestamp
+                        onSettings = { selectedAudio = audioEntity },
+                        onCancel = {
+                            audioController.cancelTranscriptionWork(audioEntity)
+                        },
+                        onBack = onBack
                     )
-                } else {
-                    NoTranscriptionFound()
+                },
+                floatingActionButton = {
+                    AnimatedVisibility(
+                        !audioEntity.transcription.isNullOrEmpty() &&
+                            audioEntity.uid != playerUiState.currentAudio?.uid
+                    ) {
+                        PlayPauseButton(
+                            audioEntity = audioEntity,
+                            playerController = playerController
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) { paddingValues ->
+                Column(
+                    modifier = Modifier.padding(top = paddingValues.calculateTopPadding())
+                ) {
+                    if (!audioEntity.transcription.isNullOrEmpty()) {
+                        TextViewer(
+                            transcription = audioEntity.transcription,
+                            onClick = { start, end ->
+                                playerController.seekTo(audioEntity, start, end)
+                            },
+                            showTimestamp = configurationUiState.appSettings!!.showTimestamp
+                        )
+                    } else {
+                        NoTranscriptionFound()
+                    }
                 }
             }
+            AudioConfigSheet(
+                playerController = playerController,
+                notificationController = notificationController,
+                audioEntity = selectedAudio,
+                onNavigate = onNavigate,
+                onClose = { selectedAudio = null },
+                modifier = Modifier
+            )
         }
-        AudioConfigSheet(
-            playerController = playerController,
-            notificationController = notificationController,
-            audioEntity = selectedAudio,
-            onNavigate = onNavigate,
-            onClose = { selectedAudio = null },
-            modifier = Modifier
-        )
+    }
+
+    if (showPlayerInDetail) {
+        val playerScaffoldState = rememberBottomSheetScaffoldState()
+
+        BottomSheetScaffold(
+            scaffoldState = playerScaffoldState,
+            sheetPeekHeight = 148.dp,
+            sheetMaxWidth = Dp.Unspecified,
+            sheetContent = {
+                PlayerScreen(
+                    playerController = playerController,
+                    notificationController = notificationController,
+                    onNavigate = onNavigate,
+                    scaffoldState = playerScaffoldState,
+                    peekHeight = 100.dp
+                )
+            },
+            sheetDragHandle = null,
+            modifier = modifier
+        ) { innerPadding ->
+            audioContent(Modifier.fillMaxSize().padding(innerPadding))
+        }
+    } else {
+        audioContent(modifier.fillMaxSize())
     }
 }
 
@@ -342,7 +373,8 @@ private fun AudioScreenPreview() {
             notificationController = FakeNotificationViewModel(),
             onNavigate = {},
             onBack = {},
-            id = audioEntity.uid
+            id = audioEntity.uid,
+            showPlayerInDetail = false
         )
     }
 }

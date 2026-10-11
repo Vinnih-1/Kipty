@@ -10,6 +10,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -22,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.vinnih.kipty.ui.components.AppNavigation
 import io.github.vinnih.kipty.ui.create.Step
@@ -89,7 +96,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(
+        ExperimentalMaterial3Api::class,
+        ExperimentalMaterial3AdaptiveApi::class
+    )
     @Composable
     fun AppScaffold(
         initialScreen: Screen,
@@ -99,6 +109,13 @@ class MainActivity : ComponentActivity() {
     ) {
         val backstack = remember { mutableStateListOf<Screen>(initialScreen) }
         val scaffoldState = rememberBottomSheetScaffoldState()
+        val listDetailStrategy = rememberListDetailSceneStrategy<Screen>(
+            backNavigationBehavior = BackNavigationBehavior.PopUntilContentChange
+        )
+        val windowInfo = currentWindowAdaptiveInfoV2()
+        val isExpanded = windowInfo.windowSizeClass.isWidthAtLeastBreakpoint(
+            WIDTH_DP_EXPANDED_LOWER_BOUND
+        )
 
         val shouldShowBottomSheet = when (backstack.lastOrNull()) {
             is Screen.Welcome -> false
@@ -121,32 +138,34 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        BottomSheetScaffold(
-            scaffoldState = scaffoldState,
-            sheetPeekHeight = animatedPeekHeight,
-            sheetContent = {
-                PlayerScreen(
-                    playerController = playerController,
-                    notificationController = notificationController,
-                    onNavigate = { screen -> backstack.add(screen) },
-                    scaffoldState = scaffoldState
-                )
-            },
-            sheetShape = RectangleShape,
-            sheetDragHandle = null,
-            modifier = modifier
-        ) { paddingValues ->
+        val navContent: @Composable (Modifier) -> Unit = { navModifier ->
             NavDisplay(
-                modifier = Modifier.padding(paddingValues),
+                sceneStrategy = listDetailStrategy,
+                modifier = navModifier,
                 backStack = backstack,
                 onBack = {
-                    if (scaffoldState.bottomSheetState.currentValue != SheetValue.Expanded) {
+                    if (isExpanded ||
+                        scaffoldState.bottomSheetState.currentValue != SheetValue.Expanded
+                    ) {
                         backstack.removeLastOrNull()
                     }
                 },
                 entryProvider = { key ->
                     when (key) {
-                        is Screen -> NavEntry(key) {
+                        is Screen -> NavEntry(
+                            key = key,
+                            metadata = when (key) {
+                                is Screen.Home -> ListDetailSceneStrategy.listPane(
+                                    detailPlaceholder = {
+                                        Text("Select an audio to view its transcription")
+                                    }
+                                )
+
+                                is Screen.Audio -> ListDetailSceneStrategy.detailPane()
+
+                                else -> emptyMap()
+                            }
+                        ) {
                             AppNavigation(
                                 currentScreen = key,
                                 playerController = playerController,
@@ -157,12 +176,35 @@ class MainActivity : ComponentActivity() {
                                 onGetStarted = {
                                     backstack.clear()
                                     backstack.add(Screen.Home)
-                                }
+                                },
+                                showPlayerInDetail = isExpanded
                             )
                         }
                     }
                 }
             )
+        }
+
+        if (isExpanded) {
+            navContent(modifier)
+        } else {
+            BottomSheetScaffold(
+                scaffoldState = scaffoldState,
+                sheetPeekHeight = animatedPeekHeight,
+                sheetContent = {
+                    PlayerScreen(
+                        playerController = playerController,
+                        notificationController = notificationController,
+                        onNavigate = { screen -> backstack.add(screen) },
+                        scaffoldState = scaffoldState
+                    )
+                },
+                sheetShape = RectangleShape,
+                sheetDragHandle = null,
+                modifier = modifier
+            ) { paddingValues ->
+                navContent(Modifier.padding(paddingValues))
+            }
         }
     }
 }

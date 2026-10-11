@@ -27,7 +27,8 @@ fun AppNavigation(
     onNavigate: (Screen) -> Unit,
     onBack: () -> Unit,
     onDatabasePopulated: () -> Unit,
-    onGetStarted: () -> Unit
+    onGetStarted: () -> Unit,
+    showPlayerInDetail: Boolean
 ) {
     when (currentScreen) {
         is Screen.Welcome -> {
@@ -57,7 +58,8 @@ fun AppNavigation(
                 notificationController = notificationController,
                 onNavigate = onNavigate,
                 onBack = onBack,
-                id = currentScreen.id
+                id = currentScreen.id,
+                showPlayerInDetail = showPlayerInDetail
             )
         }
 

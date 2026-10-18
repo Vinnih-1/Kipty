@@ -122,7 +122,7 @@ private fun TextViewerBase(
     }
 
     LaunchedEffect(activeIndex) {
-        listState.animateScrollToItem(index = activeIndex, scrollOffset = -400)
+        listState.animateScrollToItem(index = activeIndex)
     }
 
     LazyColumn(

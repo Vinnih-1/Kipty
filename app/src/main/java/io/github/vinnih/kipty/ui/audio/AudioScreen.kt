@@ -149,15 +149,15 @@ fun AudioScreen(
 
         BottomSheetScaffold(
             scaffoldState = playerScaffoldState,
-            sheetPeekHeight = 148.dp,
             sheetMaxWidth = Dp.Unspecified,
+            sheetPeekHeight = 92.dp,
             sheetContent = {
                 PlayerScreen(
                     playerController = playerController,
                     notificationController = notificationController,
                     onNavigate = onNavigate,
                     scaffoldState = playerScaffoldState,
-                    peekHeight = 100.dp
+                    peekHeight = 72.dp
                 )
             },
             sheetDragHandle = null,
@@ -242,8 +242,7 @@ fun AudioTopBar(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent
-            ),
-            expandedHeight = 100.dp
+            )
         )
         HorizontalDivider(color = colors.secondary)
     }

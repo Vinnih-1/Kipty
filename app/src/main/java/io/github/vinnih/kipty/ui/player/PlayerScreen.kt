@@ -30,6 +30,7 @@ import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -56,6 +57,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.compose.state.rememberNextButtonState
 import androidx.media3.ui.compose.state.rememberPlayPauseButtonState
 import androidx.media3.ui.compose.state.rememberPreviousButtonState
+import androidx.window.core.layout.WindowSizeClass.Companion.HEIGHT_DP_MEDIUM_LOWER_BOUND
 import coil3.compose.AsyncImage
 import io.github.vinnih.kipty.R
 import io.github.vinnih.kipty.Screen
@@ -87,6 +89,10 @@ fun PlayerScreen(
 ) {
     val configurationController = hiltViewModel<ConfigurationViewModel>()
     val sheetIsExpanded = scaffoldState.bottomSheetState.targetValue == SheetValue.Expanded
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    val hasCompactHeight = !windowSizeClass.isHeightAtLeastBreakpoint(
+        HEIGHT_DP_MEDIUM_LOWER_BOUND
+    )
     val colors = MaterialTheme.colorScheme
     val playerUiState by playerController.uiState.collectAsState()
     val scope = rememberCoroutineScope()
@@ -121,7 +127,8 @@ fun PlayerScreen(
                     onNavigate(it)
                     scope.launch { scaffoldState.bottomSheetState.partialExpand() }
                 },
-                peekHeight = peekHeight
+                peekHeight = peekHeight,
+                hasCompactHeight = hasCompactHeight
             )
         }
     }
@@ -137,6 +144,7 @@ private fun Player(
     configurationController: ConfigurationController,
     onNavigate: (Screen) -> Unit,
     peekHeight: Dp,
+    hasCompactHeight: Boolean,
     modifier: Modifier = Modifier
 ) {
     val configurationUiState by configurationController.uiState.collectAsState()
@@ -155,14 +163,33 @@ private fun Player(
 
     Scaffold(
         bottomBar = {
-            PlayerBottom(
-                player = player,
-                uiState = playerUiState,
-                onSeek = { playerController.seekTo(it) },
-                onSeekBack = { playerController.seekTo(playerUiState.currentPosition - 10_000) },
-                onSeekForward = { playerController.seekTo(playerUiState.currentPosition + 10_000) },
-                onPlaybackSpeed = playerController::changePlaybackSpeed
-            )
+            if (hasCompactHeight) {
+                CompactPlayerBottom(
+                    player = player,
+                    uiState = playerUiState,
+                    onSeek = { playerController.seekTo(it) },
+                    onSeekBack = {
+                        playerController.seekTo(playerUiState.currentPosition - 10_000)
+                    },
+                    onSeekForward = {
+                        playerController.seekTo(playerUiState.currentPosition + 10_000)
+                    },
+                    onPlaybackSpeed = playerController::changePlaybackSpeed
+                )
+            } else {
+                PlayerBottom(
+                    player = player,
+                    uiState = playerUiState,
+                    onSeek = { playerController.seekTo(it) },
+                    onSeekBack = {
+                        playerController.seekTo(playerUiState.currentPosition - 10_000)
+                    },
+                    onSeekForward = {
+                        playerController.seekTo(playerUiState.currentPosition + 10_000)
+                    },
+                    onPlaybackSpeed = playerController::changePlaybackSpeed
+                )
+            }
         },
         modifier = modifier.windowInsetsPadding(WindowInsets.navigationBars)
     ) { paddingValues ->
@@ -540,6 +567,160 @@ private fun PlayerBottom(
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun CompactPlayerBottom(
+    player: Player,
+    uiState: PlayerUiState,
+    onSeek: (Long) -> Unit,
+    onSeekBack: () -> Unit,
+    onSeekForward: () -> Unit,
+    onPlaybackSpeed: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val playPause = rememberPlayPauseButtonState(player)
+    val skipPrevious = rememberPreviousButtonState(player)
+    val skipNext = rememberNextButtonState(player)
+    var isUserSeeking by remember { mutableStateOf(false) }
+    var seekPosition by remember { mutableFloatStateOf(0f) }
+    val colors = MaterialTheme.colorScheme
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = uiState.currentPosition.formatTime(),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.secondary.copy(alpha = .8f)
+            )
+            Slider(
+                value = if (isUserSeeking) seekPosition else uiState.progress,
+                onValueChange = { newValue ->
+                    isUserSeeking = true
+                    seekPosition = newValue
+                },
+                onValueChangeFinished = {
+                    onSeek((seekPosition * uiState.duration).toLong())
+                    isUserSeeking = false
+                },
+                colors = SliderDefaults.colors(
+                    thumbColor = colors.primary,
+                    activeTrackColor = colors.primary
+                ),
+                thumb = {
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(colors.primary, shape = CircleShape)
+                    )
+                },
+                track = { sliderState ->
+                    SliderDefaults.Track(
+                        sliderState = sliderState,
+                        modifier = Modifier.height(6.dp),
+                        colors = SliderDefaults.colors(activeTrackColor = colors.primary),
+                        drawStopIndicator = {}
+                    )
+                },
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = uiState.duration.formatTime(),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.secondary.copy(alpha = .8f)
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            CompactPlayerIconButton(
+                onClick = onSeekBack,
+                icon = R.drawable.rotate_left,
+                contentDescription = "Seek back 10 seconds",
+                tint = colors.secondary.copy(alpha = .8f)
+            )
+            CompactPlayerIconButton(
+                onClick = skipPrevious::onClick,
+                enabled = skipPrevious.isEnabled,
+                icon = R.drawable.skip_previous,
+                contentDescription = "Previous audio",
+                tint = colors.secondary.copy(alpha = if (skipPrevious.isEnabled) 1f else .3f)
+            )
+            BaseButton(
+                onClick = playPause::onClick,
+                enabled = playPause.isEnabled,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(56.dp)
+                    .background(colors.secondaryContainer)
+            ) {
+                Icon(
+                    painter = painterResource(
+                        if (playPause.showPlay) R.drawable.play else R.drawable.pause
+                    ),
+                    contentDescription = if (playPause.showPlay) "Play" else "Pause",
+                    tint = colors.onSecondaryContainer,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+            CompactPlayerIconButton(
+                onClick = skipNext::onClick,
+                enabled = skipNext.isEnabled,
+                icon = R.drawable.skip_next,
+                contentDescription = "Next audio",
+                tint = colors.secondary.copy(alpha = if (skipNext.isEnabled) 1f else .3f)
+            )
+            CompactPlayerIconButton(
+                onClick = onSeekForward,
+                icon = R.drawable.rotate_right,
+                contentDescription = "Seek forward 10 seconds",
+                tint = colors.secondary.copy(alpha = .8f)
+            )
+            BaseButton(
+                onClick = onPlaybackSpeed,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Text(
+                    text = uiState.playbackSpeed.text,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.secondary.copy(alpha = .8f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactPlayerIconButton(
+    onClick: () -> Unit,
+    icon: Int,
+    contentDescription: String,
+    tint: Color,
+    enabled: Boolean = true
+) {
+    BaseButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.size(48.dp)
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = contentDescription,
+            tint = tint,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
 @Preview(showSystemUi = true, showBackground = true)
 @Composable
 private fun PlayerPreview() {
@@ -553,7 +734,8 @@ private fun PlayerPreview() {
             notificationController = FakeNotificationViewModel(),
             configurationController = FakeConfigurationViewModel(),
             onNavigate = {},
-            peekHeight = 100.dp
+            peekHeight = 100.dp,
+            hasCompactHeight = false
         )
     }
 }
